@@ -40,9 +40,9 @@ filename = f"record_{timestamp}.mp4"
 
 # カメラ録画コマンド
 camera_cmd = (
-    "libcamera-vid -t 0 --width 1280 --height 720 "
-    "--framerate 30 --codec h264 --inline -o - | "
-    "ffmpeg -fflags +genpts -i - -c:v copy {filename}"
+    f"libcamera-vid -t 0 --width 1280 --height 720 "
+    f"--framerate 30 --codec h264 --inline -o - | "
+    f"ffmpeg -fflags +genpts -i - -c:v copy {filename}"
 )
 
 try:

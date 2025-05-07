@@ -36,7 +36,7 @@ CHECK_INTERVAL = 0.4
 
 #実行時刻のファイル名
 timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-filename = f"record_{timestamp}.mp4
+filename = f"record_{timestamp}.mp4"
 
 # カメラ録画コマンド
 camera_cmd = (

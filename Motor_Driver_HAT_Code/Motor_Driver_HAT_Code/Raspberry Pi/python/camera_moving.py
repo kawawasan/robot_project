@@ -1,3 +1,5 @@
+import os
+import signal
 import subprocess
 import time
 from datetime import datetime
@@ -35,31 +37,20 @@ NO_MOVEMENT_TIMEOUT = 10  # 秒
 CHECK_INTERVAL = 0.4
 
 #実行時刻のファイル名
+record_dir = "/home/pi/recordings"
 timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-filename = f"record_{timestamp}.mp4"
+filename = os.path.join(record_dir, f"record_{timestamp}.mp4")
 
 # カメラ録画コマンド
 camera_cmd = (
-#<<<<<<< HEAD
     f"libcamera-vid -t 0 --width 1280 --height 720 "
     f"--framerate 30 --codec h264 --inline -o - | "
     f"ffmpeg -fflags +genpts -i - -c:v copy {filename}"
-#=======
-#<<<<<<< HEAD
-  #  "libcamera-vid -t 0 --width 1280 --height 720 "
- #   "--framerate 30 --codec h264 --inline -o - | "
-#    "ffmpeg -fflags +genpts -i - -c:v copy {filename}"
-#=======
-   #f"libcamera-vid --width 1280 --height 720 "
-  # f"--framerate 30 --codec h264 --inline -o - | "
- #  f"ffmpeg -fflags +genpts -i - -c:v copy {filename}"
-#>>>>>>> cf3dc02 (a)
-#>>>>>>> 56a242f950d00fb38cd268cf03eb380946661c40
 )
 
 try:
     # カメラ起動
-    camera_proc = subprocess.Popen(camera_cmd, shell=True)
+    camera_proc = subprocess.Popen(camera_cmd, shell=True, preexec_fn=os.setsid)
     print("Camera recording started.")
 
     no_movement_start = None
@@ -87,7 +78,8 @@ except KeyboardInterrupt:
 finally:
     Motor.MotorStop()
     if camera_proc.poll() is None:
-        camera_proc.terminate()
+        os.killpg(os.getpgid(camera_proc.pid), signal.SIGTERM)
+	#camera_proc.terminate()
         print("Camera recording stopped.")
 
 

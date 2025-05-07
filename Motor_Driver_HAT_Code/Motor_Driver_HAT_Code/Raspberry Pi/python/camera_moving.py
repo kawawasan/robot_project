@@ -40,7 +40,7 @@ filename = f"record_{timestamp}.mp4"
 
 # カメラ録画コマンド
 camera_cmd = (
-    "libcamera-vid --width 1280 --height 720 "
+    "libcamera-vid -t 0 --width 1280 --height 720 "
     "--framerate 30 --codec h264 --inline -o - | "
     "ffmpeg -fflags +genpts -i - -c:v copy {filename}"
 )
@@ -77,4 +77,5 @@ finally:
     if camera_proc.poll() is None:
         camera_proc.terminate()
         print("Camera recording stopped.")
+
 

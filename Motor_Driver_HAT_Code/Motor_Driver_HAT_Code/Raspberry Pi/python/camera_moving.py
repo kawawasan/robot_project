@@ -44,7 +44,7 @@ filename = os.path.join(record_dir, f"record_{timestamp}.mp4")
 # カメラ録画コマンド
 camera_cmd = (
     f"libcamera-vid -t 0 --width 1280 --height 720 "
-    f"--framerate 30 --codec h264 --inline -o - | "
+    f"--framerate 30 --codec h264 --inline -vflip -o - | "
     f"ffmpeg -fflags +genpts -i - -c:v copy {filename}"
 )
 

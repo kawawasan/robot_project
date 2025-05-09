@@ -43,10 +43,10 @@ try:
         if current_distance <= TARGET_DISTANCE-tolerance_range:
             # FORWARD
             Motor.MotorRun('forward', 70)
-	    no=movement_start = None
+            no=movement_start = None
         else:
             Motor.MotorStop()
-	    if no_movement_start is None:
+            if no_movement_start is None:
                 no_movement_start = time.time()
             elif time.time() - no_movement_start >= NO_MOVEMENT_TIMEOUT:
                 print("No movement for over 10 seconds. Exiting.")

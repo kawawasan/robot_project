@@ -1,6 +1,6 @@
 #!/usr/bin/python
-
 from PCA9685 import PCA9685
+import subprocess
 import time
 from getdist_lidar import get_distance  # LIDAR用関数をインポート
 
@@ -28,6 +28,13 @@ class MotorDriver():
 
     def MotorStop(self):
         pwm.setDutycycle(self.PWMB, 0)
+
+camera_proc = subprocess.Popen([
+    "/home/pi/robot_project/robot_video_capture/capture_send.out",
+    "192.168.200.2",
+    "10"
+])
+
 
 # メイン制御ループ
 Motor = MotorDriver()

@@ -159,6 +159,7 @@ int main(int argc, char* argv[]) {
               "-t", capture_time.c_str(), "-n", 
               "--width", WIDTH, "--height", HEIGHT, 
               "--framerate", "30", "--codec", "h264", "--inline", 
+              "--vflip",  "--hflip", 
               "-o", "-", nullptr);
         exit(EXIT_FAILURE);
     }

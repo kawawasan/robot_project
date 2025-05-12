@@ -13,7 +13,7 @@ class MotorDriver():
         self.BIN1 = 3
         self.BIN2 = 4
 
-    def MotorRun(self, motor, direction, speed):
+    def MotorRun(self, direction, speed):
         if speed > 100:
             #print("Speed must be between 0 and 100")
             return

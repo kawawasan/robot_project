@@ -32,7 +32,7 @@ class MotorDriver():
 camera_proc = subprocess.Popen([
     "/home/pi/robot_project/robot_video_capture/capture_send.out",
     "192.168.200.2",
-    "10"
+    "0"
 ])
 
 
@@ -68,3 +68,6 @@ except KeyboardInterrupt:
 
 finally:
     Motor.MotorStop()
+    if camera_proc.poll() is None:
+        camera_proc.terminate()
+        camera_proc.wait()

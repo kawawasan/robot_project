@@ -14,7 +14,18 @@
 
 1. このリポジトリをRaspberry Piにクローンします。
 2. Motor_Driver_HAT_Code/Motor_Driver_HAT_Code/Raspberry Pi/python
-ディレクトリに入り、move_1m.pyを実行
-LiDARで後方物体との距離を測距しながら、その距離が1mとなるように進みます。
-   python3 move_1m.py
+ディレクトリに入る
 
+### サンプルコード
+- モータの試運転（デフォルト）
+   ```python3 main.py```
+- LiDARで1秒おきに測距する
+   ```python3 lidar.py```
+- LiDARで後方物体との距離を測距しながら、その距離が1mとなるように進む。
+   ```python3 move_1m.py```
+- カメラロボットのカメラで撮影を行いながら進む
+   ```python3 camera_moving.py```
+- 撮影・ローカル保存・UDP送信を同時に行う
+   ```./udp_send.out [送信先IP] [撮影時間(s) 0で止めるまで] [映像保存フォルダ名(なしで実行日時)]```
+- UDP受信後，映像を.tsからmp4へ変換を行う
+   ```./save_recv.out [自身のIP] [映像保存名(なしで実行日時)]```

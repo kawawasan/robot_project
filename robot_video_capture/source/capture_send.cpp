@@ -160,7 +160,7 @@ int main(int argc, char* argv[]) {
               "--width", WIDTH, "--height", HEIGHT, 
               "--framerate", "30", "--codec", "h264", "--inline", 
               "--vflip",  "--hflip", 
-              "-o", "-", nullptr);
+              "-o", "-", "-report", nullptr);
         exit(EXIT_FAILURE);
     }
 

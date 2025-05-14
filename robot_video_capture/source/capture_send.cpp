@@ -17,6 +17,7 @@
 #include <fstream>
 #include <sstream>
 #include <filesystem>
+#include <signal.h>
 
 #define MTU_SIZE 1316
 #define BUFFER_SIZE (1316 * 100)
@@ -120,6 +121,7 @@ void udp_sender(int sock, struct sockaddr_in addr, int pipe_fd) {
 }
 
 int main(int argc, char* argv[]) {
+    signal(SIGPIPE, SIG_IGN); //sigpipe無視(できるかわからん)
     if (argc < 3 || argc > 4) {
        std::cerr << "Usage: " << argv[0] << " [送信先IP] [撮影時間(s) 0で止めるまで] [映像保存フォルダ名(なしで実行日時)]\n";
        return 1;

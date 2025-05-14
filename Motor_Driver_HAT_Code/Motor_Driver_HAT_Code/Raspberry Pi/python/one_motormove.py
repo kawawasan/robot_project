@@ -3,6 +3,7 @@ from PCA9685 import PCA9685
 import subprocess
 import time
 from getdist_lidar import get_distance  # LIDAR用関数をインポート
+import signal
 
 pwm = PCA9685(0x40, debug=False)
 pwm.setPWMFreq(50)
@@ -29,11 +30,14 @@ class MotorDriver():
     def MotorStop(self):
         pwm.setDutycycle(self.PWMB, 0)
 
+def ignore_sigpipe():
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)  # または SIG_
+    
 camera_proc = subprocess.Popen([
     "/home/pi/robot_project/robot_video_capture/capture_send.out",
     "192.168.200.2",
     "0"
-])
+], preexec_fn=ignore_sigpipe)##.outに対してsigpipeを無視させる
 
 
 # メイン制御ループ

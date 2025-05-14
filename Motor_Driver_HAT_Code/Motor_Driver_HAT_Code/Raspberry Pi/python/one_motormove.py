@@ -68,6 +68,8 @@ except KeyboardInterrupt:
 
 finally:
     Motor.MotorStop()
+    time.sleep(1.0)
+    
     if camera_proc.poll() is None:
         camera_proc.terminate()
         camera_proc.wait()

@@ -80,7 +80,10 @@ finally:
         # camera_proc.send_signal(signal.SIGINT)
         try:
             camera_proc.send_signal(signal.SIGINT)
-            camera_proc.wait(timeout=5)
+            
+            time.sleep(2.0)
+            
+            camera_proc.wait(timeout=10)
             
         except subprocess.TimeoutExpired:
             print("強制終了")

@@ -128,6 +128,7 @@ void udp_sender(int sock, struct sockaddr_in addr, int pipe_fd) {
 }
 
 int main(int argc, char* argv[]) {
+    signal(SIGPIPE, SIG_IGN)
     if (argc < 4 || argc > 5) {
        std::cerr << "Usage: " << argv[0] << " [送信先IP] [撮影時間(s) 0で止めるまで] [ビデオビットレート(kbps)] [映像保存フォルダ名(なしで実行日時)]\n";
        return 1;

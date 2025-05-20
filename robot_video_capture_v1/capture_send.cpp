@@ -88,27 +88,39 @@ void udp_sender(int sock, struct sockaddr_in addr, int pipe_fd) {
         int ret = poll(fds, 1, 100);
         if (ret > 0 && (fds[0].revents & POLLIN)) {
             ssize_t bytes_read = read(pipe_fd, buffer, BUFFER_SIZE);
-            if (bytes_read > 0) {
-                // ローカル保存
-                if (video_file.is_open()) {
-                    video_file.write(buffer, bytes_read);
-                    video_file.flush();
+            // if (bytes_read > 0) {
+            // 大修正(河村 ０５２０)
+            if (bytes_read == 0) {
+                // ✅ パイプが閉じられた（EOF）
+                std::cout << "パイプEOF検出 → 終了" << std::endl;
+                break;
+            } else if (bytes_read < 0) {
+                if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                    continue; // 一時的な読み取り失敗
+                } else {
+                    std::cerr << "パイプ読み取りエラー: " << strerror(errno) << std::endl;
+                    break;
                 }
+            }
+            // ローカル保存
+            if (video_file.is_open()) {
+                video_file.write(buffer, bytes_read);
+                video_file.flush();
+            }
 
-                // UDP送信
-                for (size_t i = 0; i < static_cast<size_t>(bytes_read); i += MTU_SIZE) {
-                    size_t chunk_size = std::min(
-                        static_cast<size_t>(MTU_SIZE),
-                        static_cast<size_t>(bytes_read - i)
-                    );
-                    try {
-                        sendto(sock, buffer + i, chunk_size, 0,
-                              (struct sockaddr*)&addr, sizeof(addr));
-                    } catch (const std::system_error& e) {
-                        std::cerr << "送信エラー: " << e.what() << std::endl;
-                        running = false;
-                        break;
-                    }
+            // UDP送信
+            for (size_t i = 0; i < static_cast<size_t>(bytes_read); i += MTU_SIZE) {
+                size_t chunk_size = std::min(
+                    static_cast<size_t>(MTU_SIZE),
+                    static_cast<size_t>(bytes_read - i)
+                );
+                try {
+                    sendto(sock, buffer + i, chunk_size, 0,
+                            (struct sockaddr*)&addr, sizeof(addr));
+                } catch (const std::system_error& e) {
+                    std::cerr << "送信エラー: " << e.what() << std::endl;
+                    running = false;
+                    break;
                 }
             }
         }

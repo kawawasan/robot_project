@@ -76,7 +76,9 @@ finally:
     time.sleep(1.0)
     
     if camera_proc.poll() is None:
-        camera_proc.terminate()
-        camera_proc.wait()
+        camera_proc.send_signal(signal.SIGINT)
+        camera_proc.wait()  
+        # camera_proc.terminate()
+        # camera_proc.wait()
     else:
         print("Camera process already exited.")

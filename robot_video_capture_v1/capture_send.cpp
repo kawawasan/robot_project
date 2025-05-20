@@ -74,6 +74,9 @@ fs::path create_timestamp_dir() {
 //     // }
 //     // std::cout << "Temporary files deleted." << std::endl;
 // }
+void signal_handler(int signum){
+    running = false; 
+}
 
 void udp_sender(int sock, struct sockaddr_in addr, int pipe_fd) {
     char buffer[BUFFER_SIZE];
@@ -121,6 +124,9 @@ int main(int argc, char* argv[]) {
     std::string send_ip = argv[1];
     std::string capture_time = argv[2];
     std::string video_bitrate = argv[3];  // デフォルトビットレート
+    std::signal(SIGINT, signal_handler);
+    std::signal(SIGTERM, signal_handler);
+
     // 出力ディレクトリ作成
     if (argc > 4) {
         output_dir = fs::current_path() / "videos" / fs::path(argv[4]);
@@ -184,6 +190,8 @@ int main(int argc, char* argv[]) {
     std::signal(SIGINT, [](int) {
         running = false;
         std::cout << "\n終了処理中..." << std::endl;
+        kill(pid, SIGTERM);
+
     });
 
     // 子プロセス終了を待機
@@ -204,7 +212,7 @@ int main(int argc, char* argv[]) {
     close(sock);
     close(pipefd[0]);
     close(pipefd[1]);
-    kill(pid, SIGTERM);
+    // kill(pid, SIGTERM);修正した河村
     // concat_ts_files();
     // std::cout << "変換完了: " << (output_dir / "output.mp4").string() << std::endl;
     return 0;

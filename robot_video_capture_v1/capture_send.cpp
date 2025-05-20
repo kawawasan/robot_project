@@ -212,7 +212,7 @@ int main(int argc, char* argv[]) {
     close(sock);
     close(pipefd[0]);
     close(pipefd[1]);
-    // kill(pid, SIGTERM);修正した河村
+    kill(pid, SIGTERM);修正した河村
     // concat_ts_files();
     // std::cout << "変換完了: " << (output_dir / "output.mp4").string() << std::endl;
     return 0;

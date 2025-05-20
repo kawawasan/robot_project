@@ -19,6 +19,7 @@
 #include <fstream>
 #include <sstream>
 #include <filesystem>
+#include <signal.h>
 
 #define MTU_SIZE 1316  // tsファイルは188byte単位であるため, 188 * 7
 #define BUFFER_SIZE (1316 * 100)

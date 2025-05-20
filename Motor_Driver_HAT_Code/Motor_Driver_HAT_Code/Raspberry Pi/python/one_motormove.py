@@ -56,7 +56,7 @@ try:
         if current_distance <= TARGET_DISTANCE-tolerance_range:
             # FORWARD
             Motor.MotorRun('forward', 70)
-            no=movement_start = None
+            no_movement_start = None
         else:
             Motor.MotorStop()
             if no_movement_start is None:
@@ -76,8 +76,15 @@ finally:
     time.sleep(1.0)
     
     if camera_proc.poll() is None:
+        print("python側終了処理")
         camera_proc.send_signal(signal.SIGINT)
-        camera_proc.wait()  
+        try:
+            camera_proc.wait(timeout=3)
+            
+        except subprocess.TimeoutExpired:
+            print("強制終了")
+            camera_proc.kill()
+            camera_proc.wait()  
         # camera_proc.terminate()
         # camera_proc.wait()
     else:

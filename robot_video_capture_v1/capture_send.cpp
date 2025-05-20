@@ -105,8 +105,14 @@ void udp_sender(int sock, struct sockaddr_in addr, int pipe_fd) {
             }
             // ローカル保存
             if (video_file.is_open()) {
-                video_file.write(buffer, bytes_read);
-                video_file.flush();
+                try{
+                    video_file.write(buffer, bytes_read);
+                    video_file.flush();
+                }catch(const std::ios_base::failure& e){
+                    std::cerr << "書き込みエラー" << e.what() << std::endl;
+                    break;
+                }
+                
             }
 
             // UDP送信
@@ -222,7 +228,14 @@ int main(int argc, char* argv[]) {
 
     // 終了処理
     sender.join();
-    if (video_file.is_open()) video_file.close();
+    // if (video_file.is_open()) video_file.close();
+    if (video_file.is_open()) {
+        try {
+            video_file.close();
+        } catch (const std::ios_base::failure& e) {
+            std::cerr << "ファイルクローズ時エラー: " << e.what() << std::endl;
+        }
+    }
     close(sock);
     close(pipefd[0]);
     close(pipefd[1]);

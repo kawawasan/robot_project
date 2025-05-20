@@ -77,9 +77,10 @@ finally:
     
     if camera_proc.poll() is None:
         print("python側終了処理")
-        camera_proc.send_signal(signal.SIGINT)
+        # camera_proc.send_signal(signal.SIGINT)
         try:
-            camera_proc.wait(timeout=3)
+            camera_proc.send_signal(signal.SIGINT)
+            camera_proc.wait(timeout=5)
             
         except subprocess.TimeoutExpired:
             print("強制終了")
@@ -87,5 +88,6 @@ finally:
             camera_proc.wait()  
         # camera_proc.terminate()
         # camera_proc.wait()
+        time.sleep(2.0)
     else:
         print("Camera process already exited.")

@@ -36,6 +36,7 @@ def ignore_sigpipe():
 camera_proc = subprocess.Popen([
     "/home/pi/robot_project/robot_video_capture_v1/capture_send2.out",
     # "/home/pi/robot_project/robot_video_capture_v1/capture_send.out",
+    "192.168.200.2"
     "0",
     "1000"
 ], preexec_fn=ignore_sigpipe)##.outに対してsigpipeを無視させる

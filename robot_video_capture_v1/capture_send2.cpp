@@ -176,6 +176,7 @@ int main(int argc, char* argv[]) {
             " --height " + HEIGHT +
             " --framerate " + FRAMERATE +
             " --bitrate " + std::to_string(std::stoi(video_bitrate) * 1000) +  // ビットレート指定
+            " --vflip --hflip" + 
             " --codec h264 --inline -o - | "  // libcamera-vidの出力をパイプ
             "ffmpeg -fflags +genpts -i - -c copy -f mpegts -";  // ffmpegでTS変換
             // "ffmpeg -fflags +genpts -i - -c copy -f mpegts -loglevel fatal -";  // ffmpegでTS変換

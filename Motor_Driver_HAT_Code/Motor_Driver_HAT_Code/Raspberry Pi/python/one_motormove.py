@@ -34,7 +34,7 @@ def ignore_sigpipe():
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)  # または SIG_
     
 camera_proc = subprocess.Popen([
-    "/home/pi/robot_project/robot_video_capture_v1/capture_send.out",
+    "/home/pi/robot_project/robot_video_capture_v1/capture_send2.out",
     "192.168.200.2",
     "0",
     "1000"

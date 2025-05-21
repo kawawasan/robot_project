@@ -207,7 +207,7 @@ int main(int argc, char* argv[]) {
     std::thread sender(udp_sender, sock, addr, pipefd[0]);
 
     // ctrl+cで終了
-    std::signal(SIGINT, [](int) {
+    std::signal(SIGINT, [pid](int) {
         running = false;
         std::cout << "\n終了処理中..." << std::endl;
         kill(pid, SIGTERM);

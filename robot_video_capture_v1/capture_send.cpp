@@ -207,10 +207,10 @@ int main(int argc, char* argv[]) {
     std::thread sender(udp_sender, sock, addr, pipefd[0]);
 
     // ctrl+cで終了
-    std::signal(SIGINT, [pid](int) {
+    std::signal(SIGINT, [](int) {
         running = false;
         std::cout << "\n終了処理中..." << std::endl;
-        kill(pid, SIGTERM);
+        // kill(pid, SIGTERM);
 
     });
 
@@ -239,7 +239,7 @@ int main(int argc, char* argv[]) {
     close(sock);
     close(pipefd[0]);
     close(pipefd[1]);
-    // kill(pid, SIGTERM);
+    kill(pid, SIGTERM);
     // 修正した河村
     // concat_ts_files();
     // std::cout << "変換完了: " << (output_dir / "output.mp4").string() << std::endl;

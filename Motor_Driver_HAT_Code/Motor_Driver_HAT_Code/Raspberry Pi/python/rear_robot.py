@@ -36,7 +36,8 @@ def ignore_sigpipe():
 
 print("映像受信プログラム (save_recv) を起動します...")
 recv_proc = subprocess.Popen([
-    "/home/pi/robot_project/robot_video_capture/save_recv.out"
+    "/home/pi/robot_project/robot_video_capture_v1/save_recv.out",
+    "192.168.200.2"
 ], preexec_fn=ignore_sigpipe)
 
 # ---------- 前方ロボットに起動信号を送信 ----------

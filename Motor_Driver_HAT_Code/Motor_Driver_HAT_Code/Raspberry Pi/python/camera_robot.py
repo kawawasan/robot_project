@@ -56,7 +56,8 @@ try:
 
         if current_distance <= TARGET_DISTANCE-tolerance_range:
             # FORWARD
-            Motor.MotorRun('forward', 70)
+            time.sleep(1.0)
+            Motor.MotorRun('forward', 50)
             no_movement_start = None
         else:
             Motor.MotorStop()

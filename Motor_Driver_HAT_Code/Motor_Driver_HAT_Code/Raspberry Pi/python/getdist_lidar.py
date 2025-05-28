@@ -2,10 +2,15 @@
 # coding: utf-8
 #lider lite v3
 
-import smbus
-import time
+import smbus  # type: ignore # type: ignore
+import time  # type: ignore
 
-bus = smbus.SMBus(1)  #I2Cのバス番号
+try:
+    bus = smbus.SMBus(1)  # Try bus 1 first
+except OSError:
+    print("Could not access I2C bus 1. Trying bus 0...")
+    bus = smbus.SMBus(0)  # If bus 1 fails, try bus 0
+
 address = 0x62  #Lider Lite v3のアドレス
 
 ACQ_COMMAND = 0x00

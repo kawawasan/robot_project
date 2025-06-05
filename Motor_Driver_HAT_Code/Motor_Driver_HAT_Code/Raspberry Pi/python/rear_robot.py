@@ -70,7 +70,7 @@ try:
         print(f"Distance: {current_distance:.2f} m")
 
         if current_distance <= TARGET_DISTANCE - tolerance_range:
-            Motor.MotorRun('forward', 50)
+            Motor.MotorRun('forward', 30)
             no_movement_start = None
         else:
             Motor.MotorStop()

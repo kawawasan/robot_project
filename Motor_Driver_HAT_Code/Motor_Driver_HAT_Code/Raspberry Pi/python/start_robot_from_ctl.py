@@ -107,6 +107,13 @@ def send_start_signal(ip_address, port):
 if __name__ == "__main__":
     start_routing_daemon(MY_NODE_ID) # ctlNodeのルーティングデーモンを起動
 
+    # 映像受信プログラムをここで起動！
+    if not start_receive_video_program():
+        print("映像受信プログラムの起動に失敗しました。終了します。")
+        stop_routing_daemon()
+        sys.exit(1)
+    
+    
     try:
         input("Enterキーを押すと、カメラロボットに起動信号を送信します...")
         

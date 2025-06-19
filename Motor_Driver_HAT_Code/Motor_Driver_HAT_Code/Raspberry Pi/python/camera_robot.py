@@ -52,7 +52,8 @@ Motor = MotorDriver()
 # TARGET_DISTANCE = 1.0  # 1m以内に入ったら停止
 TARGET_DISTANCE = 2.0  # 2m以内に入ったら停止
 NO_MOVEMENT_TIMEOUT = 10  # 秒
-tolerance_range = 0.1 # 10cm以内の誤差を認める
+tolerance_range = 0.05 # 10cm以内の誤差を認める
+# tolerance_range = 0.1 # 10cm以内の誤差を認める
 
 try:
     no_movement_start = None

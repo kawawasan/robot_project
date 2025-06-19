@@ -89,7 +89,7 @@ input("Enterキーが押されるまで待機します...")
 Motor = MotorDriver()
 TARGET_DISTANCE = 2.0  # 2m以内で停止
 NO_MOVEMENT_TIMEOUT = 10
-tolerance_range = 0.1
+tolerance_range = 0.05
 
 try:
     no_movement_start = None

@@ -9,7 +9,10 @@ import sys
 # --- ルーティングデーモン関連の設定 (共通) ---
 ROUTING_DAEMON_PATH = os.path.join(os.path.dirname(__file__), 'node.py')
 MY_NODE_ID = 2 # カメラロボットのNode ID
-CAMERA_ROBOT_SCRIPT_PATH = os.path.join(os.path.dirname(__file__), 'camera_robot.py')
+CAMERA_ROBOT_SCRIPT_PATH = os.path.join(os.path.dirname(__file__), 'camera_ex.py')
+#　実験用ファイル指定
+# CAMERA_ROBOT_SCRIPT_PATH = os.path.join(os.path.dirname(__file__), 'camera_robot.py')
+
 
 HOST = '0.0.0.0'  # 全てのネットワークインターフェースで待機
 PORT = 5000       # 待機するポート番号 (ctlNodeやrear_robotと合わせる)

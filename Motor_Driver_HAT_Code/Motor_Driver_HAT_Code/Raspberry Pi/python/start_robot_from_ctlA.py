@@ -1,4 +1,4 @@
-# start_robot_from_ctl.py (CtlNode上で実行)
+# start_robot_from_ctl.py (ctlNode上で実行)
 import socket
 import sys
 import time
@@ -6,10 +6,10 @@ import subprocess
 import os
 import signal
 
+
 # --- ルーティングデーモン関連の設定 (共通) ---
-# PATHはご自身の環境に合わせてください
 ROUTING_DAEMON_PATH = os.path.join(os.path.dirname(__file__), 'node.py')
-MY_NODE_ID = 0 # CtlNodeのNode ID
+MY_NODE_ID = 0 # ctlNodeのNode ID
 
 routing_daemon_process = None
 
@@ -43,35 +43,32 @@ def stop_routing_daemon():
         print("ルーティングデーモンは実行中ではありません。")
 # --- ルーティングデーモン関連の設定ここまで ---
 
-# ★★★ IPアドレスとポートの定義を更新 ★★★
-RECEIVE_VIDEO_PROGRAM_PATH = "/home/pi/robot_project/robot_video_capture_v1/save_recv.out" # 適切なパスに修正
-RECEIVE_VIDEO_IP = "192.168.200.10" # CtlNode自身の新しいIP
+TARGET_ROBOT_IP = "192.168.200.3" # カメラロボットのIPアドレス
+TARGET_PORT = 5000
 
-CAMERA_ROBOT_IP = "192.168.200.3" # CamNodeのIP
-CAMERA_ROBOT_PORT = 5000
+#6/12追記　映像プログラム組み込み
+# --- 映像受信プログラム関連の設定 ---
+# save_recv.out のパスと、受信待機するIPアドレス
+# 自身のIPアドレスで受信待機させる
+RECEIVE_VIDEO_PROGRAM_PATH = "/home/pi/robot_project/robot_video_capture_v1/save_recv.out"
+RECEIVE_VIDEO_IP = "192.168.200.10" # ctlNode自身のIP
 
-RELAY_NODE1_IP = "192.168.200.4" # RelayNode1のIP
-RELAY_NODE1_PORT = 5003 # ★RelayNode1用の新しいポート
+recv_video_process = None # 映像受信プロセスを保持する変数
 
-RELAY_NODE2_IP = "192.168.200.2" # RelayNode2のIP
-RELAY_NODE2_PORT = 5002 # RelayNode2用のポート
-
-recv_video_process = None
-
-def ignore_sigpipe():
+def ignore_sigpipe(): # SIGPIPEを無視する関数 (Popenで必要になることがある)
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 def start_receive_video_program():
     global recv_video_process
     if not os.path.exists(RECEIVE_VIDEO_PROGRAM_PATH):
         print(f"エラー: 映像受信プログラムのパスが見つかりません: {RECEIVE_VIDEO_PROGRAM_PATH}")
+        # プログラムを終了するか、エラー処理を記述
         return False
     
     print(f"映像受信プログラム ({RECEIVE_VIDEO_PROGRAM_PATH}) を起動します...")
     recv_video_process = subprocess.Popen([
         RECEIVE_VIDEO_PROGRAM_PATH,
-        RECEIVE_VIDEO_IP,
-        "60600" # save_recv.cppで定義されているポート番号
+        RECEIVE_VIDEO_IP # 自身のIPアドレスで受信待機
     ], preexec_fn=ignore_sigpipe)
     print(f"映像受信プログラム PID: {recv_video_process.pid} で起動しました。")
     return True
@@ -81,71 +78,59 @@ def stop_receive_video_program():
     if recv_video_process and recv_video_process.poll() is None:
         print("映像受信プログラムを終了します...")
         try:
-            recv_video_process.send_signal(signal.SIGINT)
-            time.sleep(2.0)
-            recv_video_process.wait(timeout=10)
+            recv_video_process.send_signal(signal.SIGINT) # SIGINT を送信
+            time.sleep(2.0) # 終了を待つ
+            recv_video_process.wait(timeout=10) # タイムアウト付きで終了を待機
         except subprocess.TimeoutExpired:
             print("映像受信プログラムを強制終了します。")
-            recv_video_process.kill()
+            recv_video_process.kill() # 強制終了
             recv_video_process.wait()
         except Exception as e:
             print(f"映像受信プログラム終了中にエラーが発生しました: {e}")
     else:
         print("映像受信プログラムは実行中ではありません。")
+# --- 映像受信プログラム関連の設定ここまで ---
 
 
-def send_signal(ip_address, port, signal_data):
+def send_start_signal(ip_address, port):
     try:
-        print(f"ロボット ({ip_address}:{port}) へ信号 '{signal_data.decode()}' を送信します...")
+        print(f"カメラロボット ({ip_address}) へ起動信号を送信します...")
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((ip_address, port))
-            s.sendall(signal_data)
-        print("信号を送信しました。")
+            s.sendall(b"start")
+        print("起動信号を送信しました。")
         return True
     except Exception as e:
-        print(f"ロボット ({ip_address}:{port}) への接続に失敗しました: {e}")
+        print(f"カメラロボットへの接続に失敗しました: {e}")
         return False
 
 if __name__ == "__main__":
-    start_routing_daemon(MY_NODE_ID)
+    start_routing_daemon(MY_NODE_ID) # ctlNodeのルーティングデーモンを起動
 
+    # 映像受信プログラムをここで起動！
     if not start_receive_video_program():
         print("映像受信プログラムの起動に失敗しました。終了します。")
         stop_routing_daemon()
         sys.exit(1)
     
+    
     try:
-        input("Enterキーを押すと、カメラロボットと後方ロボットへ起動/移動開始信号を送信します...")
+        input("Enterキーを押すと、カメラロボットに起動信号を送信します...")
         
-        # 1. CamNodeへ起動信号を送信 (Node ID 3)
-        if send_signal(CAMERA_ROBOT_IP, CAMERA_ROBOT_PORT, b"start"):
-            print("カメラロボット起動信号の送信に成功しました。")
+        if send_start_signal(TARGET_ROBOT_IP, TARGET_PORT):
+            print("起動信号の送信に成功しました。")
         else:
-            print("カメラロボット起動信号の送信に失敗しました。")
+            print("起動信号の送信に失敗しました。ルーティングデーモンのログと ip route show を確認してください。")
 
-        # 2. RelayNode1へ移動開始信号を送信 (Node ID 1)
-        time.sleep(1) # 必要に応じて調整
-        if send_signal(RELAY_NODE1_IP, RELAY_NODE1_PORT, b"start_move"):
-            print("中継ロボット1（RelayNode1）移動開始信号の送信に成功しました。")
-        else:
-            print("中継ロボット1（RelayNode1）移動開始信号の送信に失敗しました。")
-
-        # 3. RelayNode2へ移動開始信号を送信 (Node ID 2)
-        time.sleep(1) # 必要に応じて調整
-        if send_signal(RELAY_NODE2_IP, RELAY_NODE2_PORT, b"start_move"):
-            print("中継ロボット2（RelayNode2）移動開始信号の送信に成功しました。")
-        else:
-            print("中継ロボット2（RelayNode2）移動開始信号の送信に失敗しました。")
-
-
-        print("\nCtlNodeのメイン制御プログラムが実行中です。")
+        # ここにctlNodeのメイン制御ループを追加
+        print("\nctlNodeのメイン制御プログラムが実行中です。")
         while True:
+            # 例: ロボットのステータス監視、コマンド送信など
             time.sleep(5)
 
     except KeyboardInterrupt:
-        print("\nCtlNode制御プログラムを終了します。")
+        print("\nctlNode制御プログラムを終了します。")
     except Exception as e:
         print(f"予期せぬエラー: {e}")
     finally:
-        stop_routing_daemon()
-        stop_receive_video_program()
+        stop_routing_daemon() # ルーティングデーモンを終了

@@ -1,21 +1,13 @@
-# wait_start_robot.py
-#rear_robot.pyからの信号を待機し、camera_robot.pyを動かす(200.3)
+# wait_start_robot.py (CamNode上で実行)
 import socket
 import subprocess
 import os
-import time
 import sys
+import time
 
 # --- ルーティングデーモン関連の設定 (共通) ---
 ROUTING_DAEMON_PATH = os.path.join(os.path.dirname(__file__), 'node.py')
-MY_NODE_ID = 2 # カメラロボットのNode ID
-# CAMERA_ROBOT_SCRIPT_PATH = os.path.join(os.path.dirname(__file__), 'camera_ex.py')
-#　実験用ファイル指定
-CAMERA_ROBOT_SCRIPT_PATH = os.path.join(os.path.dirname(__file__), 'camera_robot.py')
-
-
-HOST = '0.0.0.0'  # 全てのネットワークインターフェースで待機
-PORT = 5000       # 待機するポート番号 (ctlNodeやrear_robotと合わせる)
+MY_NODE_ID = 3 # CamNodeのNode ID
 
 routing_daemon_process = None
 
@@ -49,14 +41,12 @@ def stop_routing_daemon():
         print("ルーティングデーモンは実行中ではありません。")
 # --- ルーティングデーモン関連の設定ここまで ---
 
-# ルーティングデーモンをここで起動！
-try:
-    start_routing_daemon(MY_NODE_ID)
-except Exception as e:
-    print(f"ルーティングデーモンの起動に失敗しました: {e}")
-    sys.exit(1)
+HOST = '0.0.0.0'
+PORT = 5000 # カメラロボットの起動信号待ち受けポートは変更なし
 
-print("前方ロボット：起動信号を待機中...")
+start_routing_daemon(MY_NODE_ID)
+
+print("CamNode：起動信号を待機中...")
 
 try:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -68,36 +58,12 @@ try:
             data = conn.recv(1024)
             if b'start' in data:
                 print("起動信号を受信しました，camera_robot.py を実行します")
-                if not os.path.exists(CAMERA_ROBOT_SCRIPT_PATH):
-                    print(f"エラー: camera_robot.py が見つかりません: {CAMERA_ROBOT_SCRIPT_PATH}")
-                else:
-                    # camera_robot.py を実行。この呼び出しはcamera_robot.pyが終了するまでブロックします。
-                    subprocess.run(["python3", CAMERA_ROBOT_SCRIPT_PATH], check=True)
+                # camera_robot.py のパスが異なる場合は修正
+                subprocess.run(["python3", "camera_robot.py"]) 
 
 except Exception as e:
     print(f"エラーが発生しました: {e}")
 
 finally:
-    stop_routing_daemon() # ルーティングデーモンを終了
+    stop_routing_daemon()
     print("wait_start_robot.py 終了。")
-
-
-#カメラロボットのみ動かす時のやつ、ルーティングなし
-# HOST = '0.0.0.0'  # 全インターフェースで待機
-# PORT = 5000       # 後方ロボットと合わせる
-
-# # ROUTING_DAMON_PATH = "/home/pi/robot_project/Motor_Driver_HAT_Code/Motor_Driver_HAT_Code/Raspberry Pi/python/node.py"
-# # MY_NODE_ID = 1
-
-# print("前方ロボット：後方からの起動信号を待機中...")
-
-# with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-#     s.bind((HOST, PORT))
-#     s.listen(1)
-#     conn, addr = s.accept()
-#     with conn:
-#         print(f"{addr} から接続されました")
-#         data = conn.recv(1024)
-#         if b'start' in data:
-#             print("起動信号を受信しました，camera_robot.py を実行します")
-#             subprocess.run(["python3", "camera_robot.py"])

@@ -50,11 +50,11 @@ RECEIVE_VIDEO_IP = "192.168.200.10" # CtlNode自身の新しいIP
 CAMERA_ROBOT_IP = "192.168.200.3" # CamNodeのIP
 CAMERA_ROBOT_PORT = 5000
 
-RELAY_NODE1_IP = "192.168.200.4" # RelayNode1のIP
-RELAY_NODE1_PORT = 5003 # ★RelayNode1用の新しいポート
-
 RELAY_NODE2_IP = "192.168.200.2" # RelayNode2のIP
 RELAY_NODE2_PORT = 5002 # RelayNode2用のポート
+
+RELAY_NODE1_IP = "192.168.200.4" # RelayNode1のIP
+RELAY_NODE1_PORT = 5003 # ★RelayNode1用の新しいポート
 
 recv_video_process = None
 
@@ -124,21 +124,21 @@ if __name__ == "__main__":
         else:
             print("カメラロボット起動信号の送信に失敗しました。")
             
-        # 2. RelayNode1へ移動開始信号を送信 (Node ID 1)
-        input("2回目のEnterでRelayNode1を起動します...")
-        time.sleep(1) # 必要に応じて調整
-        if send_signal(RELAY_NODE1_IP, RELAY_NODE1_PORT, b"start_move"):
-            print("中継ロボット1（RelayNode1）移動開始信号の送信に成功しました。")
-        else:
-            print("中継ロボット1（RelayNode1）移動開始信号の送信に失敗しました。")
-
-        # 3. RelayNode2へ移動開始信号を送信 (Node ID 2)
-        input("3回目のEnterでRelayNode1を起動します...")
+        # 2. RelayNode2へ移動開始信号を送信 (Node ID 2)
+        input("2回目のEnterでRelayNode2を起動します...")
         time.sleep(1) # 必要に応じて調整
         if send_signal(RELAY_NODE2_IP, RELAY_NODE2_PORT, b"start_move"):
             print("中継ロボット2（RelayNode2）移動開始信号の送信に成功しました。")
         else:
             print("中継ロボット2（RelayNode2）移動開始信号の送信に失敗しました。")
+
+        # 3. RelayNode1へ移動開始信号を送信 (Node ID 1)
+        input("3回目のEnterでRelayNode1を起動します...")
+        time.sleep(1) # 必要に応じて調整
+        if send_signal(RELAY_NODE1_IP, RELAY_NODE1_PORT, b"start_move"):
+            print("中継ロボット1（RelayNode1）移動開始信号の送信に成功しました。")
+        else:
+            print("中継ロボット1（RelayNode1）移動開始信号の送信に失敗しました。")
 
 
         print("\nCtlNodeのメイン制御プログラムが実行中です。")

@@ -71,7 +71,7 @@ def start_receive_video_program():
     recv_video_process = subprocess.Popen([
         RECEIVE_VIDEO_PROGRAM_PATH,
         RECEIVE_VIDEO_IP,
-        "60600" # save_recv.cppで定義されているポート番号
+        # "60600" # save_recv.cppで定義されているポート番号
     ], preexec_fn=ignore_sigpipe)
     print(f"映像受信プログラム PID: {recv_video_process.pid} で起動しました。")
     return True

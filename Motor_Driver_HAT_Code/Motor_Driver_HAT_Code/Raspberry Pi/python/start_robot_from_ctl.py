@@ -115,15 +115,17 @@ if __name__ == "__main__":
         sys.exit(1)
     
     try:
-        input("Enterキーを押すと、カメラロボットと後方ロボットへ起動/移動開始信号を送信します...")
-        
+        # input("Enterキーを押すと、カメラロボットと後方ロボットへ起動/移動開始信号を送信します...")
+        input("1回目のEnterでCamNodeを起動します...")
+    
         # 1. CamNodeへ起動信号を送信 (Node ID 3)
         if send_signal(CAMERA_ROBOT_IP, CAMERA_ROBOT_PORT, b"start"):
             print("カメラロボット起動信号の送信に成功しました。")
         else:
             print("カメラロボット起動信号の送信に失敗しました。")
-
+            
         # 2. RelayNode1へ移動開始信号を送信 (Node ID 1)
+        input("2回目のEnterでRelayNode1を起動します...")
         time.sleep(1) # 必要に応じて調整
         if send_signal(RELAY_NODE1_IP, RELAY_NODE1_PORT, b"start_move"):
             print("中継ロボット1（RelayNode1）移動開始信号の送信に成功しました。")
@@ -131,6 +133,7 @@ if __name__ == "__main__":
             print("中継ロボット1（RelayNode1）移動開始信号の送信に失敗しました。")
 
         # 3. RelayNode2へ移動開始信号を送信 (Node ID 2)
+        input("3回目のEnterでRelayNode1を起動します...")
         time.sleep(1) # 必要に応じて調整
         if send_signal(RELAY_NODE2_IP, RELAY_NODE2_PORT, b"start_move"):
             print("中継ロボット2（RelayNode2）移動開始信号の送信に成功しました。")

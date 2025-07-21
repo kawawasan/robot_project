@@ -65,11 +65,11 @@ class MotorDriver():
             return
         pwm.setDutycycle(self.PWMB, speed) # PWMデューティサイクルを設定 (0-100)
         if direction == 'forward':
-            pwm.setLevel(self.BIN1, 0) # 方向制御ピンを設定
-            pwm.setLevel(self.BIN2, 1)
-        else: # 'backward'
-            pwm.setLevel(self.BIN1, 1)
+            pwm.setLevel(self.BIN1, 1) # 方向制御ピンを設定
             pwm.setLevel(self.BIN2, 0)
+        else: # 'backward'
+            pwm.setLevel(self.BIN1, 0)
+            pwm.setLevel(self.BIN2, 1)
 
     def MotorStop(self):
         pwm.setDutycycle(self.PWMB, 0) # デューティサイクルを0にしてモーター停止

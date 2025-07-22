@@ -50,7 +50,7 @@ camera_proc = subprocess.Popen([
 # メイン制御ループ
 Motor = MotorDriver()
 TARGET_DISTANCE = 2.0
-NO_MOVEMENT_TIMEOUT = 10
+NO_MOVEMENT_TIMEOUT = 30
 tolerance_range = 0.1
 
 try:

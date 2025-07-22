@@ -64,11 +64,11 @@ class MotorDriver():
             return
         pwm.setDutycycle(self.PWMB, speed)
         if direction == 'forward':
-            pwm.setLevel(self.BIN1, 0)
-            pwm.setLevel(self.BIN2, 1)
-        else: # 'backward'
             pwm.setLevel(self.BIN1, 1)
             pwm.setLevel(self.BIN2, 0)
+        else: # 'backward'
+            pwm.setLevel(self.BIN1, 0)
+            pwm.setLevel(self.BIN2, 1)
 
     def MotorStop(self):
         pwm.setDutycycle(self.PWMB, 0)
@@ -130,7 +130,7 @@ try:
         print(f"Distance: {current_distance:.2f} m")
 
         if current_distance <= TARGET_DISTANCE - tolerance_range:
-            Motor.MotorRun('forward', 30)
+            Motor.MotorRun('forward', 60)
             no_movement_start = None
         else:
             Motor.MotorStop()

@@ -24,19 +24,19 @@ class MotorDriver():
         if motor == 0:
             pwm.setDutycycle(self.PWMA, speed)
             if(direction == 'forward'):
-                pwm.setLevel(self.AIN1, 0)
-                pwm.setLevel(self.AIN2, 1)
-            else:
                 pwm.setLevel(self.AIN1, 1)
                 pwm.setLevel(self.AIN2, 0)
+            else:
+                pwm.setLevel(self.AIN1, 0)
+                pwm.setLevel(self.AIN2, 1)
         else:
             pwm.setDutycycle(self.PWMB, speed)
             if direction == 'forward':
-                pwm.setLevel(self.BIN1, 0)
-                pwm.setLevel(self.BIN2, 1)
-            else:
                 pwm.setLevel(self.BIN1, 1)
                 pwm.setLevel(self.BIN2, 0)
+            else:
+                pwm.setLevel(self.BIN1, 0)
+                pwm.setLevel(self.BIN2, 1)
 
     def MotorStop(self, motor):
         if motor == 0:

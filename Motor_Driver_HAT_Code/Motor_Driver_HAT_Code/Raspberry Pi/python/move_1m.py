@@ -47,7 +47,7 @@ class MotorDriver():
 # メイン制御ループ
 Motor = MotorDriver()
 #実験用に変更
-TARGET_DISTANCE = 2.0  # 2m以内に入ったら停止
+TARGET_DISTANCE = 1.0  # 1m以内に入ったら停止
 tolerance_range = 0.05
 
 try:

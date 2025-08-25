@@ -43,7 +43,7 @@ camera_proc = subprocess.Popen([
     "/home/pi/robot_project/robot_video_capture_v1/capture_send2.out",
     "192.168.200.10", # CtlNodeの新しいIPアドレス
     "0", # この引数の意味はcapture_send2.outの仕様に依存
-    "60600" # save_recv.cppで定義されているポート番号
+    "1000" # ビットレート
 ], preexec_fn=ignore_sigpipe)
 
 

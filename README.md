@@ -7,7 +7,7 @@
 ## ディレクトリ構成
 
 - `lidar/` – LiDARセンサーのサンプルコード
-- `Motor_Driver_HAT_Code/` – モータドライバHATの制御コード
+- `Motor_Driver_HAT_Code/` – モータドライバHATの制御コード（この内部にメインプログラムがあります）
 - `dual-max14870-motor-driver-rpi/` – Pololu製MAX14870ドライバのRaspberry Pi用コード(未使用)
 
 ## 使い方
@@ -43,5 +43,15 @@
       - ```python3 wait_start_camex.py```
    - 中継：
       - ```python3 rear_ex.py```
+   - ctl：
+      - ```python3 start_robot_from_ctl.py```
+
+- 映像伝送実験用プログラム（走行実験）
+   - CamNカメラロボット：
+      - ```python3 wait_start_robot.py```
+   - RN2：
+      - ```python3 rear_robot.py```
+   - RN1：
+      - ```python3 relay_node1.py```
    - ctl：
       - ```python3 start_robot_from_ctl.py```

@@ -338,7 +338,8 @@ def start_relay_node1_api():
         return jsonify({"status": "error", "message": "RelayNode1移動開始信号の送信に失敗しました。"}), 500
 
 def run_server():
-    app.run(host='0.0.0.0', port=8000)
+    app.run(host='192.168.200.10', port=8000)
+    # app.run(host='0.0.0.0', port=8000)
 
 # --- メイン処理 ---
 if __name__ == "__main__":

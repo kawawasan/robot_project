@@ -1,0 +1,85 @@
+// MUCViSのパケットクラスの実装
+
+#include "../header/packet.hpp"
+#include <iostream>
+
+// パケット受信時のコンストラクタ
+Packet::Packet(uint8_t *payload) {
+    // ペイロードをコピー
+    memcpy(this->payload, payload, NAX_PAYLOAD_SIZE);
+    // ペイロードからパケット情報を取得
+    top4bytes = *reinterpret_cast<uint32_t*>(this->payload);
+    type = top4bytes >> 30 << 30;
+}
+
+// ビデオパケット生成時のコンストラクタ
+Packet::Packet(uint32_t type, uint32_t ack, uint32_t seq, uint8_t* videoData) {
+    this->type = type;
+    this->ack = ack;
+    this->seq = seq;
+    // 繋げてペイロードに変形
+    top4bytes = this->type + this->ack;
+    uint32_t header[2] = {top4bytes, this->seq};
+    memcpy(payload, header, 8);
+    memcpy(payload + 8, videoData, MAX_VIDEO_SIZE);
+}
+
+// コマンドパケット生成時のコンストラクタ
+Packet::Packet(uint32_t type, uint32_t seq, std::string command) {
+    this->type = type;
+    this->seq = seq;
+    // 繋げてペイロードに変形
+    top4bytes = this->type + this->seq;
+    memcpy(payload, &top4bytes, 4);
+    memcpy(payload + 4, command.c_str(), command.size());
+}
+
+// ダミーパケット生成時のコンストラクタ
+Packet::Packet(uint32_t type, uint32_t ack) {
+    this->type = type;
+    this->ack = ack;
+    // 繋げてペイロードに変形
+    top4bytes = this->type + this->ack;
+    memcpy(payload, &top4bytes, 4);
+}
+
+std::string Packet::get_type() {
+    if (type == TYPE_VIDEO) {
+        return "VIDEO";
+    } else if (type == TYPE_CONTROL) {
+        return "CONTROL";
+    } else if (type == (uint32_t)TYPE_DUMMY) {
+        return "DUMMY";
+    } else {
+        return "UNKNOWN";
+    }
+}
+
+uint8_t* Packet::get_payload() {
+    return payload;
+}
+
+int Packet::get_ack() {
+    ack = top4bytes - type;
+    return ack;
+}
+
+int Packet::get_videoSeq() {
+    seq = *reinterpret_cast<uint32_t*>(payload + 4);
+    return seq;
+}
+
+int Packet::get_commandSeq() {
+    seq = top4bytes - type;
+    return seq;
+}
+
+uint8_t* Packet::get_videoData() {
+    memcpy(videoData, payload + 8, MAX_VIDEO_SIZE);
+    return videoData;
+}
+
+std::string Packet::get_command() {
+    command = std::string(payload + 4, payload + 4 + MAX_COMMAND_SIZE);
+    return command;
+}

@@ -176,7 +176,9 @@ public:
             bytes_read = read(pipefd[0], buffer, VIDEO_BUFFER_SIZE);
             if (bytes_read > 0) {
                 // .tsファイルに書き込む
-                video_file.write(reinterpret_cast<const char*>(buffer), bytes_read);
+                // video_file.write(reinterpret_cast<const char*>(buffer), bytes_read);
+                //河村コメントあうと0926
+
                 // video_file.flush();
 
                 // 読み込んだデータを映像データキューに入れる
@@ -215,7 +217,9 @@ public:
                             
                             if (bytes_read > 0) {
                                 // .tsファイルに書き込む
-                                video_file.write(reinterpret_cast<const char*>(buffer), bytes_read);
+                                // video_file.write(reinterpret_cast<const char*>(buffer), bytes_read);
+                                //河村コメントあうと0926
+
                                 // video_file.flush();
                                 
                                 // 読み込んだデータを映像データキューに入れる

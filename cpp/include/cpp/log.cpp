@@ -41,16 +41,18 @@ Log::Log(const std::string& method, const std::string& log_name, system_clock::t
         std::tm* start_date_tm = std::localtime(&start_date);
         log << method << "_" << std::put_time(start_date_tm, "%Y-%m-%d_%H-%M-%S") << ".log" << std::endl;
         log << "Time= 0 time_pref_counter= " << time_pref_counter.time_since_epoch().count() << std::endl;  // 時刻同期ズレのためのカウンタ
-        log.close();
+        // log.close();
     }
 }
 
 void Log::write(const std::string& msg) {
-    log.open(logName, std::ios::out | std::ios::app);
+    lock.lock();
+    // log.open(logName, std::ios::out | std::ios::app);
     if (log.is_open()) {
         log << msg << std::endl;
-        log.close();
+        // log.close();
     }
+    lock.unlock();
 }
 
 void Log::write_camn_cn(std::chrono::duration<double> time, std::string event, std::string packet_type, int ack, int seq, int payload_size, system_clock::time_point system_time) {
@@ -79,6 +81,7 @@ void Log::write_rn(std::chrono::duration<double> time, std::string event, std::s
     write(log_message);
 }
 
+// video用(コマンド内容を書き込まないバージョン)
 void Log::write_generate(std::chrono::duration<double> time, std::string type, int seq, int data_size) {
     // time_pointをdurationに変換
     std::string log_message = 
@@ -90,7 +93,33 @@ void Log::write_generate(std::chrono::duration<double> time, std::string type, i
     write(log_message);
 }
 
+// command用(コマンド内容もログに書き込むバージョン)
+void Log::write_generate(std::chrono::duration<double> time, std::string type, int seq, int data_size, std::string command) {
+    // time_pointをdurationに変換
+    std::string log_message = 
+    "T= " + std::to_string(time.count()) +
+    " Ev= Generate_" + type +
+    " Seq= " + std::to_string(seq) + 
+    " PacketBytes= " + std::to_string(data_size) +
+    " Command= \"" + command + "\"";
+
+    write(log_message);
+}
+
+void Log::write_command(std::chrono::duration<double> time, std::string event, int seq, std::string command) {
+    std::string log_message = 
+    "T= " + std::to_string(time.count()) +
+    " Ev= " + event +
+    " Seq= " + std::to_string(seq) +
+    " Command= \"" + command + "\"";
+
+    write(log_message);
+}
+
 Log::~Log() {
+    if (log.is_open()) {
+        log.close();
+    }
     std::cout << "log file closed" << std::endl;
 }
 

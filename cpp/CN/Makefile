@@ -97,6 +97,10 @@ mucvis_cn_video_save_play_udp.out: $(OBJDIR)mucvis_cn_video_save_play_udp.o $(IN
 	$(CC) -o $@ $^ $(LIBDIR) $(LIBS) -pthread
 	@echo "make $@"
 
+mucvis_cn_video_save_play_command.out: $(OBJDIR)mucvis_cn_video_save_play_command.o $(INCOBJECTS)  # 映像をtsファイルとして保存し，名前付きパイプに渡してストリーミング再生．制御情報を入力可能
+	$(CC) -o $@ $^ $(LIBDIR) $(LIBS) -pthread
+	@echo "make $@"
+
 
 # オブジェクトファイル生成(.cppファイルから.oファイルを生成)
 $(OBJDIR)%.o: $(SRCDIR)%.cpp

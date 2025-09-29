@@ -1,6 +1,7 @@
 // カメラノード  同軸環境用 グローバルミューテックス使用
 // libcamra-vidの出力をffmpegでts形式にしてからMUCViSに渡す
 // 映像ビットレートは指定可能
+// 制御情報により宛先を変更
 
 #include <iostream>
 #include <thread>  // コンパイル時には-pthread
@@ -55,7 +56,7 @@ std::queue<std::vector<uint8_t>> g_command_queue;  // 制御情報パケット�
 std::mutex g_lock;
 std::string g_video_file_name;  // 映像ファイル名
 
-const double generate_time_all = 60.0;  // ビデオデータ生成時間 [s]
+// const double generate_time_all = 60.0;  // ビデオデータ生成時間 [s]
 
 // void generate_video_fixed_interval(double generate_time_all, double video_bit_rate, Log& log, hr_clock::time_point start_time);
 // void ffmpeg_ts_mp4();
@@ -81,6 +82,8 @@ private:
     struct sockaddr_in down_addr;
     Log *log;
     double ipt_interval;
+    int my_node_num;
+    std::vector<std::vector<std::string>> routing_table;
 
     int pipefd[2];  // パイプのファイルディスクリプタ
     int epoll_fd;
@@ -95,7 +98,7 @@ private:
     char recv_buf[BUFFER_MAX];
 
 public:
-    Mucvis_camn(std::string my_address, int my_port, std::string down_address, int down_port, Log& log, double ipt_interval, hr_clock::time_point hr_start_time, int pipefd[2], std::string video_file_name) {
+    Mucvis_camn(std::string my_address, int my_port, std::string down_address, int down_port, Log& log, double ipt_interval, hr_clock::time_point hr_start_time, int pipefd[2], std::string video_file_name, int my_node_num, std::vector<std::vector<std::string>>& routing_table) {
         my_addr.sin_family = AF_INET;
         my_addr.sin_addr.s_addr = inet_addr(my_address.c_str());
         my_addr.sin_port = htons(my_port);
@@ -105,6 +108,8 @@ public:
         this->log = &log;
         this->ipt_interval = ipt_interval;
         this->hr_start_time = hr_start_time;
+        this->my_node_num = my_node_num;
+        this->routing_table = routing_table;
 
         this->pipefd[0] = pipefd[0];
         this->pipefd[1] = pipefd[1];
@@ -335,9 +340,37 @@ public:
             g_ack = seq;
             g_lock.unlock();
             std::string command = packet.get_command();
+
+            if (command.size() < 60) {
+                cout << endl << "Recv command: " << command << endl;
+            }
+            // command内にコンマがあるか確認
+            if (command.find(',') != std::string::npos) {
+                // 制御コマンドがルーティングのとき，ルーティングテーブルを参照し送信先を更新
+                try {
+                    std::string position = command.substr(0, command.find(' '));
+                    std::string send_node = command.substr(command.find(' ') + 1, command.find(',') - command.find(' ') - 1);
+                    std::string down_address = routing_table[std::stoi(send_node) - 1][1];  // down
+                    down_addr.sin_addr.s_addr = inet_addr(down_address.c_str());
+                    // std::string down_port = routing_table[std::stoi(send_node) - 1][1];  // down
+                    // down_addr.sin_port = htons(std::stoi(down_port));
+
+                    std::cout << "position: " << position << std::endl;
+                    std::cout << "send_node: " << send_node << std::endl;
+                    std::cout << "down_address: " << down_address << std::endl;
+                    
+                }
+                catch (...) {
+                    // 例外が発生した場合の処理
+                    // std::cerr << "Error parsing command or updating routing table." << std::endl;
+                }
+            }
         } 
         // ログ出力
         log->write_camn_cn(std::chrono::duration<double>(recv_time - hr_start_time), "Recv", packet_type, ack, seq, recv_size, system_recv_time);
+        if (packet_type == "CONTROL") {
+            log->write_command(std::chrono::duration<double>(recv_time - hr_start_time), "Command", seq, packet.get_command());
+        }
     }
 
     int start_receive() {
@@ -385,21 +418,113 @@ int main(int argc, char* argv[]) {
     system_clock::time_point system_start_time = system_clock::now();  // システム起動時刻 ノード間時刻同期用
     hr_clock::time_point hr_start_time = hr_clock::now();  // プログラム開始時刻 同一ノード内のログ出力用 std::chrono::high_resolution_clock::now()
 
+    // 引数でパラメータ指定
     // 引数チェック
-    if (argc != 6) {
-        std::cerr << "Usage: " << argv[0] << " [My IP Address] [Send IP Address] [IPT interval(s)] [video bit rate(Mbps)] [log_name]" << endl;
+    // if (argc != 6) {
+    //     std::cerr << "Usage: " << argv[0] << " [My IP Address] [Send IP Address] [IPT interval(s)] [video bit rate(Mbps)] [log_name]" << endl;
+    //     return 1;
+    // }
+
+    // std::string host = argv[1];  // 自身のIPアドレス
+    // std::string down_address = argv[2];  // 宛先IPアドレス
+    // int down_port = 60202;  // ポート番号60202: 下り用
+    // int up_port = 60201;  // ポート番号60201: 上り用
+    // double ipt_interval = std::stod(argv[3]);  // 送信間隔 1msぐらい?
+    // double video_bit_rate = std::stod(argv[4]);  // 映像ビットレート
+    // // double generate_time_all = std::stod(argv[4]) * 60;  // 映像撮影時間 [s]
+    // std::string video_file_name = argv[5];  // 映像ファイル名
+    // g_video_file_name = video_file_name;
+
+
+    // 設定ファイルからパラメータ読み込み
+    // 引数チェック
+    if (argc != 3) {
+        std::cerr << "Usage: " << argv[0] << " [node_num] [log_name]" << endl;
         return 1;
     }
+    // ファイルオープン
+    std::ifstream ifs("../include/mucvis.conf");
+    if (!ifs) {
+        std::cerr << "Failed to open setting file: mucvis_setting.txt" << std::endl;
+        return 1;
+    }
+    // パラメータ読み込み
+    std::string parameter_list[] = {
+        "node_num", "communication_range(m)", "Vehicle_body_length(m)", "IPT_interval(s)", "video_bit_rete(Mbps)", "time(s)","up_port", "down_port"
+    };
+    std::string line;
+    for(int i = 0; i < int(std::size(parameter_list)); i++) {
+        if (std::getline(ifs, line)) {
+            auto delimiter_pos = line.find('=');
+            if (delimiter_pos != std::string::npos) {
+                parameter_list[i] = line.substr(delimiter_pos + 1);
+                }
+            }
+        }
 
-    std::string host = argv[1];  // 自身のIPアドレス
-    std::string down_address = argv[2];  // 宛先IPアドレス
-    int down_port = 60202;  // ポート番号60202: 下り用
-    int up_port = 60201;  // ポート番号60201: 上り用
-    double ipt_interval = std::stod(argv[3]);  // 送信間隔 1msぐらい?
-    double video_bit_rate = std::stod(argv[4]);  // 映像ビットレート
-    // double generate_time_all = std::stod(argv[4]) * 60;  // 映像撮影時間 [s]
-    std::string video_file_name = argv[5];  // 映像ファイル名
+    // lineにnode_typeがあるまで読み飛ばす
+    while(std::getline(ifs, line)) {
+        if (line.find("node_type") != std::string::npos) {
+            break;
+        }
+    }
+    // 初期ルーティングテーブル読み込み
+    std::vector<std::vector<std::string>> routing_table;
+    while(std::getline(ifs, line)) {
+        if (line.empty()) {
+            break;
+        }
+        auto delimiter_pos = line.find(' ');
+        std::vector<std::string> row;
+        while (delimiter_pos != std::string::npos) {
+            row.push_back(line.substr(0, delimiter_pos));
+            line = line.substr(delimiter_pos + 1);
+            delimiter_pos = line.find(' ');
+        }
+        row.push_back(line);
+        routing_table.push_back(row);
+        }
+    ifs.close();
+    
+    const int node_num = std::stoi(parameter_list[0]);
+    const double communication_range = std::stod(parameter_list[1]);  // 通信可能距離[m]
+    const double Vehicle_body_length = std::stod(parameter_list[2]);  // 車両長[m]
+    const double ipt_interval = std::stod(parameter_list[3]);  // 送信間隔 1msぐらい?
+    const double video_bit_rate = std::stod(parameter_list[4]);  // 映像ビットレート [Mbps]
+    const double generate_time_all = std::stod(parameter_list[5]);  // コマンド生成時間 [s]
+    const int up_port = std::stoi(parameter_list[6]);  // ポート番号
+    const int down_port = std::stoi(parameter_list[7]);  // ポート番号
+    const int my_node_num = std::stoi(argv[1]);
+    std::string video_file_name = argv[2];  // 映像ファイル名
     g_video_file_name = video_file_name;
+    std::string host = routing_table[my_node_num - 1][1];  // 自身のIPアドレス
+    int down_node = std::stoi(routing_table[my_node_num - 1][3]);
+    std::string down_address = routing_table[down_node - 1][1];  // 宛先IPアドレス
+    // int send_socket = socket(AF_INET, SOCK_DGRAM, 0);
+
+    // 上のパラメータを表示
+    std::cout << "CamN" << std::endl;
+    std::cout << "node_num = " + std::to_string(node_num) << std::endl;
+    std::cout << "communication_range = " + std::to_string(communication_range) + " m" << std::endl;
+    std::cout << "Vehicle_body_length = " + std::to_string(Vehicle_body_length) + " m" << std::endl;
+    std::cout << "IPT_interval = " + std::to_string(ipt_interval) + " s" << std::endl;
+    std::cout << "video_bit_rete = " + std::to_string(video_bit_rate) + " Mbps" << std::endl;
+    std::cout << "generate_time_all = " + std::to_string(generate_time_all) + " s" << std::endl;
+    std::cout << "up_port = " + std::to_string(up_port) << std::endl;
+    std::cout << "down_port = " + std::to_string(down_port) << std::endl;
+    std::cout << "video_file_name = " + video_file_name << std::endl;
+    std::cout << "my_node_num = " + std::to_string(my_node_num) << std::endl;
+    std::cout << "my_IP_address = " + host << std::endl;
+    std::cout << "down_node = " + std::to_string(down_node) << std::endl;
+    std::cout << "down_address = " + down_address + ":" + std::to_string(down_port) << std::endl;
+    std::cout << "resolution = " << WIDTH << "x" << HEIGHT << " @ " << FRAMERATE << " fps" << std::endl;
+    std::cout << "routing_table:" << std::endl;
+    for (const auto& row : routing_table) {
+        for (const auto& item : row) {
+            std::cout << item << " ";
+        }
+        std::cout << std::endl;
+    }
 
     // ディレクトリが存在しない場合は作成
     if (!std::filesystem::exists("videos")) {
@@ -410,7 +535,8 @@ int main(int argc, char* argv[]) {
     }
 
     // ログファイル作成
-    Log log("IPT", argv[5], system_start_time);
+    // Log log("IPT", argv[5], system_start_time);
+    Log log("IPT", argv[2], system_start_time);
     log.write("CamN");
     log.write("ipt_interval = " + std::to_string(ipt_interval) + " s");
     log.write("video_bit_rate = " + std::to_string(video_bit_rate) + " Mbps");
@@ -418,15 +544,15 @@ int main(int argc, char* argv[]) {
     log.write("resolution = " + std::string(WIDTH) + "x" + std::string(HEIGHT) + " @ " + FRAMERATE + " fps");
 
     // 標準出力
-    std::cout << "CamN" << std::endl;
-    std::cout << "my_IP_address = " + host << std::endl;
-    std::cout << "down_address = " + down_address + ":" + std::to_string(down_port) << std::endl;
-    std::cout << "ipt_interval = " + std::to_string(ipt_interval) + " s" << std::endl;
-    std::cout << "generate_time_all = " + std::to_string(generate_time_all) + " s" << std::endl;
-    std::cout << "video_bit_rate" + std::to_string(video_bit_rate) << std::endl;
-    std::cout << "log_name = " + std::string(argv[5]) << std::endl;
-    std::cout << "video_file_name = " + video_file_name << std::endl;
-    std::cout << "resolution = " << WIDTH << "x" << HEIGHT << " @ " << FRAMERATE << " fps" << std::endl;
+    // std::cout << "CamN" << std::endl;
+    // std::cout << "my_IP_address = " + host << std::endl;
+    // std::cout << "down_address = " + down_address + ":" + std::to_string(down_port) << std::endl;
+    // std::cout << "ipt_interval = " + std::to_string(ipt_interval) + " s" << std::endl;
+    // std::cout << "generate_time_all = " + std::to_string(generate_time_all) + " s" << std::endl;
+    // std::cout << "video_bit_rate" + std::to_string(video_bit_rate) << std::endl;
+    // std::cout << "log_name = " + std::string(argv[5]) << std::endl;
+    // std::cout << "video_file_name = " + video_file_name << std::endl;
+    // std::cout << "resolution = " << WIDTH << "x" << HEIGHT << " @ " << FRAMERATE << " fps" << std::endl;
 
     // パイプ作成
     int pipefd[2];
@@ -436,7 +562,7 @@ int main(int argc, char* argv[]) {
     }
 
     // クラスのインスタンス化
-    Mucvis_camn mucvis_camn(host, up_port, down_address, down_port, log, ipt_interval, hr_start_time, pipefd, video_file_name);
+    Mucvis_camn mucvis_camn(host, up_port, down_address, down_port, log, ipt_interval, hr_start_time, pipefd, video_file_name, my_node_num, routing_table);
     
     // スレッド生成 受信
     std::thread receiver_thread(&Mucvis_camn::start_receive, &mucvis_camn);

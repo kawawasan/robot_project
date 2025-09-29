@@ -81,6 +81,10 @@ mucvis_rn_udp.out: $(OBJDIR)mucvis_rn_udp.o $(INCOBJECTS)  # UDP版
 	$(CC) -o $@ $^ $(LIBDIR) $(LIBS) -pthread
 	@echo "make $@"
 
+mucvis_rn_command.out: $(OBJDIR)mucvis_rn_command.o $(INCOBJECTS)  # 制御情報により，送信先を変更する版
+	$(CC) -o $@ $^ $(LIBDIR) $(LIBS) -pthread
+	@echo "make $@"
+
 
 # オブジェクトファイル生成(.cppファイルから.oファイルを生成)
 $(OBJDIR)%.o: $(SRCDIR)%.cpp

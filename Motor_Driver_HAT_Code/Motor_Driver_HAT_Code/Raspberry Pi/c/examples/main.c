@@ -83,7 +83,8 @@ int get_lidar_distance_cm() {
 double read_target_position_m() {
     FILE *fp = fopen(TARGET_POSITION_FILE, "r");
     if (fp == NULL) {
-        return 2.0; // ファイルなし
+        return -1.0; // ファイルなし
+        // return 2.0 //モータの試験用
     }
 
     double position_cm;

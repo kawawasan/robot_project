@@ -360,7 +360,7 @@ public:
                     std::cout << "down_address: " << down_address << std::endl;
 
                     // 端末間距離をファイル出力 --------------------
-                    // 受信したposition（距離情報）をファイルに書き出す
+                    // 受信したposition（距離情報）をファイルに書き出す河村追加
                     std::ofstream pos_file("/tmp/robot_target_position.txt");
                     if (pos_file.is_open()) {
                         pos_file << position;
@@ -564,6 +564,31 @@ int main(int argc, char* argv[]) {
     // std::cout << "resolution = " << WIDTH << "x" << HEIGHT << " @ " << FRAMERATE << " fps" << std::endl;
 
     // パイプ作成
+
+    // --- ここからモーター制御プログラムをバックグラウンドで起動する処理 ---
+    //河村追加20250930
+    pid_t motor_pid = fork();
+    if (motor_pid == -1) {
+        // forkに失敗した場合
+        perror("fork failed to start motor control program");
+    } else if (motor_pid == 0) {
+        // 子プロセス: モーター制御プログラムを実行する
+        std::cout << "Starting motor control program in the background..." << std::endl;
+        
+        // モーター制御プログラムの実行ファイルへの絶対パス
+        const char* motor_program_path = "/home/pi/robot_project/Motor_Driver_HAT_Code/Motor_Driver_HAT_Code/Raspberry Pi/c/examples/main";
+        
+        // execlでプログラムを起動
+        // この通信プログラム自体をsudoで実行する必要があります
+        execl(motor_program_path, motor_program_path, (char *)NULL);
+        
+        // execlが失敗した場合のみ、以下のコードが実行される
+        perror("execl failed to run motor program");
+        exit(1); // 子プロセスを終了
+    }
+    // --- ここまで ---
+
+
     int pipefd[2];
     if (pipe(pipefd) == -1) {
         std::cerr << "Failed to create pipe" << std::endl;

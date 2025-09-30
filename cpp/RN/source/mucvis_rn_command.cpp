@@ -345,6 +345,16 @@ public:
                     std::cout << "position: " << position << std::endl;
                     std::cout << "send_up_node: " << send_up_node << std::endl;
                     std::cout << "send_down_node: " << send_down_node << std::endl;
+
+                    // 端末間距離をファイル出力
+                    // 受信したposition（距離情報）をファイルに書き出す 河村追加0930------------------
+                    std::ofstream pos_file("/tmp/robot_target_position.txt");
+                    if (pos_file.is_open()) {
+                        pos_file << position;
+                        pos_file.close();
+                    }
+                    // -------------------- 提案コード20250930 --------------------
+
                     if (send_up_node != "0") {
                         // change_up_address = routing_table[std::stoi(send_node)-1][1];  // down
                         // up_addr.sin_addr.s_addr = inet_addr(change_up_address.c_str());
@@ -526,6 +536,28 @@ int main(int argc, char* argv[]) {
     Log log("IPT", argv[2], system_start_time);
     log.write("RN");
     log.write("ipt_interval = " + std::to_string(ipt_interval) + " s");
+
+    // --- 河村追加0930 ここからモーター制御プログラムをバックグラウンドで起動する処理 ---
+    pid_t motor_pid = fork();
+    if (motor_pid == -1) {
+        // forkに失敗した場合
+        perror("fork failed to start motor control program");
+    } else if (motor_pid == 0) {
+        // 子プロセス: モーター制御プログラムを実行する
+        std::cout << "Starting motor control program in the background..." << std::endl;
+        
+        // モーター制御プログラムの実行ファイルへの絶対パス
+        const char* motor_program_path = "/home/pi/robot_project/Motor_Driver_HAT_Code/Motor_Driver_HAT_Code/Raspberry Pi/c/examples/main";
+        
+        // execlでプログラムを起動
+        // この通信プログラム自体をsudoで実行する必要があります
+        execl(motor_program_path, motor_program_path, (char *)NULL);
+        
+        // execlが失敗した場合のみ、以下のコードが実行される
+        perror("execl failed to run motor program");
+        exit(1); // 子プロセスを終了
+    }
+    // --- ここまで ---
 
     // cout << "RN" << std::endl;
     // cout << "My_IP_address = " << host << std::endl;

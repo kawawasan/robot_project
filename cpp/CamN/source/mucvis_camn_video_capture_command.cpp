@@ -576,7 +576,7 @@ int main(int argc, char* argv[]) {
         std::cout << "Starting motor control program in the background..." << std::endl;
         
         // モーター制御プログラムの実行ファイルへの絶対パス
-        const char* motor_program_path = "/home/pi/robot_project/Motor_Driver_HAT_Code/Motor_Driver_HAT_Code/Raspberry Pi/c";
+        const char* motor_program_path = "/home/pi/robot_project/Motor_Driver_HAT_Code/Motor_Driver_HAT_Code/Raspberry Pi/c/main";
         
         // execlでプログラムを起動
         // この通信プログラム自体をsudoで実行する必要があります

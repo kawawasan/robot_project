@@ -16,6 +16,7 @@ const int FULL_DELAY_HIGH = 0x0f;
 
 // --- 目標距離ファイル ---
 const char* TARGET_POSITION_FILE = "/tmp/robot_target_position.txt";
+const double DISTANCE_TOLERANCE = 0.05; // 5cmの誤差を許容
 
 int i2c_fd = -1; // I2Cファイルディスクリプタ
 
@@ -148,8 +149,8 @@ int main(void)
             // --- 目標距離が設定されている場合 ---
             printf("Current: %.2f m, Target: %.2f m\n", current_distance_m, target_distance_m);
 
-            // 目標より遠ければ前進、近ければ停止
-            if (current_distance_m > target_distance_m) {
+            // 目標より近ければ前進、遠ければ停止
+            if (current_distance_m < target_distance_m - DISTANCE_TOLERANCE) {
                 printf("Moving forward to target...\n");
                 Motor_Run(MOTORA, FORWARD, 50);
                 Motor_Run(MOTORB, FORWARD, 50);

@@ -358,6 +358,15 @@ public:
                     std::cout << "position: " << position << std::endl;
                     std::cout << "send_node: " << send_node << std::endl;
                     std::cout << "down_address: " << down_address << std::endl;
+
+                    // 端末間距離をファイル出力 --------------------
+                    // 受信したposition（距離情報）をファイルに書き出す
+                    std::ofstream pos_file("/tmp/robot_target_position.txt");
+                    if (pos_file.is_open()) {
+                        pos_file << position;
+                        pos_file.close();
+                    }
+                    // -------------------- 提案コード20250930 --------------------
                     
                 }
                 catch (...) {

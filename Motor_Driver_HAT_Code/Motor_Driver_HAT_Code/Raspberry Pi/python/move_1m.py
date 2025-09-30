@@ -46,26 +46,40 @@ class MotorDriver():
 
 # メイン制御ループ
 Motor = MotorDriver()
-#実験用に変更
-TARGET_DISTANCE = 1.0  # 1m以内に入ったら停止
-tolerance_range = 0.05
+TARGET_POSITION_FILE = "/tmp/robot_target_position.txt"
+
+def read_target_position():
+    """ファイルから目標位置を読み取る"""
+    try:
+        with open(TARGET_POSITION_FILE, 'r') as f:
+            # cm単位で読み取り、m単位に変換
+            return float(f.read().strip()) / 100.0
+    except (FileNotFoundError, ValueError):
+        # ファイルがない、または内容が不正な場合は現在の位置を維持
+        return None
 
 try:
     while True:
+        target_distance = read_target_position()
         current_distance = get_distance()  # LIDARから距離を取得
-        print(f"Distance: {current_distance:.2f} m")
 
-        if current_distance <= TARGET_DISTANCE-tolerance_range:
-            # FORWARD
+        if target_distance is not None:
+            print(f"Current: {current_distance:.2f} m, Target: {target_distance:.2f} m")
+            # 目標距離より遠ければ前進、近ければ後退（ここでは単純な前進のみ）
+            if current_distance > target_distance:
+                print("Moving forward to target...")
+                Motor.MotorRun(0, 'forward', 50)
+                Motor.MotorRun(1, 'forward', 50)
+            else:
+                print("Target reached or passed. Stopping.")
+                Motor.MotorStop(0)
+                Motor.MotorStop(1)
+        else:
+            print(f"Waiting for target position... Current distance: {current_distance:.2f} m")
             Motor.MotorRun(0, 'forward', 50)
             Motor.MotorRun(1, 'forward', 50)
-        else:
-            print("Target reached. Stopping motors.")
-            Motor.MotorStop(0)
-            Motor.MotorStop(1)
-            #break
 
-        time.sleep(0.4)  # 100ms間隔で距離チェック
+        time.sleep(0.2)  # 200ms間隔でチェック
 
 except KeyboardInterrupt:
     print("Interrupted by user")

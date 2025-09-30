@@ -7,7 +7,7 @@ CC = gcc
 # Source files
 SRCS =  $(TARGET).c \
 	../lib/Config/DEV_Config.c \
-	../lib/Motor/Motor.c \
+	..main.c \
 	../lib/PCA9685/PCA9685.c
 
 # Include directories

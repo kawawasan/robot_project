@@ -7,7 +7,7 @@
 
 #include "DEV_Config.h"
 #include <time.h>
-#include "DEV_Config.h"
+// #include "DEV_Config.h"
 #include "MotorDriver.h"
 
 #endif 

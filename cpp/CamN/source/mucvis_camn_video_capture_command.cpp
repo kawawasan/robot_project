@@ -564,7 +564,10 @@ int main(int argc, char* argv[]) {
     // std::cout << "resolution = " << WIDTH << "x" << HEIGHT << " @ " << FRAMERATE << " fps" << std::endl;
 
     // パイプ作成
-
+      // --- 古い目標距離ファイルを削除し、起動直後の誤動作を防ぐ ---
+    std::cout << "Removing old target position file if it exists." << std::endl;
+    std::remove("/tmp/robot_target_position.txt");
+    // --- ここまで ---
     // --- ここからモーター制御プログラムをバックグラウンドで起動する処理 ---
     //河村追加20250930
     pid_t motor_pid = fork();
@@ -618,6 +621,7 @@ int main(int argc, char* argv[]) {
             " --height " + HEIGHT +
             " --framerate " + FRAMERATE +
             " --bitrate " + std::to_string(int(video_bit_rate * 1000 * 1000)) +  // ビットレート指定
+            " --vflip --hflip" +  //河村追加1001 画面上下左右反転
             " --codec h264 --inline -o - | "  // libcamera-vidの出力をパイプ
             "ffmpeg -fflags +genpts -analyzeduration 100000 -i - -c copy -f mpegts "  // 入力ストリームの解析に使う最大時間を0.1秒に設定
             "-loglevel fatal "  // ログレベルをfatalに設定;

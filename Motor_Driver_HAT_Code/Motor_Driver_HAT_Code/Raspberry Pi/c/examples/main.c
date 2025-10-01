@@ -153,8 +153,8 @@ int main(void)
             // 目標より近ければ前進、遠ければ停止
             if (current_distance_m < target_distance_m - DISTANCE_TOLERANCE) {
                 printf("Moving forward to target...\n");
-                Motor_Run(MOTORA, FORWARD, 50);
-                Motor_Run(MOTORB, FORWARD, 50);
+                Motor_Run(MOTORA, BACKWARD, 50);
+                Motor_Run(MOTORB, BACKWARD, 50);
             } else {
                 printf("Target reached or passed. Stopping.\n");
                 Motor_Stop(MOTORA);

@@ -537,6 +537,11 @@ int main(int argc, char* argv[]) {
     log.write("RN");
     log.write("ipt_interval = " + std::to_string(ipt_interval) + " s");
 
+        // --- 古い目標距離ファイルを削除し、起動直後の誤動作を防ぐ ---
+    std::cout << "Removing old target position file if it exists." << std::endl;
+    std::remove("/tmp/robot_target_position.txt");
+    // --- ここまで ---
+
     // --- 河村追加0930 ここからモーター制御プログラムをバックグラウンドで起動する処理 ---
     pid_t motor_pid = fork();
     if (motor_pid == -1) {

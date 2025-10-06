@@ -1,0 +1,18 @@
+
+CamN_end_time: 20.975162 s
+CN_end_time:   76.586879 s
+
+control_delay_max: 0.000000 s
+video_delay_max:   55.797672 s
+control_delay_average: 0.000000 s
+video_delay_average:   55.613778 s
+
+Control_loss_rate_num: 50.00 %
+Video_loss_rate_num:   0.00 %
+Lost_ack_num: 179
+Video_loss_seq_num: 0
+
+Video_throughput: 1.156056 Mbps
+Video_send_size: 2581340 bytes
+Video_recv_size: 2581340 bytes
+

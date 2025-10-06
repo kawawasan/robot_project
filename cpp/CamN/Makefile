@@ -130,6 +130,9 @@ mucvis_camn_video_capture_command.out: $(OBJDIR)mucvis_camn_video_capture_comman
 	$(CC) -o $@ $^ $(LIBDIR) $(LIBS) -pthread
 	@echo "make $@"
 
+mucvis_camn_video_capture_command_pipethread.out: $(OBJDIR)mucvis_camn_video_capture_command_pipethread.o $(INCOBJECTS)  # カメラから映像を撮影する．制御情報により宛先を変更する版
+	$(CC) -o $@ $^ $(LIBDIR) $(LIBS) -pthread
+	@echo "make $@"
 
 # オブジェクトファイル生成(.cppファイルから.oファイルを生成)
 $(OBJDIR)%.o: $(SRCDIR)%.cpp

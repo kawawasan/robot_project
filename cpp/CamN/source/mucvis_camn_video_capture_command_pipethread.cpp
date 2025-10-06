@@ -2,6 +2,7 @@
 // libcamra-vidの出力をffmpegでts形式にしてからMUCViSに渡す
 // 映像ビットレートは指定可能
 // 制御情報により宛先を変更
+// 映像撮影によるパイプ溢れを防ぐため，パイプ読み込みを別スレッドで実行
 
 #include <iostream>
 #include <thread>  // コンパイル時には-pthread
@@ -162,13 +163,42 @@ public:
 
     }
 
+
+    // ffmpegからのデータをひたすら読み込む(映像の倍速対策) この関数を新しいスレッドで実行する
+    void pipe_reader_thread() {
+        uint8_t buffer[VIDEO_BUFFER_SIZE];
+        struct epoll_event events[1];
+
+        while (true) { // 本来は終了処理が必要
+            int nfds = epoll_wait(epoll_fd, events, 1, -1); // データが来るまで待機
+            if (nfds == -1) {
+                perror("epoll_wait failed in reader thread");
+                break; 
+            }
+
+            if (events[0].data.fd == pipefd[0]) {
+                ssize_t bytes_read = read(pipefd[0], buffer, VIDEO_BUFFER_SIZE);
+                if (bytes_read > 0) {
+                    // 読み込んだデータを映像データキューに入れるだけ
+                    g_lock.lock();
+                    g_video_bytequeue.put(std::vector<uint8_t>(buffer, buffer + bytes_read));
+                    g_lock.unlock();
+                } else if (bytes_read == 0) {
+                    // パイプが閉じた（EOF）
+                    std::cout << "Pipe closed." << std::endl;
+                    break;
+                }
+            }
+        }
+    }
+
     // パケット生成
     Packet make_packet() {
         uint32_t packet_type = TYPE_VIDEO;
 
         // パイプに映像データがあれば，取り出す
         // uint8_t buffer[VIDEO_BUFFER_SIZE];
-        ssize_t bytes_read = 0;
+        // ssize_t bytes_read = 0;
 
         g_lock.lock();
         int dummy_seq = g_dummy_seq;
@@ -176,24 +206,10 @@ public:
         g_lock.unlock();
 
         if (video_bytequeue_size == 0 && dummy_seq < DUMMY_SEQ_MAX) {
-            // ダミーパケットを生成する前に，パイプに映像データがあるか確認
-            // buffer[0] = '\0';  // バッファを初期化
-            bytes_read = read(pipefd[0], buffer, VIDEO_BUFFER_SIZE);
-            if (bytes_read > 0) {
-                // .tsファイルに書き込む
-                video_file.write(reinterpret_cast<const char*>(buffer), bytes_read);
-                // video_file.flush();
-
-                // 読み込んだデータを映像データキューに入れる
-                g_video_bytequeue.put(std::vector<uint8_t>(buffer, buffer + bytes_read));
-            } else {
-                packet_type = TYPE_DUMMY;
-            }
+            packet_type = TYPE_DUMMY;
         }
 
         if (packet_type == TYPE_VIDEO) {
-            // std::vector<uint8_t> video_data;
-            // video_data.reserve(MAX_VIDEO_SIZE);
             video_data.clear();
 
             // 映像データキューから映像データを取り出す
@@ -202,35 +218,18 @@ public:
                 video_data = g_video_bytequeue.get(MAX_VIDEO_SIZE);
                 g_lock.unlock();
 
-                // 映像データキューが空の場合は，epollでパイプを監視し，映像データキューに取り出す
+                // 映像データキューが空の場合は待機
                 if (video_data.empty()) {
-                    // epollでパイプを監視し，映像データキューに取り出す
-                    struct epoll_event events[1];
-                    while (g_video_bytequeue.size() == 0) {
-                        int nfds = epoll_wait(epoll_fd, events, 1, -1);
-                        if (nfds == -1) {
-                            perror("epoll_wait failed");
-                            exit(EXIT_FAILURE);
-                        }
-                        // パイプからデータを映像データキューに取り出す
-                        if (events[0].data.fd == pipefd[0]) {
-                            // パイプからデータを読み込む
-                            // buffer[0] = '\0';  // バッファを初期化
-                            bytes_read = read(pipefd[0], buffer, VIDEO_BUFFER_SIZE);
-                            
-                            if (bytes_read > 0) {
-                                // .tsファイルに書き込む
-                                video_file.write(reinterpret_cast<const char*>(buffer), bytes_read);
-                                // video_file.flush();
-                                
-                                // 読み込んだデータを映像データキューに入れる
-                                g_video_bytequeue.put(std::vector<uint8_t>(buffer,buffer + bytes_read));
-                            }
-                        }
-                    }
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 } else {
                     break;
                 }
+            }
+
+            // 取り出した映像データをtsファイルとして保存
+            video_file.write(reinterpret_cast<const char*>(video_data.data()), video_data.size());
+            if (!video_file) {
+                std::cerr << "Failed to write to video file" << std::endl;
             }
 
             g_lock.lock();
@@ -358,8 +357,8 @@ public:
                     std::cout << "position: " << position << std::endl;
                     std::cout << "send_node: " << send_node << std::endl;
                     std::cout << "down_address: " << down_address << std::endl;
-
-                    // 端末間距離をファイル出力 --------------------
+                    
+                         // 端末間距離をファイル出力 --------------------
                     // 受信したposition（距離情報）をファイルに書き出す河村追加
                     std::ofstream pos_file("/tmp/robot_target_position.txt");
                     if (pos_file.is_open()) {
@@ -563,6 +562,8 @@ int main(int argc, char* argv[]) {
     // std::cout << "video_file_name = " + video_file_name << std::endl;
     // std::cout << "resolution = " << WIDTH << "x" << HEIGHT << " @ " << FRAMERATE << " fps" << std::endl;
 
+
+    // パイプ作成
     // パイプ作成
       // --- 古い目標距離ファイルを削除し、起動直後の誤動作を防ぐ ---
     std::cout << "Removing old target position file if it exists." << std::endl;
@@ -624,13 +625,15 @@ int main(int argc, char* argv[]) {
             " --vflip --hflip" +  //河村追加1001 画面上下左右反転
             " --codec h264 --inline -o - | "  // libcamera-vidの出力をパイプ
             // "ffmpeg -fflags +genpts -analyzeduration 100000 -i - -c copy -f mpegts "  // 入力ストリームの解析に使う最大時間を0.1秒に設定
-            "ffmpeg -fflags +genpts -analyzeduration 100000 -r " + FRAMERATE + " -i - -c copy -f mpegts"
+            "ffmpeg -fflags +genpts -analyzeduration 100000 -r " + FRAMERATE + " -i - -c copy -f mpegts "
             "-loglevel fatal "  // ログレベルをfatalに設定;
             "-";
         execlp("sh", "sh", "-c", cmd.c_str(), nullptr);
         exit(EXIT_FAILURE);
     }
     
+    // スレッド生成 パイプリーダー
+    std::thread pipe_reader_thread(&Mucvis_camn::pipe_reader_thread, &mucvis_camn);
     // スレッド生成 送信
     std::thread sender_thread(&Mucvis_camn::start_send, &mucvis_camn);
 

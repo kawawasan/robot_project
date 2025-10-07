@@ -16,7 +16,7 @@ const int FULL_DELAY_HIGH = 0x0f;
 
 // --- 目標距離ファイル ---
 const char* TARGET_POSITION_FILE = "/tmp/robot_target_position.txt";
-const double DISTANCE_TOLERANCE = 0.05; // 5cmの誤差を許容
+const double DISTANCE_TOLERANCE = 0.1; // 10cmの誤差を許容
 
 int i2c_fd = -1; // I2Cファイルディスクリプタ
 
@@ -83,8 +83,7 @@ int get_lidar_distance_cm() {
 double read_target_position_m() {
     FILE *fp = fopen(TARGET_POSITION_FILE, "r");
     if (fp == NULL) {
-        return -1.0; // ファイルなし
-        // return 2.0 //モータの試験用
+        return 2.0; // ファイルなし
     }
 
     double position_cm;
@@ -132,6 +131,7 @@ int main(void)
     printf("Starting motor control loop...\n");
 
     while(1) {
+
         // 目標距離をファイルから取得
         double target_distance_m = read_target_position_m();
 
@@ -148,21 +148,37 @@ int main(void)
 
         if (target_distance_m >= 0) {
             // --- 目標距離が設定されている場合 ---
-            // printf("Current: %.2f m, Target: %.2f m\n", current_distance_m, target_distance_m);
+            printf("Current: %.2f m, Target: %.2f m\n", current_distance_m, target_distance_m);
 
-            // 目標より近ければ前進、遠ければ停止
-            if (current_distance_m < target_distance_m - DISTANCE_TOLERANCE) {
-                printf("Moving forward to target...\n");
-                Motor_Run(MOTORA, BACKWARD, 50);
-                Motor_Run(MOTORB, BACKWARD, 50);
+            // --- ここから提案コード ---
+            if (target_distance_m == 0) {
+                // 目標が0の場合は逆走して元の位置に戻る
+                // ここでは、LIDARの距離が初期位置（例: 0.05m）より大きい間、逆走を続ける
+                if (current_distance_m > 0.05) { // 5cmを初期位置と仮定
+                    printf("Returning to original position...\n");
+                    Motor_Run(MOTORA, FORWARD, 50); // FORWARDで逆走
+                    Motor_Run(MOTORB, FORWARD, 50);
+                } else {
+                    printf("Original position reached. Stopping.\n");
+                    Motor_Stop(MOTORA);
+                    Motor_Stop(MOTORB);
+                }
             } else {
+            // --- ここまで提案コード ---
+                // 通常の前進処理
+                if (current_distance_m < target_distance_m - DISTANCE_TOLERANCE) {
+                    printf("Moving forward to target...\n");
+                    Motor_Run(MOTORA, BACKWARD, 50);
+                    Motor_Run(MOTORB, BACKWARD, 50);
+                } else {
                 printf("Target reached or passed. Stopping.\n");
                 Motor_Stop(MOTORA);
                 Motor_Stop(MOTORB);
+                }
             }
         } else {
             // --- 目標距離が設定されていない場合 (デフォルトの動作) ---
-            // printf("Waiting for target position... Current distance: %.2f m\n", current_distance_m);
+            printf("Waiting for target position... Current distance: %.2f m\n", current_distance_m);
             // 安全のため停止
             Motor_Stop(MOTORA);
             Motor_Stop(MOTORB);
@@ -179,6 +195,7 @@ int main(void)
     DEV_ModuleExit();
     return 0;
 }
+
 
 
 // #include "main.h"
@@ -217,6 +234,3 @@ int main(void)
 //     DEV_ModuleExit();
 //     return 0;
 // }
-
-
-

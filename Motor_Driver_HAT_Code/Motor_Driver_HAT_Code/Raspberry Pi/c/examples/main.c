@@ -156,8 +156,8 @@ int main(void)
                 // ここでは、LIDARの距離が初期位置（例: 0.05m）より大きい間、逆走を続ける
                 if (current_distance_m > 0.05) { // 5cmを初期位置と仮定
                     printf("Returning to original position...\n");
-                    Motor_Run(MOTORA, FORWARD, 50); // FORWARDで逆走
-                    Motor_Run(MOTORB, FORWARD, 50);
+                    Motor_Run(MOTORA, FORWARD, 20); // FORWARDで逆走
+                    Motor_Run(MOTORB, FORWARD, 20);
                 } else {
                     printf("Original position reached. Stopping.\n");
                     Motor_Stop(MOTORA);
@@ -168,8 +168,8 @@ int main(void)
                 // 通常の前進処理
                 if (current_distance_m < target_distance_m - DISTANCE_TOLERANCE) {
                     printf("Moving forward to target...\n");
-                    Motor_Run(MOTORA, BACKWARD, 50);
-                    Motor_Run(MOTORB, BACKWARD, 50);
+                    Motor_Run(MOTORA, BACKWARD, 20);
+                    Motor_Run(MOTORB, BACKWARD, 20);
                 } else {
                 printf("Target reached or passed. Stopping.\n");
                 Motor_Stop(MOTORA);

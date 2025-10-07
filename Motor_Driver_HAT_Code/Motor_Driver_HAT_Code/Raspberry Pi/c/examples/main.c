@@ -148,7 +148,7 @@ int main(void)
 
         if (target_distance_m >= 0) {
             // --- 目標距離が設定されている場合 ---
-            printf("Current: %.2f m, Target: %.2f m\n", current_distance_m, target_distance_m);
+            // printf("Current: %.2f m, Target: %.2f m\n", current_distance_m, target_distance_m);
 
             // 目標より近ければ前進、遠ければ停止
             if (current_distance_m < target_distance_m - DISTANCE_TOLERANCE) {
@@ -162,7 +162,7 @@ int main(void)
             }
         } else {
             // --- 目標距離が設定されていない場合 (デフォルトの動作) ---
-            printf("Waiting for target position... Current distance: %.2f m\n", current_distance_m);
+            // printf("Waiting for target position... Current distance: %.2f m\n", current_distance_m);
             // 安全のため停止
             Motor_Stop(MOTORA);
             Motor_Stop(MOTORB);

@@ -83,7 +83,7 @@ int get_lidar_distance_cm() {
 double read_target_position_m() {
     FILE *fp = fopen(TARGET_POSITION_FILE, "r");
     if (fp == NULL) {
-        return 2.0; // ファイルなし
+        return -1.0; // ファイルなし
     }
 
     double position_cm;
@@ -156,8 +156,8 @@ int main(void)
                 // ここでは、LIDARの距離が初期位置（例: 0.05m）より大きい間、逆走を続ける
                 if (current_distance_m > 0.05) { // 5cmを初期位置と仮定
                     printf("Returning to original position...\n");
-                    Motor_Run(MOTORA, FORWARD, 20); // FORWARDで逆走
-                    Motor_Run(MOTORB, FORWARD, 20);
+                    Motor_Run(MOTORA, FORWARD, 40); // FORWARDで逆走
+                    Motor_Run(MOTORB, FORWARD, 40);
                 } else {
                     printf("Original position reached. Stopping.\n");
                     Motor_Stop(MOTORA);
@@ -168,8 +168,8 @@ int main(void)
                 // 通常の前進処理
                 if (current_distance_m < target_distance_m - DISTANCE_TOLERANCE) {
                     printf("Moving forward to target...\n");
-                    Motor_Run(MOTORA, BACKWARD, 20);
-                    Motor_Run(MOTORB, BACKWARD, 20);
+                    Motor_Run(MOTORA, BACKWARD, 40);
+                    Motor_Run(MOTORB, BACKWARD, 40);
                 } else {
                 printf("Target reached or passed. Stopping.\n");
                 Motor_Stop(MOTORA);

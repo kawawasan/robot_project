@@ -346,8 +346,8 @@ public:
                     std::cout << "send_up_node: " << send_up_node << std::endl;
                     std::cout << "send_down_node: " << send_down_node << std::endl;
 
-                    // 端末間距離をファイル出力
-                    // 受信したposition（距離情報）をファイルに書き出す 河村追加0930------------------
+                           // 端末間距離をファイル出力 --------------------
+                    // 受信したposition（距離情報）をファイルに書き出す河村追加
                     std::ofstream pos_file("/tmp/robot_target_position.txt");
                     if (pos_file.is_open()) {
                         pos_file << position;
@@ -503,8 +503,12 @@ int main(int argc, char* argv[]) {
     int up_node = std::stoi(routing_table[my_node_num - 1][2]);
     int down_node = std::stoi(routing_table[my_node_num - 1][3]);
     std::string down_address = routing_table[down_node - 1][1];  // 宛先IPアドレス
-    std::string up_address = routing_table[up_node - 1][1];  // 宛先IPアドレス
-    // int send_socket = socket(AF_INET, SOCK_DGRAM, 0);
+    std::string up_address; // 宛先IPアドレス
+    if (up_node == 0) {
+        up_address = "0";
+    } else {
+        up_address = routing_table[up_node - 1][1];  // 宛先IPアドレス
+    }
 
     // 上のパラメータを表示
     std::cout << "RN" << std::endl;
@@ -530,14 +534,7 @@ int main(int argc, char* argv[]) {
         std::cout << std::endl;
     }
 
-
-    // ログファイルの作成
-    // Log log("IPT", argv[5], system_start_time);
-    Log log("IPT", argv[2], system_start_time);
-    log.write("RN");
-    log.write("ipt_interval = " + std::to_string(ipt_interval) + " s");
-
-        // --- 古い目標距離ファイルを削除し、起動直後の誤動作を防ぐ ---
+    // --- 古い目標距離ファイルを削除し、起動直後の誤動作を防ぐ ---
     std::cout << "Removing old target position file if it exists." << std::endl;
     std::remove("/tmp/robot_target_position.txt");
     // --- ここまで ---
@@ -563,6 +560,12 @@ int main(int argc, char* argv[]) {
         exit(1); // 子プロセスを終了
     }
     // --- ここまで ---
+
+    // ログファイルの作成
+    // Log log("IPT", argv[5], system_start_time);
+    Log log("IPT", argv[2], system_start_time);
+    log.write("RN");
+    log.write("ipt_interval = " + std::to_string(ipt_interval) + " s");
 
     // cout << "RN" << std::endl;
     // cout << "My_IP_address = " << host << std::endl;

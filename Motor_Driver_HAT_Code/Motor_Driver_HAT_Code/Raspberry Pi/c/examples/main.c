@@ -150,31 +150,23 @@ int main(void)
             // --- 目標距離が設定されている場合 ---
             printf("Current: %.2f m, Target: %.2f m\n", current_distance_m, target_distance_m);
 
-            // --- ここから提案コード ---
-            if (target_distance_m == 0) {
-                // 目標が0の場合は逆走して元の位置に戻る
-                // ここでは、LIDARの距離が初期位置（例: 0.05m）より大きい間、逆走を続ける
-                if (current_distance_m > 0.05) { // 5cmを初期位置と仮定
-                    printf("Returning to original position...\n");
-                    Motor_Run(MOTORA, FORWARD, 40); // FORWARDで逆走
-                    Motor_Run(MOTORB, FORWARD, 40);
-                } else {
-                    printf("Original position reached. Stopping.\n");
-                    Motor_Stop(MOTORA);
-                    Motor_Stop(MOTORB);
-                }
+            // 目標より遠くにいる場合 -> 前進 (BACKWARD)
+            // 例: current=1.5, target=1.0 -> 1.5 > 1.0 + 0.1 -> true
+            if (current_distance_m > target_distance_m + DISTANCE_TOLERANCE) {
+                printf("Moving forward to target...\n");
+                Motor_Run(MOTORA, BACKWARD, 40);
+                Motor_Run(MOTORB, BACKWARD, 40);
+            // 目標より手前にいる場合 -> 後退 (FORWARD)
+            // 例: current=0.8, target=1.0 -> 0.8 < 1.0 - 0.1 -> true
+            } else if (current_distance_m < target_distance_m - DISTANCE_TOLERANCE) {
+                printf("Moving backward to target...\n");
+                Motor_Run(MOTORA, FORWARD, 40);
+                Motor_Run(MOTORB, FORWARD, 40);
+            // 目標範囲内にいる場合 -> 停止
             } else {
-            // --- ここまで提案コード ---
-                // 通常の前進処理
-                if (current_distance_m < target_distance_m - DISTANCE_TOLERANCE) {
-                    printf("Moving forward to target...\n");
-                    Motor_Run(MOTORA, BACKWARD, 40);
-                    Motor_Run(MOTORB, BACKWARD, 40);
-                } else {
-                printf("Target reached or passed. Stopping.\n");
+                printf("Target reached. Stopping.\n");
                 Motor_Stop(MOTORA);
                 Motor_Stop(MOTORB);
-                }
             }
         } else {
             // --- 目標距離が設定されていない場合 (デフォルトの動作) ---

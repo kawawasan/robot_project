@@ -43,7 +43,7 @@ using system_clock = std::chrono::system_clock;
 #define DUMMY_SEQ_MAX 3  // ダミーパケット送信回数上限
 #define WIDTH "1920"  // 映像幅 1280 1920 
 #define HEIGHT "1080"  // 映像高さ 720 1080
-#define FRAMERATE "30"  // フレームレート
+#define FRAMERATE "24"  // フレームレート
 #define FILE_NAME_PREFIX "videos/IPT_"  // 映像ファイル名プレフィックス
 
 // グローバル変数

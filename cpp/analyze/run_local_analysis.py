@@ -9,7 +9,7 @@ ANALYSIS_SCRIPT_NAME = 'analyze_logs.py'
 
 # ### 変更点: 必須ノードとオプションノードを分ける ###
 REQUIRED_NODES = ["CamN", "CN"]
-OPTIONAL_NODES = ["RN1", "RN2"]
+OPTIONAL_NODES = ["RN", "RN1", "RN2"]
 
 # --- 関数 (変更なし) ---
 
@@ -110,6 +110,8 @@ def main():
         sorted_log_paths["CN"]
     ]
     # RNのログが見つかっていれば引数に追加
+    if "RN" in sorted_log_paths:
+        analysis_command.append(sorted_log_paths["RN"])
     if "RN1" in sorted_log_paths:
         analysis_command.append(sorted_log_paths["RN1"])
     if "RN2" in sorted_log_paths:

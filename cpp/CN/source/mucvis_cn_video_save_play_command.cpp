@@ -593,16 +593,6 @@ void generate_command_from_input(Log& log, hr_clock::time_point hr_start_time, c
         try {
             input_distance = std::stod(command_data) - correction_distance;  // input_distanceはCamNからCNまでの実際の距離
 
-            // --- ここから提案コード ---河村1007
-            // 入力が100の場合、全ノードの目標位置を0に設定して逆走させる
-            if (std::stod(command_data) == 100) {
-                std::cout << "Return command received. Setting all node positions to 0." << std::endl;
-                for (int i = 0; i < node_num; i++) {
-                    node_position[i] = 0;
-                }
-            } else {
-            // --- ここまで提案コード ---
-            
             std::cout << "input_distance = " << input_distance << std::endl;
             for (int i = 0; i < node_num; i++) {
                 distance = (i == 0)? input_distance : input_distance;
@@ -622,7 +612,7 @@ void generate_command_from_input(Log& log, hr_clock::time_point hr_start_time, c
                 std::cout << "error: The distance between the last node and the CN is greater than the communication range." << std::endl;
                 continue;
             }
-            } // 提案コードのelseブロックを閉じる
+
             double distance_sum = (node_num-1) * Vehicle_body_length;
             for (int i = 0; i < node_num; i++) {
                 distance_sum += node_position[i];

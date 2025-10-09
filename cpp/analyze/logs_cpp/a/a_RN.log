@@ -1,0 +1,626 @@
+Time= 0 time_pref_counter= 1759828662438106261
+T= 16.761700 Ev= Recv Type= CONTROL Direction= Up Seq= 0 PayloadSize= 64 VideoQueueSize= 0
+T= 16.761700 Ev= Command Seq= 0 Command= "The control command is generated so that it is 60 bytes long"
+T= 16.868274 Ev= Recv Type= CONTROL Direction= Up Seq= 1 PayloadSize= 64 VideoQueueSize= 0
+T= 16.868274 Ev= Command Seq= 1 Command= "The control command is generated so that it is 60 bytes long"
+T= 16.969844 Ev= Recv Type= CONTROL Direction= Up Seq= 2 PayloadSize= 64 VideoQueueSize= 0
+T= 16.969844 Ev= Command Seq= 2 Command= "The control command is generated so that it is 60 bytes long"
+T= 17.070934 Ev= Recv Type= CONTROL Direction= Up Seq= 3 PayloadSize= 64 VideoQueueSize= 0
+T= 17.070934 Ev= Command Seq= 3 Command= "The control command is generated so that it is 60 bytes long"
+T= 17.163443 Ev= Recv Type= CONTROL Direction= Up Seq= 4 PayloadSize= 64 VideoQueueSize= 0
+T= 17.163443 Ev= Command Seq= 4 Command= "The control command is generated so that it is 60 bytes long"
+T= 17.262983 Ev= Recv Type= CONTROL Direction= Up Seq= 5 PayloadSize= 64 VideoQueueSize= 0
+T= 17.262983 Ev= Command Seq= 5 Command= "The control command is generated so that it is 60 bytes long"
+T= 17.365456 Ev= Recv Type= CONTROL Direction= Up Seq= 6 PayloadSize= 64 VideoQueueSize= 0
+T= 17.365456 Ev= Command Seq= 6 Command= "The control command is generated so that it is 60 bytes long"
+T= 17.466346 Ev= Recv Type= CONTROL Direction= Up Seq= 7 PayloadSize= 64 VideoQueueSize= 0
+T= 17.466346 Ev= Command Seq= 7 Command= "The control command is generated so that it is 60 bytes long"
+T= 17.565430 Ev= Recv Type= CONTROL Direction= Up Seq= 8 PayloadSize= 64 VideoQueueSize= 0
+T= 17.565430 Ev= Command Seq= 8 Command= "The control command is generated so that it is 60 bytes long"
+T= 17.670632 Ev= Recv Type= CONTROL Direction= Up Seq= 9 PayloadSize= 64 VideoQueueSize= 0
+T= 17.670632 Ev= Command Seq= 9 Command= "The control command is generated so that it is 60 bytes long"
+T= 17.766667 Ev= Recv Type= CONTROL Direction= Up Seq= 10 PayloadSize= 64 VideoQueueSize= 0
+T= 17.766667 Ev= Command Seq= 10 Command= "The control command is generated so that it is 60 bytes long"
+T= 17.867998 Ev= Recv Type= CONTROL Direction= Up Seq= 11 PayloadSize= 64 VideoQueueSize= 0
+T= 17.867998 Ev= Command Seq= 11 Command= "The control command is generated so that it is 60 bytes long"
+T= 17.974828 Ev= Recv Type= CONTROL Direction= Up Seq= 12 PayloadSize= 64 VideoQueueSize= 0
+T= 17.974828 Ev= Command Seq= 12 Command= "The control command is generated so that it is 60 bytes long"
+T= 18.068541 Ev= Recv Type= CONTROL Direction= Up Seq= 13 PayloadSize= 64 VideoQueueSize= 0
+T= 18.068541 Ev= Command Seq= 13 Command= "The control command is generated so that it is 60 bytes long"
+T= 18.169109 Ev= Recv Type= CONTROL Direction= Up Seq= 14 PayloadSize= 64 VideoQueueSize= 0
+T= 18.169109 Ev= Command Seq= 14 Command= "The control command is generated so that it is 60 bytes long"
+T= 18.270209 Ev= Recv Type= CONTROL Direction= Up Seq= 15 PayloadSize= 64 VideoQueueSize= 0
+T= 18.270209 Ev= Command Seq= 15 Command= "The control command is generated so that it is 60 bytes long"
+T= 18.385937 Ev= Recv Type= CONTROL Direction= Up Seq= 16 PayloadSize= 64 VideoQueueSize= 0
+T= 18.385937 Ev= Command Seq= 16 Command= "The control command is generated so that it is 60 bytes long"
+T= 18.468310 Ev= Recv Type= CONTROL Direction= Up Seq= 17 PayloadSize= 64 VideoQueueSize= 0
+T= 18.468310 Ev= Command Seq= 17 Command= "The control command is generated so that it is 60 bytes long"
+T= 18.592597 Ev= Recv Type= CONTROL Direction= Up Seq= 18 PayloadSize= 64 VideoQueueSize= 0
+T= 18.592597 Ev= Command Seq= 18 Command= "The control command is generated so that it is 60 bytes long"
+T= 18.671160 Ev= Recv Type= CONTROL Direction= Up Seq= 19 PayloadSize= 64 VideoQueueSize= 0
+T= 18.671160 Ev= Command Seq= 19 Command= "The control command is generated so that it is 60 bytes long"
+T= 18.773741 Ev= Recv Type= CONTROL Direction= Up Seq= 20 PayloadSize= 64 VideoQueueSize= 0
+T= 18.773741 Ev= Command Seq= 20 Command= "The control command is generated so that it is 60 bytes long"
+T= 18.872814 Ev= Recv Type= CONTROL Direction= Up Seq= 21 PayloadSize= 64 VideoQueueSize= 0
+T= 18.872814 Ev= Command Seq= 21 Command= "The control command is generated so that it is 60 bytes long"
+T= 18.975006 Ev= Recv Type= CONTROL Direction= Up Seq= 22 PayloadSize= 64 VideoQueueSize= 0
+T= 18.975006 Ev= Command Seq= 22 Command= "The control command is generated so that it is 60 bytes long"
+T= 19.075949 Ev= Recv Type= CONTROL Direction= Up Seq= 23 PayloadSize= 64 VideoQueueSize= 0
+T= 19.075949 Ev= Command Seq= 23 Command= "The control command is generated so that it is 60 bytes long"
+T= 19.167526 Ev= Recv Type= CONTROL Direction= Up Seq= 24 PayloadSize= 64 VideoQueueSize= 0
+T= 19.167526 Ev= Command Seq= 24 Command= "The control command is generated so that it is 60 bytes long"
+T= 19.268631 Ev= Recv Type= CONTROL Direction= Up Seq= 25 PayloadSize= 64 VideoQueueSize= 0
+T= 19.268631 Ev= Command Seq= 25 Command= "The control command is generated so that it is 60 bytes long"
+T= 19.368864 Ev= Recv Type= CONTROL Direction= Up Seq= 26 PayloadSize= 64 VideoQueueSize= 0
+T= 19.368864 Ev= Command Seq= 26 Command= "The control command is generated so that it is 60 bytes long"
+T= 19.470894 Ev= Recv Type= CONTROL Direction= Up Seq= 27 PayloadSize= 64 VideoQueueSize= 0
+T= 19.470894 Ev= Command Seq= 27 Command= "The control command is generated so that it is 60 bytes long"
+T= 19.571461 Ev= Recv Type= CONTROL Direction= Up Seq= 28 PayloadSize= 64 VideoQueueSize= 0
+T= 19.571461 Ev= Command Seq= 28 Command= "The control command is generated so that it is 60 bytes long"
+T= 19.678894 Ev= Recv Type= CONTROL Direction= Up Seq= 29 PayloadSize= 64 VideoQueueSize= 0
+T= 19.678894 Ev= Command Seq= 29 Command= "The control command is generated so that it is 60 bytes long"
+T= 19.769753 Ev= Recv Type= CONTROL Direction= Up Seq= 30 PayloadSize= 64 VideoQueueSize= 0
+T= 19.769753 Ev= Command Seq= 30 Command= "The control command is generated so that it is 60 bytes long"
+T= 19.874744 Ev= Recv Type= CONTROL Direction= Up Seq= 31 PayloadSize= 64 VideoQueueSize= 0
+T= 19.874744 Ev= Command Seq= 31 Command= "The control command is generated so that it is 60 bytes long"
+T= 19.971010 Ev= Recv Type= CONTROL Direction= Up Seq= 32 PayloadSize= 64 VideoQueueSize= 0
+T= 19.971010 Ev= Command Seq= 32 Command= "The control command is generated so that it is 60 bytes long"
+T= 20.076608 Ev= Recv Type= CONTROL Direction= Up Seq= 33 PayloadSize= 64 VideoQueueSize= 0
+T= 20.076608 Ev= Command Seq= 33 Command= "The control command is generated so that it is 60 bytes long"
+T= 20.180398 Ev= Recv Type= CONTROL Direction= Up Seq= 34 PayloadSize= 14 VideoQueueSize= 0
+T= 20.180398 Ev= Command Seq= 34 Command= "90 3,0 0 3"
+T= 20.276658 Ev= Recv Type= CONTROL Direction= Up Seq= 35 PayloadSize= 64 VideoQueueSize= 0
+T= 20.276658 Ev= Command Seq= 35 Command= "The control command is generated so that it is 60 bytes long"
+T= 20.378535 Ev= Recv Type= CONTROL Direction= Up Seq= 36 PayloadSize= 64 VideoQueueSize= 0
+T= 20.378535 Ev= Command Seq= 36 Command= "The control command is generated so that it is 60 bytes long"
+T= 20.479018 Ev= Recv Type= CONTROL Direction= Up Seq= 37 PayloadSize= 64 VideoQueueSize= 0
+T= 20.479018 Ev= Command Seq= 37 Command= "The control command is generated so that it is 60 bytes long"
+T= 20.580582 Ev= Recv Type= CONTROL Direction= Up Seq= 38 PayloadSize= 64 VideoQueueSize= 0
+T= 20.580582 Ev= Command Seq= 38 Command= "The control command is generated so that it is 60 bytes long"
+T= 20.680863 Ev= Recv Type= CONTROL Direction= Up Seq= 39 PayloadSize= 64 VideoQueueSize= 0
+T= 20.680863 Ev= Command Seq= 39 Command= "The control command is generated so that it is 60 bytes long"
+T= 20.781876 Ev= Recv Type= CONTROL Direction= Up Seq= 40 PayloadSize= 64 VideoQueueSize= 0
+T= 20.781876 Ev= Command Seq= 40 Command= "The control command is generated so that it is 60 bytes long"
+T= 20.883392 Ev= Recv Type= CONTROL Direction= Up Seq= 41 PayloadSize= 64 VideoQueueSize= 0
+T= 20.883392 Ev= Command Seq= 41 Command= "The control command is generated so that it is 60 bytes long"
+T= 20.984460 Ev= Recv Type= CONTROL Direction= Up Seq= 42 PayloadSize= 64 VideoQueueSize= 0
+T= 20.984460 Ev= Command Seq= 42 Command= "The control command is generated so that it is 60 bytes long"
+T= 21.082563 Ev= Recv Type= CONTROL Direction= Up Seq= 43 PayloadSize= 64 VideoQueueSize= 0
+T= 21.082563 Ev= Command Seq= 43 Command= "The control command is generated so that it is 60 bytes long"
+T= 21.184859 Ev= Recv Type= CONTROL Direction= Up Seq= 44 PayloadSize= 64 VideoQueueSize= 0
+T= 21.184859 Ev= Command Seq= 44 Command= "The control command is generated so that it is 60 bytes long"
+T= 21.288839 Ev= Recv Type= CONTROL Direction= Up Seq= 45 PayloadSize= 64 VideoQueueSize= 0
+T= 21.288839 Ev= Command Seq= 45 Command= "The control command is generated so that it is 60 bytes long"
+T= 21.379798 Ev= Recv Type= CONTROL Direction= Up Seq= 46 PayloadSize= 64 VideoQueueSize= 0
+T= 21.379798 Ev= Command Seq= 46 Command= "The control command is generated so that it is 60 bytes long"
+T= 21.480708 Ev= Recv Type= CONTROL Direction= Up Seq= 47 PayloadSize= 64 VideoQueueSize= 0
+T= 21.480708 Ev= Command Seq= 47 Command= "The control command is generated so that it is 60 bytes long"
+T= 21.587233 Ev= Recv Type= CONTROL Direction= Up Seq= 48 PayloadSize= 64 VideoQueueSize= 0
+T= 21.587233 Ev= Command Seq= 48 Command= "The control command is generated so that it is 60 bytes long"
+T= 21.682412 Ev= Recv Type= CONTROL Direction= Up Seq= 49 PayloadSize= 64 VideoQueueSize= 0
+T= 21.682412 Ev= Command Seq= 49 Command= "The control command is generated so that it is 60 bytes long"
+T= 21.783464 Ev= Recv Type= CONTROL Direction= Up Seq= 50 PayloadSize= 64 VideoQueueSize= 0
+T= 21.783464 Ev= Command Seq= 50 Command= "The control command is generated so that it is 60 bytes long"
+T= 21.886973 Ev= Recv Type= CONTROL Direction= Up Seq= 51 PayloadSize= 64 VideoQueueSize= 0
+T= 21.886973 Ev= Command Seq= 51 Command= "The control command is generated so that it is 60 bytes long"
+T= 21.981706 Ev= Recv Type= CONTROL Direction= Up Seq= 52 PayloadSize= 64 VideoQueueSize= 0
+T= 21.981706 Ev= Command Seq= 52 Command= "The control command is generated so that it is 60 bytes long"
+T= 22.086494 Ev= Recv Type= CONTROL Direction= Up Seq= 53 PayloadSize= 64 VideoQueueSize= 0
+T= 22.086494 Ev= Command Seq= 53 Command= "The control command is generated so that it is 60 bytes long"
+T= 22.189273 Ev= Recv Type= CONTROL Direction= Up Seq= 54 PayloadSize= 64 VideoQueueSize= 0
+T= 22.189273 Ev= Command Seq= 54 Command= "The control command is generated so that it is 60 bytes long"
+T= 22.289256 Ev= Recv Type= CONTROL Direction= Up Seq= 55 PayloadSize= 64 VideoQueueSize= 0
+T= 22.289256 Ev= Command Seq= 55 Command= "The control command is generated so that it is 60 bytes long"
+T= 22.389881 Ev= Recv Type= CONTROL Direction= Up Seq= 56 PayloadSize= 64 VideoQueueSize= 0
+T= 22.389881 Ev= Command Seq= 56 Command= "The control command is generated so that it is 60 bytes long"
+T= 22.491023 Ev= Recv Type= CONTROL Direction= Up Seq= 57 PayloadSize= 64 VideoQueueSize= 0
+T= 22.491023 Ev= Command Seq= 57 Command= "The control command is generated so that it is 60 bytes long"
+T= 22.592330 Ev= Recv Type= CONTROL Direction= Up Seq= 58 PayloadSize= 64 VideoQueueSize= 0
+T= 22.592330 Ev= Command Seq= 58 Command= "The control command is generated so that it is 60 bytes long"
+T= 22.694031 Ev= Recv Type= CONTROL Direction= Up Seq= 59 PayloadSize= 64 VideoQueueSize= 0
+T= 22.694031 Ev= Command Seq= 59 Command= "The control command is generated so that it is 60 bytes long"
+T= 22.794355 Ev= Recv Type= CONTROL Direction= Up Seq= 60 PayloadSize= 64 VideoQueueSize= 0
+T= 22.794355 Ev= Command Seq= 60 Command= "The control command is generated so that it is 60 bytes long"
+T= 22.892617 Ev= Recv Type= CONTROL Direction= Up Seq= 61 PayloadSize= 64 VideoQueueSize= 0
+T= 22.892617 Ev= Command Seq= 61 Command= "The control command is generated so that it is 60 bytes long"
+T= 22.995103 Ev= Recv Type= CONTROL Direction= Up Seq= 62 PayloadSize= 64 VideoQueueSize= 0
+T= 22.995103 Ev= Command Seq= 62 Command= "The control command is generated so that it is 60 bytes long"
+T= 23.100666 Ev= Recv Type= CONTROL Direction= Up Seq= 63 PayloadSize= 64 VideoQueueSize= 0
+T= 23.100666 Ev= Command Seq= 63 Command= "The control command is generated so that it is 60 bytes long"
+T= 23.191241 Ev= Recv Type= CONTROL Direction= Up Seq= 64 PayloadSize= 64 VideoQueueSize= 0
+T= 23.191241 Ev= Command Seq= 64 Command= "The control command is generated so that it is 60 bytes long"
+T= 23.299301 Ev= Recv Type= CONTROL Direction= Up Seq= 65 PayloadSize= 64 VideoQueueSize= 0
+T= 23.299301 Ev= Command Seq= 65 Command= "The control command is generated so that it is 60 bytes long"
+T= 23.401455 Ev= Recv Type= CONTROL Direction= Up Seq= 66 PayloadSize= 64 VideoQueueSize= 0
+T= 23.401455 Ev= Command Seq= 66 Command= "The control command is generated so that it is 60 bytes long"
+T= 23.502593 Ev= Recv Type= CONTROL Direction= Up Seq= 67 PayloadSize= 64 VideoQueueSize= 0
+T= 23.502593 Ev= Command Seq= 67 Command= "The control command is generated so that it is 60 bytes long"
+T= 23.603437 Ev= Recv Type= CONTROL Direction= Up Seq= 68 PayloadSize= 64 VideoQueueSize= 0
+T= 23.603437 Ev= Command Seq= 68 Command= "The control command is generated so that it is 60 bytes long"
+T= 23.703831 Ev= Recv Type= CONTROL Direction= Up Seq= 69 PayloadSize= 64 VideoQueueSize= 0
+T= 23.703831 Ev= Command Seq= 69 Command= "The control command is generated so that it is 60 bytes long"
+T= 23.805181 Ev= Recv Type= CONTROL Direction= Up Seq= 70 PayloadSize= 64 VideoQueueSize= 0
+T= 23.805181 Ev= Command Seq= 70 Command= "The control command is generated so that it is 60 bytes long"
+T= 23.907187 Ev= Recv Type= CONTROL Direction= Up Seq= 71 PayloadSize= 64 VideoQueueSize= 0
+T= 23.907187 Ev= Command Seq= 71 Command= "The control command is generated so that it is 60 bytes long"
+T= 23.998515 Ev= Recv Type= CONTROL Direction= Up Seq= 72 PayloadSize= 64 VideoQueueSize= 0
+T= 23.998515 Ev= Command Seq= 72 Command= "The control command is generated so that it is 60 bytes long"
+T= 24.102953 Ev= Recv Type= CONTROL Direction= Up Seq= 73 PayloadSize= 64 VideoQueueSize= 0
+T= 24.102953 Ev= Command Seq= 73 Command= "The control command is generated so that it is 60 bytes long"
+T= 24.202743 Ev= Recv Type= CONTROL Direction= Up Seq= 74 PayloadSize= 64 VideoQueueSize= 0
+T= 24.202743 Ev= Command Seq= 74 Command= "The control command is generated so that it is 60 bytes long"
+T= 24.305889 Ev= Recv Type= CONTROL Direction= Up Seq= 75 PayloadSize= 64 VideoQueueSize= 0
+T= 24.305889 Ev= Command Seq= 75 Command= "The control command is generated so that it is 60 bytes long"
+T= 24.404603 Ev= Recv Type= CONTROL Direction= Up Seq= 76 PayloadSize= 64 VideoQueueSize= 0
+T= 24.404603 Ev= Command Seq= 76 Command= "The control command is generated so that it is 60 bytes long"
+T= 24.505974 Ev= Recv Type= CONTROL Direction= Up Seq= 77 PayloadSize= 64 VideoQueueSize= 0
+T= 24.505974 Ev= Command Seq= 77 Command= "The control command is generated so that it is 60 bytes long"
+T= 24.605965 Ev= Recv Type= CONTROL Direction= Up Seq= 78 PayloadSize= 64 VideoQueueSize= 0
+T= 24.605965 Ev= Command Seq= 78 Command= "The control command is generated so that it is 60 bytes long"
+T= 24.707292 Ev= Recv Type= CONTROL Direction= Up Seq= 79 PayloadSize= 64 VideoQueueSize= 0
+T= 24.707292 Ev= Command Seq= 79 Command= "The control command is generated so that it is 60 bytes long"
+T= 24.808015 Ev= Recv Type= CONTROL Direction= Up Seq= 80 PayloadSize= 64 VideoQueueSize= 0
+T= 24.808015 Ev= Command Seq= 80 Command= "The control command is generated so that it is 60 bytes long"
+T= 24.905641 Ev= Recv Type= CONTROL Direction= Up Seq= 81 PayloadSize= 64 VideoQueueSize= 0
+T= 24.905641 Ev= Command Seq= 81 Command= "The control command is generated so that it is 60 bytes long"
+T= 25.010919 Ev= Recv Type= CONTROL Direction= Up Seq= 82 PayloadSize= 64 VideoQueueSize= 0
+T= 25.010919 Ev= Command Seq= 82 Command= "The control command is generated so that it is 60 bytes long"
+T= 25.112877 Ev= Recv Type= CONTROL Direction= Up Seq= 83 PayloadSize= 64 VideoQueueSize= 0
+T= 25.112877 Ev= Command Seq= 83 Command= "The control command is generated so that it is 60 bytes long"
+T= 25.207893 Ev= Recv Type= CONTROL Direction= Up Seq= 84 PayloadSize= 64 VideoQueueSize= 0
+T= 25.207893 Ev= Command Seq= 84 Command= "The control command is generated so that it is 60 bytes long"
+T= 25.318796 Ev= Recv Type= CONTROL Direction= Up Seq= 85 PayloadSize= 64 VideoQueueSize= 0
+T= 25.318796 Ev= Command Seq= 85 Command= "The control command is generated so that it is 60 bytes long"
+T= 25.404673 Ev= Recv Type= CONTROL Direction= Up Seq= 86 PayloadSize= 64 VideoQueueSize= 0
+T= 25.404673 Ev= Command Seq= 86 Command= "The control command is generated so that it is 60 bytes long"
+T= 25.506518 Ev= Recv Type= CONTROL Direction= Up Seq= 87 PayloadSize= 64 VideoQueueSize= 0
+T= 25.506518 Ev= Command Seq= 87 Command= "The control command is generated so that it is 60 bytes long"
+T= 25.611569 Ev= Recv Type= CONTROL Direction= Up Seq= 88 PayloadSize= 64 VideoQueueSize= 0
+T= 25.611569 Ev= Command Seq= 88 Command= "The control command is generated so that it is 60 bytes long"
+T= 25.710649 Ev= Recv Type= CONTROL Direction= Up Seq= 89 PayloadSize= 64 VideoQueueSize= 0
+T= 25.710649 Ev= Command Seq= 89 Command= "The control command is generated so that it is 60 bytes long"
+T= 25.808130 Ev= Recv Type= CONTROL Direction= Up Seq= 90 PayloadSize= 64 VideoQueueSize= 0
+T= 25.808130 Ev= Command Seq= 90 Command= "The control command is generated so that it is 60 bytes long"
+T= 25.914691 Ev= Recv Type= CONTROL Direction= Up Seq= 91 PayloadSize= 64 VideoQueueSize= 0
+T= 25.914691 Ev= Command Seq= 91 Command= "The control command is generated so that it is 60 bytes long"
+T= 26.007460 Ev= Recv Type= CONTROL Direction= Up Seq= 92 PayloadSize= 64 VideoQueueSize= 0
+T= 26.007460 Ev= Command Seq= 92 Command= "The control command is generated so that it is 60 bytes long"
+T= 26.115090 Ev= Recv Type= CONTROL Direction= Up Seq= 93 PayloadSize= 64 VideoQueueSize= 0
+T= 26.115090 Ev= Command Seq= 93 Command= "The control command is generated so that it is 60 bytes long"
+T= 26.215640 Ev= Recv Type= CONTROL Direction= Up Seq= 94 PayloadSize= 64 VideoQueueSize= 0
+T= 26.215640 Ev= Command Seq= 94 Command= "The control command is generated so that it is 60 bytes long"
+T= 26.317138 Ev= Recv Type= CONTROL Direction= Up Seq= 95 PayloadSize= 64 VideoQueueSize= 0
+T= 26.317138 Ev= Command Seq= 95 Command= "The control command is generated so that it is 60 bytes long"
+T= 26.417795 Ev= Recv Type= CONTROL Direction= Up Seq= 96 PayloadSize= 64 VideoQueueSize= 0
+T= 26.417795 Ev= Command Seq= 96 Command= "The control command is generated so that it is 60 bytes long"
+T= 26.511195 Ev= Recv Type= CONTROL Direction= Up Seq= 97 PayloadSize= 64 VideoQueueSize= 0
+T= 26.511195 Ev= Command Seq= 97 Command= "The control command is generated so that it is 60 bytes long"
+T= 26.610131 Ev= Recv Type= CONTROL Direction= Up Seq= 98 PayloadSize= 64 VideoQueueSize= 0
+T= 26.610131 Ev= Command Seq= 98 Command= "The control command is generated so that it is 60 bytes long"
+T= 26.708813 Ev= Recv Type= CONTROL Direction= Up Seq= 99 PayloadSize= 64 VideoQueueSize= 0
+T= 26.708813 Ev= Command Seq= 99 Command= "The control command is generated so that it is 60 bytes long"
+T= 26.814517 Ev= Recv Type= CONTROL Direction= Up Seq= 100 PayloadSize= 64 VideoQueueSize= 0
+T= 26.814517 Ev= Command Seq= 100 Command= "The control command is generated so that it is 60 bytes long"
+T= 26.912148 Ev= Recv Type= CONTROL Direction= Up Seq= 101 PayloadSize= 64 VideoQueueSize= 0
+T= 26.912148 Ev= Command Seq= 101 Command= "The control command is generated so that it is 60 bytes long"
+T= 27.072911 Ev= Recv Type= CONTROL Direction= Up Seq= 102 PayloadSize= 64 VideoQueueSize= 0
+T= 27.072911 Ev= Command Seq= 102 Command= "The control command is generated so that it is 60 bytes long"
+T= 27.116733 Ev= Recv Type= CONTROL Direction= Up Seq= 103 PayloadSize= 64 VideoQueueSize= 0
+T= 27.116733 Ev= Command Seq= 103 Command= "The control command is generated so that it is 60 bytes long"
+T= 27.218967 Ev= Recv Type= CONTROL Direction= Up Seq= 104 PayloadSize= 64 VideoQueueSize= 0
+T= 27.218967 Ev= Command Seq= 104 Command= "The control command is generated so that it is 60 bytes long"
+T= 27.318549 Ev= Recv Type= CONTROL Direction= Up Seq= 105 PayloadSize= 64 VideoQueueSize= 0
+T= 27.318549 Ev= Command Seq= 105 Command= "The control command is generated so that it is 60 bytes long"
+T= 27.421055 Ev= Recv Type= CONTROL Direction= Up Seq= 106 PayloadSize= 64 VideoQueueSize= 0
+T= 27.421055 Ev= Command Seq= 106 Command= "The control command is generated so that it is 60 bytes long"
+T= 27.515238 Ev= Recv Type= CONTROL Direction= Up Seq= 107 PayloadSize= 64 VideoQueueSize= 0
+T= 27.515238 Ev= Command Seq= 107 Command= "The control command is generated so that it is 60 bytes long"
+T= 27.621286 Ev= Recv Type= CONTROL Direction= Up Seq= 108 PayloadSize= 64 VideoQueueSize= 0
+T= 27.621286 Ev= Command Seq= 108 Command= "The control command is generated so that it is 60 bytes long"
+T= 27.723456 Ev= Recv Type= CONTROL Direction= Up Seq= 109 PayloadSize= 64 VideoQueueSize= 0
+T= 27.723456 Ev= Command Seq= 109 Command= "The control command is generated so that it is 60 bytes long"
+T= 27.822819 Ev= Recv Type= CONTROL Direction= Up Seq= 110 PayloadSize= 64 VideoQueueSize= 0
+T= 27.822819 Ev= Command Seq= 110 Command= "The control command is generated so that it is 60 bytes long"
+T= 27.926801 Ev= Recv Type= CONTROL Direction= Up Seq= 111 PayloadSize= 64 VideoQueueSize= 0
+T= 27.926801 Ev= Command Seq= 111 Command= "The control command is generated so that it is 60 bytes long"
+T= 28.026621 Ev= Recv Type= CONTROL Direction= Up Seq= 112 PayloadSize= 64 VideoQueueSize= 0
+T= 28.026621 Ev= Command Seq= 112 Command= "The control command is generated so that it is 60 bytes long"
+T= 28.117320 Ev= Recv Type= CONTROL Direction= Up Seq= 113 PayloadSize= 64 VideoQueueSize= 0
+T= 28.117320 Ev= Command Seq= 113 Command= "The control command is generated so that it is 60 bytes long"
+T= 28.218719 Ev= Recv Type= CONTROL Direction= Up Seq= 114 PayloadSize= 64 VideoQueueSize= 0
+T= 28.218719 Ev= Command Seq= 114 Command= "The control command is generated so that it is 60 bytes long"
+T= 28.319474 Ev= Recv Type= CONTROL Direction= Up Seq= 115 PayloadSize= 64 VideoQueueSize= 0
+T= 28.319474 Ev= Command Seq= 115 Command= "The control command is generated so that it is 60 bytes long"
+T= 28.421288 Ev= Recv Type= CONTROL Direction= Up Seq= 116 PayloadSize= 64 VideoQueueSize= 0
+T= 28.421288 Ev= Command Seq= 116 Command= "The control command is generated so that it is 60 bytes long"
+T= 28.519948 Ev= Recv Type= CONTROL Direction= Up Seq= 117 PayloadSize= 64 VideoQueueSize= 0
+T= 28.519948 Ev= Command Seq= 117 Command= "The control command is generated so that it is 60 bytes long"
+T= 28.618766 Ev= Recv Type= CONTROL Direction= Up Seq= 118 PayloadSize= 64 VideoQueueSize= 0
+T= 28.618766 Ev= Command Seq= 118 Command= "The control command is generated so that it is 60 bytes long"
+T= 28.716117 Ev= Recv Type= CONTROL Direction= Up Seq= 119 PayloadSize= 64 VideoQueueSize= 0
+T= 28.716117 Ev= Command Seq= 119 Command= "The control command is generated so that it is 60 bytes long"
+T= 28.833968 Ev= Recv Type= CONTROL Direction= Up Seq= 120 PayloadSize= 64 VideoQueueSize= 0
+T= 28.833968 Ev= Command Seq= 120 Command= "The control command is generated so that it is 60 bytes long"
+T= 28.920791 Ev= Recv Type= CONTROL Direction= Up Seq= 121 PayloadSize= 64 VideoQueueSize= 0
+T= 28.920791 Ev= Command Seq= 121 Command= "The control command is generated so that it is 60 bytes long"
+T= 29.023661 Ev= Recv Type= CONTROL Direction= Up Seq= 122 PayloadSize= 64 VideoQueueSize= 0
+T= 29.023661 Ev= Command Seq= 122 Command= "The control command is generated so that it is 60 bytes long"
+T= 29.124684 Ev= Recv Type= CONTROL Direction= Up Seq= 123 PayloadSize= 64 VideoQueueSize= 0
+T= 29.124684 Ev= Command Seq= 123 Command= "The control command is generated so that it is 60 bytes long"
+T= 29.227624 Ev= Recv Type= CONTROL Direction= Up Seq= 124 PayloadSize= 64 VideoQueueSize= 0
+T= 29.227624 Ev= Command Seq= 124 Command= "The control command is generated so that it is 60 bytes long"
+T= 29.328055 Ev= Recv Type= CONTROL Direction= Up Seq= 125 PayloadSize= 64 VideoQueueSize= 0
+T= 29.328055 Ev= Command Seq= 125 Command= "The control command is generated so that it is 60 bytes long"
+T= 29.429232 Ev= Recv Type= CONTROL Direction= Up Seq= 126 PayloadSize= 64 VideoQueueSize= 0
+T= 29.429232 Ev= Command Seq= 126 Command= "The control command is generated so that it is 60 bytes long"
+T= 29.529980 Ev= Recv Type= CONTROL Direction= Up Seq= 127 PayloadSize= 64 VideoQueueSize= 0
+T= 29.529980 Ev= Command Seq= 127 Command= "The control command is generated so that it is 60 bytes long"
+T= 29.631058 Ev= Recv Type= CONTROL Direction= Up Seq= 128 PayloadSize= 64 VideoQueueSize= 0
+T= 29.631058 Ev= Command Seq= 128 Command= "The control command is generated so that it is 60 bytes long"
+T= 29.732354 Ev= Recv Type= CONTROL Direction= Up Seq= 129 PayloadSize= 64 VideoQueueSize= 0
+T= 29.732354 Ev= Command Seq= 129 Command= "The control command is generated so that it is 60 bytes long"
+T= 29.831592 Ev= Recv Type= CONTROL Direction= Up Seq= 130 PayloadSize= 64 VideoQueueSize= 0
+T= 29.831592 Ev= Command Seq= 130 Command= "The control command is generated so that it is 60 bytes long"
+T= 29.924908 Ev= Recv Type= CONTROL Direction= Up Seq= 131 PayloadSize= 64 VideoQueueSize= 0
+T= 29.924908 Ev= Command Seq= 131 Command= "The control command is generated so that it is 60 bytes long"
+T= 30.021705 Ev= Recv Type= CONTROL Direction= Up Seq= 132 PayloadSize= 64 VideoQueueSize= 0
+T= 30.021705 Ev= Command Seq= 132 Command= "The control command is generated so that it is 60 bytes long"
+T= 30.127432 Ev= Recv Type= CONTROL Direction= Up Seq= 133 PayloadSize= 64 VideoQueueSize= 0
+T= 30.127432 Ev= Command Seq= 133 Command= "The control command is generated so that it is 60 bytes long"
+T= 30.228040 Ev= Recv Type= CONTROL Direction= Up Seq= 134 PayloadSize= 64 VideoQueueSize= 0
+T= 30.228040 Ev= Command Seq= 134 Command= "The control command is generated so that it is 60 bytes long"
+T= 30.331211 Ev= Recv Type= CONTROL Direction= Up Seq= 135 PayloadSize= 64 VideoQueueSize= 0
+T= 30.331211 Ev= Command Seq= 135 Command= "The control command is generated so that it is 60 bytes long"
+T= 30.433306 Ev= Recv Type= CONTROL Direction= Up Seq= 136 PayloadSize= 64 VideoQueueSize= 0
+T= 30.433306 Ev= Command Seq= 136 Command= "The control command is generated so that it is 60 bytes long"
+T= 30.531274 Ev= Recv Type= CONTROL Direction= Up Seq= 137 PayloadSize= 64 VideoQueueSize= 0
+T= 30.531274 Ev= Command Seq= 137 Command= "The control command is generated so that it is 60 bytes long"
+T= 30.631662 Ev= Recv Type= CONTROL Direction= Up Seq= 138 PayloadSize= 64 VideoQueueSize= 0
+T= 30.631662 Ev= Command Seq= 138 Command= "The control command is generated so that it is 60 bytes long"
+T= 30.733982 Ev= Recv Type= CONTROL Direction= Up Seq= 139 PayloadSize= 64 VideoQueueSize= 0
+T= 30.733982 Ev= Command Seq= 139 Command= "The control command is generated so that it is 60 bytes long"
+T= 30.834851 Ev= Recv Type= CONTROL Direction= Up Seq= 140 PayloadSize= 64 VideoQueueSize= 0
+T= 30.834851 Ev= Command Seq= 140 Command= "The control command is generated so that it is 60 bytes long"
+T= 30.932093 Ev= Recv Type= CONTROL Direction= Up Seq= 141 PayloadSize= 64 VideoQueueSize= 0
+T= 30.932093 Ev= Command Seq= 141 Command= "The control command is generated so that it is 60 bytes long"
+T= 31.036126 Ev= Recv Type= CONTROL Direction= Up Seq= 142 PayloadSize= 64 VideoQueueSize= 0
+T= 31.036126 Ev= Command Seq= 142 Command= "The control command is generated so that it is 60 bytes long"
+T= 31.137367 Ev= Recv Type= CONTROL Direction= Up Seq= 143 PayloadSize= 64 VideoQueueSize= 0
+T= 31.137367 Ev= Command Seq= 143 Command= "The control command is generated so that it is 60 bytes long"
+T= 31.239905 Ev= Recv Type= CONTROL Direction= Up Seq= 144 PayloadSize= 64 VideoQueueSize= 0
+T= 31.239905 Ev= Command Seq= 144 Command= "The control command is generated so that it is 60 bytes long"
+T= 31.340722 Ev= Recv Type= CONTROL Direction= Up Seq= 145 PayloadSize= 64 VideoQueueSize= 0
+T= 31.340722 Ev= Command Seq= 145 Command= "The control command is generated so that it is 60 bytes long"
+T= 31.440023 Ev= Recv Type= CONTROL Direction= Up Seq= 146 PayloadSize= 64 VideoQueueSize= 0
+T= 31.440023 Ev= Command Seq= 146 Command= "The control command is generated so that it is 60 bytes long"
+T= 31.541338 Ev= Recv Type= CONTROL Direction= Up Seq= 147 PayloadSize= 64 VideoQueueSize= 0
+T= 31.541338 Ev= Command Seq= 147 Command= "The control command is generated so that it is 60 bytes long"
+T= 31.642405 Ev= Recv Type= CONTROL Direction= Up Seq= 148 PayloadSize= 64 VideoQueueSize= 0
+T= 31.642405 Ev= Command Seq= 148 Command= "The control command is generated so that it is 60 bytes long"
+T= 31.776034 Ev= Recv Type= CONTROL Direction= Up Seq= 149 PayloadSize= 64 VideoQueueSize= 0
+T= 31.776034 Ev= Command Seq= 149 Command= "The control command is generated so that it is 60 bytes long"
+T= 31.832732 Ev= Recv Type= CONTROL Direction= Up Seq= 150 PayloadSize= 64 VideoQueueSize= 0
+T= 31.832732 Ev= Command Seq= 150 Command= "The control command is generated so that it is 60 bytes long"
+T= 31.945175 Ev= Recv Type= CONTROL Direction= Up Seq= 151 PayloadSize= 64 VideoQueueSize= 0
+T= 31.945175 Ev= Command Seq= 151 Command= "The control command is generated so that it is 60 bytes long"
+T= 32.037792 Ev= Recv Type= CONTROL Direction= Up Seq= 152 PayloadSize= 64 VideoQueueSize= 0
+T= 32.037792 Ev= Command Seq= 152 Command= "The control command is generated so that it is 60 bytes long"
+T= 32.148956 Ev= Recv Type= CONTROL Direction= Up Seq= 153 PayloadSize= 64 VideoQueueSize= 0
+T= 32.148956 Ev= Command Seq= 153 Command= "The control command is generated so that it is 60 bytes long"
+T= 32.249635 Ev= Recv Type= CONTROL Direction= Up Seq= 154 PayloadSize= 64 VideoQueueSize= 0
+T= 32.249635 Ev= Command Seq= 154 Command= "The control command is generated so that it is 60 bytes long"
+T= 32.339500 Ev= Recv Type= CONTROL Direction= Up Seq= 155 PayloadSize= 64 VideoQueueSize= 0
+T= 32.339500 Ev= Command Seq= 155 Command= "The control command is generated so that it is 60 bytes long"
+T= 32.440571 Ev= Recv Type= CONTROL Direction= Up Seq= 156 PayloadSize= 64 VideoQueueSize= 0
+T= 32.440571 Ev= Command Seq= 156 Command= "The control command is generated so that it is 60 bytes long"
+T= 32.541261 Ev= Recv Type= CONTROL Direction= Up Seq= 157 PayloadSize= 64 VideoQueueSize= 0
+T= 32.541261 Ev= Command Seq= 157 Command= "The control command is generated so that it is 60 bytes long"
+T= 32.643224 Ev= Recv Type= CONTROL Direction= Up Seq= 158 PayloadSize= 64 VideoQueueSize= 0
+T= 32.643224 Ev= Command Seq= 158 Command= "The control command is generated so that it is 60 bytes long"
+T= 32.739968 Ev= Recv Type= CONTROL Direction= Up Seq= 159 PayloadSize= 64 VideoQueueSize= 0
+T= 32.739968 Ev= Command Seq= 159 Command= "The control command is generated so that it is 60 bytes long"
+T= 32.857439 Ev= Recv Type= CONTROL Direction= Up Seq= 160 PayloadSize= 64 VideoQueueSize= 0
+T= 32.857439 Ev= Command Seq= 160 Command= "The control command is generated so that it is 60 bytes long"
+T= 32.943756 Ev= Recv Type= CONTROL Direction= Up Seq= 161 PayloadSize= 64 VideoQueueSize= 0
+T= 32.943756 Ev= Command Seq= 161 Command= "The control command is generated so that it is 60 bytes long"
+T= 33.047356 Ev= Recv Type= CONTROL Direction= Up Seq= 162 PayloadSize= 64 VideoQueueSize= 0
+T= 33.047356 Ev= Command Seq= 162 Command= "The control command is generated so that it is 60 bytes long"
+T= 33.157937 Ev= Recv Type= CONTROL Direction= Up Seq= 163 PayloadSize= 64 VideoQueueSize= 0
+T= 33.157937 Ev= Command Seq= 163 Command= "The control command is generated so that it is 60 bytes long"
+T= 33.249714 Ev= Recv Type= CONTROL Direction= Up Seq= 164 PayloadSize= 64 VideoQueueSize= 0
+T= 33.249714 Ev= Command Seq= 164 Command= "The control command is generated so that it is 60 bytes long"
+T= 33.355789 Ev= Recv Type= CONTROL Direction= Up Seq= 165 PayloadSize= 64 VideoQueueSize= 0
+T= 33.355789 Ev= Command Seq= 165 Command= "The control command is generated so that it is 60 bytes long"
+T= 33.453280 Ev= Recv Type= CONTROL Direction= Up Seq= 166 PayloadSize= 64 VideoQueueSize= 0
+T= 33.453280 Ev= Command Seq= 166 Command= "The control command is generated so that it is 60 bytes long"
+T= 33.544424 Ev= Recv Type= CONTROL Direction= Up Seq= 167 PayloadSize= 64 VideoQueueSize= 0
+T= 33.544424 Ev= Command Seq= 167 Command= "The control command is generated so that it is 60 bytes long"
+T= 33.644211 Ev= Recv Type= CONTROL Direction= Up Seq= 168 PayloadSize= 64 VideoQueueSize= 0
+T= 33.644211 Ev= Command Seq= 168 Command= "The control command is generated so that it is 60 bytes long"
+T= 33.746720 Ev= Recv Type= CONTROL Direction= Up Seq= 169 PayloadSize= 64 VideoQueueSize= 0
+T= 33.746720 Ev= Command Seq= 169 Command= "The control command is generated so that it is 60 bytes long"
+T= 33.853863 Ev= Recv Type= CONTROL Direction= Up Seq= 170 PayloadSize= 64 VideoQueueSize= 0
+T= 33.853863 Ev= Command Seq= 170 Command= "The control command is generated so that it is 60 bytes long"
+T= 33.959186 Ev= Recv Type= CONTROL Direction= Up Seq= 171 PayloadSize= 64 VideoQueueSize= 0
+T= 33.959186 Ev= Command Seq= 171 Command= "The control command is generated so that it is 60 bytes long"
+T= 34.060740 Ev= Recv Type= CONTROL Direction= Up Seq= 172 PayloadSize= 64 VideoQueueSize= 0
+T= 34.060740 Ev= Command Seq= 172 Command= "The control command is generated so that it is 60 bytes long"
+T= 34.160918 Ev= Recv Type= CONTROL Direction= Up Seq= 173 PayloadSize= 64 VideoQueueSize= 0
+T= 34.160918 Ev= Command Seq= 173 Command= "The control command is generated so that it is 60 bytes long"
+T= 34.269265 Ev= Recv Type= CONTROL Direction= Up Seq= 174 PayloadSize= 64 VideoQueueSize= 0
+T= 34.269265 Ev= Command Seq= 174 Command= "The control command is generated so that it is 60 bytes long"
+T= 34.358664 Ev= Recv Type= CONTROL Direction= Up Seq= 175 PayloadSize= 64 VideoQueueSize= 0
+T= 34.358664 Ev= Command Seq= 175 Command= "The control command is generated so that it is 60 bytes long"
+T= 34.463319 Ev= Recv Type= CONTROL Direction= Up Seq= 176 PayloadSize= 64 VideoQueueSize= 0
+T= 34.463319 Ev= Command Seq= 176 Command= "The control command is generated so that it is 60 bytes long"
+T= 34.560664 Ev= Recv Type= CONTROL Direction= Up Seq= 177 PayloadSize= 64 VideoQueueSize= 0
+T= 34.560664 Ev= Command Seq= 177 Command= "The control command is generated so that it is 60 bytes long"
+T= 34.656849 Ev= Recv Type= CONTROL Direction= Up Seq= 178 PayloadSize= 64 VideoQueueSize= 0
+T= 34.656849 Ev= Command Seq= 178 Command= "The control command is generated so that it is 60 bytes long"
+T= 34.755264 Ev= Recv Type= CONTROL Direction= Up Seq= 179 PayloadSize= 64 VideoQueueSize= 0
+T= 34.755264 Ev= Command Seq= 179 Command= "The control command is generated so that it is 60 bytes long"
+T= 34.863720 Ev= Recv Type= CONTROL Direction= Up Seq= 180 PayloadSize= 64 VideoQueueSize= 0
+T= 34.863720 Ev= Command Seq= 180 Command= "The control command is generated so that it is 60 bytes long"
+T= 34.961101 Ev= Recv Type= CONTROL Direction= Up Seq= 181 PayloadSize= 64 VideoQueueSize= 0
+T= 34.961101 Ev= Command Seq= 181 Command= "The control command is generated so that it is 60 bytes long"
+T= 35.064285 Ev= Recv Type= CONTROL Direction= Up Seq= 182 PayloadSize= 64 VideoQueueSize= 0
+T= 35.064285 Ev= Command Seq= 182 Command= "The control command is generated so that it is 60 bytes long"
+T= 35.161563 Ev= Recv Type= CONTROL Direction= Up Seq= 183 PayloadSize= 64 VideoQueueSize= 0
+T= 35.161563 Ev= Command Seq= 183 Command= "The control command is generated so that it is 60 bytes long"
+T= 35.263061 Ev= Recv Type= CONTROL Direction= Up Seq= 184 PayloadSize= 64 VideoQueueSize= 0
+T= 35.263061 Ev= Command Seq= 184 Command= "The control command is generated so that it is 60 bytes long"
+T= 35.364378 Ev= Recv Type= CONTROL Direction= Up Seq= 185 PayloadSize= 64 VideoQueueSize= 0
+T= 35.364378 Ev= Command Seq= 185 Command= "The control command is generated so that it is 60 bytes long"
+T= 35.466153 Ev= Recv Type= CONTROL Direction= Up Seq= 186 PayloadSize= 64 VideoQueueSize= 0
+T= 35.466153 Ev= Command Seq= 186 Command= "The control command is generated so that it is 60 bytes long"
+T= 35.572390 Ev= Recv Type= CONTROL Direction= Up Seq= 187 PayloadSize= 64 VideoQueueSize= 0
+T= 35.572390 Ev= Command Seq= 187 Command= "The control command is generated so that it is 60 bytes long"
+T= 35.665412 Ev= Recv Type= CONTROL Direction= Up Seq= 188 PayloadSize= 64 VideoQueueSize= 0
+T= 35.665412 Ev= Command Seq= 188 Command= "The control command is generated so that it is 60 bytes long"
+T= 35.768763 Ev= Recv Type= CONTROL Direction= Up Seq= 189 PayloadSize= 64 VideoQueueSize= 0
+T= 35.768763 Ev= Command Seq= 189 Command= "The control command is generated so that it is 60 bytes long"
+T= 35.870545 Ev= Recv Type= CONTROL Direction= Up Seq= 190 PayloadSize= 64 VideoQueueSize= 0
+T= 35.870545 Ev= Command Seq= 190 Command= "The control command is generated so that it is 60 bytes long"
+T= 35.972730 Ev= Recv Type= CONTROL Direction= Up Seq= 191 PayloadSize= 64 VideoQueueSize= 0
+T= 35.972730 Ev= Command Seq= 191 Command= "The control command is generated so that it is 60 bytes long"
+T= 36.072705 Ev= Recv Type= CONTROL Direction= Up Seq= 192 PayloadSize= 64 VideoQueueSize= 0
+T= 36.072705 Ev= Command Seq= 192 Command= "The control command is generated so that it is 60 bytes long"
+T= 36.171091 Ev= Recv Type= CONTROL Direction= Up Seq= 193 PayloadSize= 64 VideoQueueSize= 0
+T= 36.171091 Ev= Command Seq= 193 Command= "The control command is generated so that it is 60 bytes long"
+T= 36.264849 Ev= Recv Type= CONTROL Direction= Up Seq= 194 PayloadSize= 64 VideoQueueSize= 0
+T= 36.264849 Ev= Command Seq= 194 Command= "The control command is generated so that it is 60 bytes long"
+T= 36.366243 Ev= Recv Type= CONTROL Direction= Up Seq= 195 PayloadSize= 64 VideoQueueSize= 0
+T= 36.366243 Ev= Command Seq= 195 Command= "The control command is generated so that it is 60 bytes long"
+T= 36.466741 Ev= Recv Type= CONTROL Direction= Up Seq= 196 PayloadSize= 64 VideoQueueSize= 0
+T= 36.466741 Ev= Command Seq= 196 Command= "The control command is generated so that it is 60 bytes long"
+T= 36.565517 Ev= Recv Type= CONTROL Direction= Up Seq= 197 PayloadSize= 64 VideoQueueSize= 0
+T= 36.565517 Ev= Command Seq= 197 Command= "The control command is generated so that it is 60 bytes long"
+T= 36.672270 Ev= Recv Type= CONTROL Direction= Up Seq= 198 PayloadSize= 64 VideoQueueSize= 0
+T= 36.672270 Ev= Command Seq= 198 Command= "The control command is generated so that it is 60 bytes long"
+T= 36.723032 Ev= Recv Type= CONTROL Direction= Up Seq= 199 PayloadSize= 14 VideoQueueSize= 0
+T= 36.723032 Ev= Command Seq= 199 Command= "90 3,0 0 3"
+T= 36.771171 Ev= Recv Type= CONTROL Direction= Up Seq= 200 PayloadSize= 64 VideoQueueSize= 0
+T= 36.771171 Ev= Command Seq= 200 Command= "The control command is generated so that it is 60 bytes long"
+T= 36.873603 Ev= Recv Type= CONTROL Direction= Up Seq= 201 PayloadSize= 64 VideoQueueSize= 0
+T= 36.873603 Ev= Command Seq= 201 Command= "The control command is generated so that it is 60 bytes long"
+T= 36.975677 Ev= Recv Type= CONTROL Direction= Up Seq= 202 PayloadSize= 64 VideoQueueSize= 0
+T= 36.975677 Ev= Command Seq= 202 Command= "The control command is generated so that it is 60 bytes long"
+T= 37.075721 Ev= Recv Type= CONTROL Direction= Up Seq= 203 PayloadSize= 64 VideoQueueSize= 0
+T= 37.075721 Ev= Command Seq= 203 Command= "The control command is generated so that it is 60 bytes long"
+T= 37.176117 Ev= Recv Type= CONTROL Direction= Up Seq= 204 PayloadSize= 64 VideoQueueSize= 0
+T= 37.176117 Ev= Command Seq= 204 Command= "The control command is generated so that it is 60 bytes long"
+T= 37.276601 Ev= Recv Type= CONTROL Direction= Up Seq= 205 PayloadSize= 64 VideoQueueSize= 0
+T= 37.276601 Ev= Command Seq= 205 Command= "The control command is generated so that it is 60 bytes long"
+T= 37.377653 Ev= Recv Type= CONTROL Direction= Up Seq= 206 PayloadSize= 64 VideoQueueSize= 0
+T= 37.377653 Ev= Command Seq= 206 Command= "The control command is generated so that it is 60 bytes long"
+T= 37.475819 Ev= Recv Type= CONTROL Direction= Up Seq= 207 PayloadSize= 64 VideoQueueSize= 0
+T= 37.475819 Ev= Command Seq= 207 Command= "The control command is generated so that it is 60 bytes long"
+T= 37.580762 Ev= Recv Type= CONTROL Direction= Up Seq= 208 PayloadSize= 64 VideoQueueSize= 0
+T= 37.580762 Ev= Command Seq= 208 Command= "The control command is generated so that it is 60 bytes long"
+T= 37.678984 Ev= Recv Type= CONTROL Direction= Up Seq= 209 PayloadSize= 64 VideoQueueSize= 0
+T= 37.678984 Ev= Command Seq= 209 Command= "The control command is generated so that it is 60 bytes long"
+T= 37.782726 Ev= Recv Type= CONTROL Direction= Up Seq= 210 PayloadSize= 64 VideoQueueSize= 0
+T= 37.782726 Ev= Command Seq= 210 Command= "The control command is generated so that it is 60 bytes long"
+T= 37.879456 Ev= Recv Type= CONTROL Direction= Up Seq= 211 PayloadSize= 64 VideoQueueSize= 0
+T= 37.879456 Ev= Command Seq= 211 Command= "The control command is generated so that it is 60 bytes long"
+T= 37.989868 Ev= Recv Type= CONTROL Direction= Up Seq= 212 PayloadSize= 64 VideoQueueSize= 0
+T= 37.989868 Ev= Command Seq= 212 Command= "The control command is generated so that it is 60 bytes long"
+T= 38.089104 Ev= Recv Type= CONTROL Direction= Up Seq= 213 PayloadSize= 64 VideoQueueSize= 0
+T= 38.089104 Ev= Command Seq= 213 Command= "The control command is generated so that it is 60 bytes long"
+T= 38.179785 Ev= Recv Type= CONTROL Direction= Up Seq= 214 PayloadSize= 64 VideoQueueSize= 0
+T= 38.179785 Ev= Command Seq= 214 Command= "The control command is generated so that it is 60 bytes long"
+T= 38.280468 Ev= Recv Type= CONTROL Direction= Up Seq= 215 PayloadSize= 64 VideoQueueSize= 0
+T= 38.280468 Ev= Command Seq= 215 Command= "The control command is generated so that it is 60 bytes long"
+T= 38.382021 Ev= Recv Type= CONTROL Direction= Up Seq= 216 PayloadSize= 64 VideoQueueSize= 0
+T= 38.382021 Ev= Command Seq= 216 Command= "The control command is generated so that it is 60 bytes long"
+T= 38.483414 Ev= Recv Type= CONTROL Direction= Up Seq= 217 PayloadSize= 64 VideoQueueSize= 0
+T= 38.483414 Ev= Command Seq= 217 Command= "The control command is generated so that it is 60 bytes long"
+T= 38.581390 Ev= Recv Type= CONTROL Direction= Up Seq= 218 PayloadSize= 64 VideoQueueSize= 0
+T= 38.581390 Ev= Command Seq= 218 Command= "The control command is generated so that it is 60 bytes long"
+T= 38.684834 Ev= Recv Type= CONTROL Direction= Up Seq= 219 PayloadSize= 64 VideoQueueSize= 0
+T= 38.684834 Ev= Command Seq= 219 Command= "The control command is generated so that it is 60 bytes long"
+T= 38.790799 Ev= Recv Type= CONTROL Direction= Up Seq= 220 PayloadSize= 64 VideoQueueSize= 0
+T= 38.790799 Ev= Command Seq= 220 Command= "The control command is generated so that it is 60 bytes long"
+T= 38.889080 Ev= Recv Type= CONTROL Direction= Up Seq= 221 PayloadSize= 64 VideoQueueSize= 0
+T= 38.889080 Ev= Command Seq= 221 Command= "The control command is generated so that it is 60 bytes long"
+T= 38.989305 Ev= Recv Type= CONTROL Direction= Up Seq= 222 PayloadSize= 64 VideoQueueSize= 0
+T= 38.989305 Ev= Command Seq= 222 Command= "The control command is generated so that it is 60 bytes long"
+T= 39.092135 Ev= Recv Type= CONTROL Direction= Up Seq= 223 PayloadSize= 64 VideoQueueSize= 0
+T= 39.092135 Ev= Command Seq= 223 Command= "The control command is generated so that it is 60 bytes long"
+T= 39.192648 Ev= Recv Type= CONTROL Direction= Up Seq= 224 PayloadSize= 64 VideoQueueSize= 0
+T= 39.192648 Ev= Command Seq= 224 Command= "The control command is generated so that it is 60 bytes long"
+T= 39.335848 Ev= Recv Type= CONTROL Direction= Up Seq= 225 PayloadSize= 64 VideoQueueSize= 0
+T= 39.335848 Ev= Command Seq= 225 Command= "The control command is generated so that it is 60 bytes long"
+T= 39.387346 Ev= Recv Type= CONTROL Direction= Up Seq= 226 PayloadSize= 64 VideoQueueSize= 0
+T= 39.387346 Ev= Command Seq= 226 Command= "The control command is generated so that it is 60 bytes long"
+T= 39.483853 Ev= Recv Type= CONTROL Direction= Up Seq= 227 PayloadSize= 64 VideoQueueSize= 0
+T= 39.483853 Ev= Command Seq= 227 Command= "The control command is generated so that it is 60 bytes long"
+T= 39.586591 Ev= Recv Type= CONTROL Direction= Up Seq= 228 PayloadSize= 64 VideoQueueSize= 0
+T= 39.586591 Ev= Command Seq= 228 Command= "The control command is generated so that it is 60 bytes long"
+T= 39.689466 Ev= Recv Type= CONTROL Direction= Up Seq= 229 PayloadSize= 64 VideoQueueSize= 0
+T= 39.689466 Ev= Command Seq= 229 Command= "The control command is generated so that it is 60 bytes long"
+T= 39.792346 Ev= Recv Type= CONTROL Direction= Up Seq= 230 PayloadSize= 64 VideoQueueSize= 0
+T= 39.792346 Ev= Command Seq= 230 Command= "The control command is generated so that it is 60 bytes long"
+T= 39.889541 Ev= Recv Type= CONTROL Direction= Up Seq= 231 PayloadSize= 64 VideoQueueSize= 0
+T= 39.889541 Ev= Command Seq= 231 Command= "The control command is generated so that it is 60 bytes long"
+T= 39.990854 Ev= Recv Type= CONTROL Direction= Up Seq= 232 PayloadSize= 64 VideoQueueSize= 0
+T= 39.990854 Ev= Command Seq= 232 Command= "The control command is generated so that it is 60 bytes long"
+T= 40.092182 Ev= Recv Type= CONTROL Direction= Up Seq= 233 PayloadSize= 64 VideoQueueSize= 0
+T= 40.092182 Ev= Command Seq= 233 Command= "The control command is generated so that it is 60 bytes long"
+T= 40.190711 Ev= Recv Type= CONTROL Direction= Up Seq= 234 PayloadSize= 64 VideoQueueSize= 0
+T= 40.190711 Ev= Command Seq= 234 Command= "The control command is generated so that it is 60 bytes long"
+T= 40.244632 Ev= Recv Type= CONTROL Direction= Up Seq= 235 PayloadSize= 13 VideoQueueSize= 0
+T= 40.244632 Ev= Command Seq= 235 Command= "0 3,0 0 3"
+T= 40.294492 Ev= Recv Type= CONTROL Direction= Up Seq= 236 PayloadSize= 64 VideoQueueSize= 0
+T= 40.294492 Ev= Command Seq= 236 Command= "The control command is generated so that it is 60 bytes long"
+T= 40.392089 Ev= Recv Type= CONTROL Direction= Up Seq= 237 PayloadSize= 64 VideoQueueSize= 0
+T= 40.392089 Ev= Command Seq= 237 Command= "The control command is generated so that it is 60 bytes long"
+T= 40.491786 Ev= Recv Type= CONTROL Direction= Up Seq= 238 PayloadSize= 64 VideoQueueSize= 0
+T= 40.491786 Ev= Command Seq= 238 Command= "The control command is generated so that it is 60 bytes long"
+T= 40.597532 Ev= Recv Type= CONTROL Direction= Up Seq= 239 PayloadSize= 64 VideoQueueSize= 0
+T= 40.597532 Ev= Command Seq= 239 Command= "The control command is generated so that it is 60 bytes long"
+T= 40.697737 Ev= Recv Type= CONTROL Direction= Up Seq= 240 PayloadSize= 64 VideoQueueSize= 0
+T= 40.697737 Ev= Command Seq= 240 Command= "The control command is generated so that it is 60 bytes long"
+T= 40.799227 Ev= Recv Type= CONTROL Direction= Up Seq= 241 PayloadSize= 64 VideoQueueSize= 0
+T= 40.799227 Ev= Command Seq= 241 Command= "The control command is generated so that it is 60 bytes long"
+T= 40.900711 Ev= Recv Type= CONTROL Direction= Up Seq= 242 PayloadSize= 64 VideoQueueSize= 0
+T= 40.900711 Ev= Command Seq= 242 Command= "The control command is generated so that it is 60 bytes long"
+T= 41.000805 Ev= Recv Type= CONTROL Direction= Up Seq= 243 PayloadSize= 64 VideoQueueSize= 0
+T= 41.000805 Ev= Command Seq= 243 Command= "The control command is generated so that it is 60 bytes long"
+T= 41.092424 Ev= Recv Type= CONTROL Direction= Up Seq= 244 PayloadSize= 64 VideoQueueSize= 0
+T= 41.092424 Ev= Command Seq= 244 Command= "The control command is generated so that it is 60 bytes long"
+T= 41.196635 Ev= Recv Type= CONTROL Direction= Up Seq= 245 PayloadSize= 64 VideoQueueSize= 0
+T= 41.196635 Ev= Command Seq= 245 Command= "The control command is generated so that it is 60 bytes long"
+T= 41.294583 Ev= Recv Type= CONTROL Direction= Up Seq= 246 PayloadSize= 64 VideoQueueSize= 0
+T= 41.294583 Ev= Command Seq= 246 Command= "The control command is generated so that it is 60 bytes long"
+T= 41.399238 Ev= Recv Type= CONTROL Direction= Up Seq= 247 PayloadSize= 64 VideoQueueSize= 0
+T= 41.399238 Ev= Command Seq= 247 Command= "The control command is generated so that it is 60 bytes long"
+T= 41.500420 Ev= Recv Type= CONTROL Direction= Up Seq= 248 PayloadSize= 64 VideoQueueSize= 0
+T= 41.500420 Ev= Command Seq= 248 Command= "The control command is generated so that it is 60 bytes long"
+T= 41.598821 Ev= Recv Type= CONTROL Direction= Up Seq= 249 PayloadSize= 64 VideoQueueSize= 0
+T= 41.598821 Ev= Command Seq= 249 Command= "The control command is generated so that it is 60 bytes long"
+T= 41.699956 Ev= Recv Type= CONTROL Direction= Up Seq= 250 PayloadSize= 64 VideoQueueSize= 0
+T= 41.699956 Ev= Command Seq= 250 Command= "The control command is generated so that it is 60 bytes long"
+T= 41.801489 Ev= Recv Type= CONTROL Direction= Up Seq= 251 PayloadSize= 64 VideoQueueSize= 0
+T= 41.801489 Ev= Command Seq= 251 Command= "The control command is generated so that it is 60 bytes long"
+T= 41.902514 Ev= Recv Type= CONTROL Direction= Up Seq= 252 PayloadSize= 64 VideoQueueSize= 0
+T= 41.902514 Ev= Command Seq= 252 Command= "The control command is generated so that it is 60 bytes long"
+T= 42.003527 Ev= Recv Type= CONTROL Direction= Up Seq= 253 PayloadSize= 64 VideoQueueSize= 0
+T= 42.003527 Ev= Command Seq= 253 Command= "The control command is generated so that it is 60 bytes long"
+T= 42.104680 Ev= Recv Type= CONTROL Direction= Up Seq= 254 PayloadSize= 64 VideoQueueSize= 0
+T= 42.104680 Ev= Command Seq= 254 Command= "The control command is generated so that it is 60 bytes long"
+T= 42.203280 Ev= Recv Type= CONTROL Direction= Up Seq= 255 PayloadSize= 64 VideoQueueSize= 0
+T= 42.203280 Ev= Command Seq= 255 Command= "The control command is generated so that it is 60 bytes long"
+T= 42.306605 Ev= Recv Type= CONTROL Direction= Up Seq= 256 PayloadSize= 64 VideoQueueSize= 0
+T= 42.306605 Ev= Command Seq= 256 Command= "The control command is generated so that it is 60 bytes long"
+T= 42.406430 Ev= Recv Type= CONTROL Direction= Up Seq= 257 PayloadSize= 64 VideoQueueSize= 0
+T= 42.406430 Ev= Command Seq= 257 Command= "The control command is generated so that it is 60 bytes long"
+T= 42.509525 Ev= Recv Type= CONTROL Direction= Up Seq= 258 PayloadSize= 64 VideoQueueSize= 0
+T= 42.509525 Ev= Command Seq= 258 Command= "The control command is generated so that it is 60 bytes long"
+T= 42.610306 Ev= Recv Type= CONTROL Direction= Up Seq= 259 PayloadSize= 64 VideoQueueSize= 0
+T= 42.610306 Ev= Command Seq= 259 Command= "The control command is generated so that it is 60 bytes long"
+T= 42.712285 Ev= Recv Type= CONTROL Direction= Up Seq= 260 PayloadSize= 64 VideoQueueSize= 0
+T= 42.712285 Ev= Command Seq= 260 Command= "The control command is generated so that it is 60 bytes long"
+T= 42.808080 Ev= Recv Type= CONTROL Direction= Up Seq= 261 PayloadSize= 64 VideoQueueSize= 0
+T= 42.808080 Ev= Command Seq= 261 Command= "The control command is generated so that it is 60 bytes long"
+T= 42.915216 Ev= Recv Type= CONTROL Direction= Up Seq= 262 PayloadSize= 64 VideoQueueSize= 0
+T= 42.915216 Ev= Command Seq= 262 Command= "The control command is generated so that it is 60 bytes long"
+T= 43.004811 Ev= Recv Type= CONTROL Direction= Up Seq= 263 PayloadSize= 64 VideoQueueSize= 0
+T= 43.004811 Ev= Command Seq= 263 Command= "The control command is generated so that it is 60 bytes long"
+T= 43.104617 Ev= Recv Type= CONTROL Direction= Up Seq= 264 PayloadSize= 64 VideoQueueSize= 0
+T= 43.104617 Ev= Command Seq= 264 Command= "The control command is generated so that it is 60 bytes long"
+T= 43.207318 Ev= Recv Type= CONTROL Direction= Up Seq= 265 PayloadSize= 64 VideoQueueSize= 0
+T= 43.207318 Ev= Command Seq= 265 Command= "The control command is generated so that it is 60 bytes long"
+T= 43.307097 Ev= Recv Type= CONTROL Direction= Up Seq= 266 PayloadSize= 64 VideoQueueSize= 0
+T= 43.307097 Ev= Command Seq= 266 Command= "The control command is generated so that it is 60 bytes long"
+T= 43.406156 Ev= Recv Type= CONTROL Direction= Up Seq= 267 PayloadSize= 64 VideoQueueSize= 0
+T= 43.406156 Ev= Command Seq= 267 Command= "The control command is generated so that it is 60 bytes long"
+T= 43.512928 Ev= Recv Type= CONTROL Direction= Up Seq= 268 PayloadSize= 64 VideoQueueSize= 0
+T= 43.512928 Ev= Command Seq= 268 Command= "The control command is generated so that it is 60 bytes long"
+T= 43.611604 Ev= Recv Type= CONTROL Direction= Up Seq= 269 PayloadSize= 64 VideoQueueSize= 0
+T= 43.611604 Ev= Command Seq= 269 Command= "The control command is generated so that it is 60 bytes long"
+T= 43.712807 Ev= Recv Type= CONTROL Direction= Up Seq= 270 PayloadSize= 64 VideoQueueSize= 0
+T= 43.712807 Ev= Command Seq= 270 Command= "The control command is generated so that it is 60 bytes long"
+T= 43.815356 Ev= Recv Type= CONTROL Direction= Up Seq= 271 PayloadSize= 64 VideoQueueSize= 0
+T= 43.815356 Ev= Command Seq= 271 Command= "The control command is generated so that it is 60 bytes long"
+T= 43.915386 Ev= Recv Type= CONTROL Direction= Up Seq= 272 PayloadSize= 64 VideoQueueSize= 0
+T= 43.915386 Ev= Command Seq= 272 Command= "The control command is generated so that it is 60 bytes long"
+T= 44.015817 Ev= Recv Type= CONTROL Direction= Up Seq= 273 PayloadSize= 64 VideoQueueSize= 0
+T= 44.015817 Ev= Command Seq= 273 Command= "The control command is generated so that it is 60 bytes long"
+T= 44.118828 Ev= Recv Type= CONTROL Direction= Up Seq= 274 PayloadSize= 64 VideoQueueSize= 0
+T= 44.118828 Ev= Command Seq= 274 Command= "The control command is generated so that it is 60 bytes long"
+T= 44.207717 Ev= Recv Type= CONTROL Direction= Up Seq= 275 PayloadSize= 64 VideoQueueSize= 0
+T= 44.207717 Ev= Command Seq= 275 Command= "The control command is generated so that it is 60 bytes long"
+T= 44.310910 Ev= Recv Type= CONTROL Direction= Up Seq= 276 PayloadSize= 64 VideoQueueSize= 0
+T= 44.310910 Ev= Command Seq= 276 Command= "The control command is generated so that it is 60 bytes long"
+T= 44.411469 Ev= Recv Type= CONTROL Direction= Up Seq= 277 PayloadSize= 64 VideoQueueSize= 0
+T= 44.411469 Ev= Command Seq= 277 Command= "The control command is generated so that it is 60 bytes long"
+T= 44.519221 Ev= Recv Type= CONTROL Direction= Up Seq= 278 PayloadSize= 64 VideoQueueSize= 0
+T= 44.519221 Ev= Command Seq= 278 Command= "The control command is generated so that it is 60 bytes long"
+T= 44.632847 Ev= Recv Type= CONTROL Direction= Up Seq= 279 PayloadSize= 64 VideoQueueSize= 0
+T= 44.632847 Ev= Command Seq= 279 Command= "The control command is generated so that it is 60 bytes long"
+T= 44.715636 Ev= Recv Type= CONTROL Direction= Up Seq= 280 PayloadSize= 64 VideoQueueSize= 0
+T= 44.715636 Ev= Command Seq= 280 Command= "The control command is generated so that it is 60 bytes long"
+T= 44.817509 Ev= Recv Type= CONTROL Direction= Up Seq= 281 PayloadSize= 64 VideoQueueSize= 0
+T= 44.817509 Ev= Command Seq= 281 Command= "The control command is generated so that it is 60 bytes long"
+T= 44.913897 Ev= Recv Type= CONTROL Direction= Up Seq= 282 PayloadSize= 64 VideoQueueSize= 0
+T= 44.913897 Ev= Command Seq= 282 Command= "The control command is generated so that it is 60 bytes long"
+T= 45.018212 Ev= Recv Type= CONTROL Direction= Up Seq= 283 PayloadSize= 64 VideoQueueSize= 0
+T= 45.018212 Ev= Command Seq= 283 Command= "The control command is generated so that it is 60 bytes long"
+T= 45.117406 Ev= Recv Type= CONTROL Direction= Up Seq= 284 PayloadSize= 64 VideoQueueSize= 0
+T= 45.117406 Ev= Command Seq= 284 Command= "The control command is generated so that it is 60 bytes long"
+T= 45.220442 Ev= Recv Type= CONTROL Direction= Up Seq= 285 PayloadSize= 64 VideoQueueSize= 0
+T= 45.220442 Ev= Command Seq= 285 Command= "The control command is generated so that it is 60 bytes long"
+T= 45.321547 Ev= Recv Type= CONTROL Direction= Up Seq= 286 PayloadSize= 64 VideoQueueSize= 0
+T= 45.321547 Ev= Command Seq= 286 Command= "The control command is generated so that it is 60 bytes long"
+T= 45.415970 Ev= Recv Type= CONTROL Direction= Up Seq= 287 PayloadSize= 64 VideoQueueSize= 0
+T= 45.415970 Ev= Command Seq= 287 Command= "The control command is generated so that it is 60 bytes long"
+T= 45.519872 Ev= Recv Type= CONTROL Direction= Up Seq= 288 PayloadSize= 64 VideoQueueSize= 0
+T= 45.519872 Ev= Command Seq= 288 Command= "The control command is generated so that it is 60 bytes long"
+T= 45.615898 Ev= Recv Type= CONTROL Direction= Up Seq= 289 PayloadSize= 64 VideoQueueSize= 0
+T= 45.615898 Ev= Command Seq= 289 Command= "The control command is generated so that it is 60 bytes long"
+T= 45.716621 Ev= Recv Type= CONTROL Direction= Up Seq= 290 PayloadSize= 64 VideoQueueSize= 0
+T= 45.716621 Ev= Command Seq= 290 Command= "The control command is generated so that it is 60 bytes long"
+T= 45.816314 Ev= Recv Type= CONTROL Direction= Up Seq= 291 PayloadSize= 64 VideoQueueSize= 0
+T= 45.816314 Ev= Command Seq= 291 Command= "The control command is generated so that it is 60 bytes long"
+T= 45.918869 Ev= Recv Type= CONTROL Direction= Up Seq= 292 PayloadSize= 64 VideoQueueSize= 0
+T= 45.918869 Ev= Command Seq= 292 Command= "The control command is generated so that it is 60 bytes long"
+T= 46.017891 Ev= Recv Type= CONTROL Direction= Up Seq= 293 PayloadSize= 64 VideoQueueSize= 0
+T= 46.017891 Ev= Command Seq= 293 Command= "The control command is generated so that it is 60 bytes long"
+T= 46.122206 Ev= Recv Type= CONTROL Direction= Up Seq= 294 PayloadSize= 64 VideoQueueSize= 0
+T= 46.122206 Ev= Command Seq= 294 Command= "The control command is generated so that it is 60 bytes long"
+T= 46.224052 Ev= Recv Type= CONTROL Direction= Up Seq= 295 PayloadSize= 64 VideoQueueSize= 0
+T= 46.224052 Ev= Command Seq= 295 Command= "The control command is generated so that it is 60 bytes long"
+T= 46.321322 Ev= Recv Type= CONTROL Direction= Up Seq= 296 PayloadSize= 64 VideoQueueSize= 0
+T= 46.321322 Ev= Command Seq= 296 Command= "The control command is generated so that it is 60 bytes long"
+T= 46.427173 Ev= Recv Type= CONTROL Direction= Up Seq= 297 PayloadSize= 64 VideoQueueSize= 0
+T= 46.427173 Ev= Command Seq= 297 Command= "The control command is generated so that it is 60 bytes long"
+T= 46.527224 Ev= Recv Type= CONTROL Direction= Up Seq= 298 PayloadSize= 64 VideoQueueSize= 0
+T= 46.527224 Ev= Command Seq= 298 Command= "The control command is generated so that it is 60 bytes long"
+T= 46.629740 Ev= Recv Type= CONTROL Direction= Up Seq= 299 PayloadSize= 64 VideoQueueSize= 0
+T= 46.629740 Ev= Command Seq= 299 Command= "The control command is generated so that it is 60 bytes long"
+T= 46.731418 Ev= Recv Type= CONTROL Direction= Up Seq= 300 PayloadSize= 64 VideoQueueSize= 0
+T= 46.731418 Ev= Command Seq= 300 Command= "The control command is generated so that it is 60 bytes long"
+T= 46.835785 Ev= Recv Type= CONTROL Direction= Up Seq= 301 PayloadSize= 64 VideoQueueSize= 0
+T= 46.835785 Ev= Command Seq= 301 Command= "The control command is generated so that it is 60 bytes long"
+T= 46.920947 Ev= Recv Type= CONTROL Direction= Up Seq= 302 PayloadSize= 64 VideoQueueSize= 0
+T= 46.920947 Ev= Command Seq= 302 Command= "The control command is generated so that it is 60 bytes long"
+T= 47.024914 Ev= Recv Type= CONTROL Direction= Up Seq= 303 PayloadSize= 64 VideoQueueSize= 0
+T= 47.024914 Ev= Command Seq= 303 Command= "The control command is generated so that it is 60 bytes long"
+T= 47.124848 Ev= Recv Type= CONTROL Direction= Up Seq= 304 PayloadSize= 64 VideoQueueSize= 0
+T= 47.124848 Ev= Command Seq= 304 Command= "The control command is generated so that it is 60 bytes long"
+T= 47.230913 Ev= Recv Type= CONTROL Direction= Up Seq= 305 PayloadSize= 64 VideoQueueSize= 0
+T= 47.230913 Ev= Command Seq= 305 Command= "The control command is generated so that it is 60 bytes long"
+T= 47.330970 Ev= Recv Type= CONTROL Direction= Up Seq= 306 PayloadSize= 64 VideoQueueSize= 0
+T= 47.330970 Ev= Command Seq= 306 Command= "The control command is generated so that it is 60 bytes long"
+T= 47.431333 Ev= Recv Type= CONTROL Direction= Up Seq= 307 PayloadSize= 64 VideoQueueSize= 0
+T= 47.431333 Ev= Command Seq= 307 Command= "The control command is generated so that it is 60 bytes long"
+T= 47.533464 Ev= Recv Type= CONTROL Direction= Up Seq= 308 PayloadSize= 64 VideoQueueSize= 0
+T= 47.533464 Ev= Command Seq= 308 Command= "The control command is generated so that it is 60 bytes long"
+T= 47.634105 Ev= Recv Type= CONTROL Direction= Up Seq= 309 PayloadSize= 64 VideoQueueSize= 0
+T= 47.634105 Ev= Command Seq= 309 Command= "The control command is generated so that it is 60 bytes long"
+T= 47.735045 Ev= Recv Type= CONTROL Direction= Up Seq= 310 PayloadSize= 64 VideoQueueSize= 0
+T= 47.735045 Ev= Command Seq= 310 Command= "The control command is generated so that it is 60 bytes long"
+IPT_2025-10-07_18-17-42.log
+RN
+ipt_interval = 0.010000 s

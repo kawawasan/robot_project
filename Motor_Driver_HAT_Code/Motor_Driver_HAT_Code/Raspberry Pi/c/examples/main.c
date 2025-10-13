@@ -17,6 +17,7 @@ const int FULL_DELAY_HIGH = 0x0f;
 // --- 目標距離ファイル ---
 const char* TARGET_POSITION_FILE = "/tmp/robot_target_position.txt";
 const double DISTANCE_TOLERANCE = 0.1; // 10cmの誤差を許容
+const int MOVE_SPEED = 35; // 移動速度（デューティ比 0-100）。モーターが動く最低限の速度に設定。
 
 int i2c_fd = -1; // I2Cファイルディスクリプタ
 
@@ -150,19 +151,20 @@ int main(void)
             // --- 目標距離が設定されている場合 ---
             printf("Current: %.2f m, Target: %.2f m\n", current_distance_m, target_distance_m);
 
+            // 非常に小さな許容誤差（LIDARの測定誤差を考慮）
+            const double VERY_SMALL_TOLERANCE = 0.01; // 1cm
+
             // 目標より遠くにいる場合 -> 前進 (BACKWARD)
-            // 例: current=1.5, target=1.0 -> 1.5 > 1.0 + 0.1 -> true
-            if (current_distance_m > target_distance_m + DISTANCE_TOLERANCE) {
+            if (current_distance_m > target_distance_m + VERY_SMALL_TOLERANCE) {
                 printf("Moving forward to target...\n");
-                Motor_Run(MOTORA, BACKWARD, 40);
-                Motor_Run(MOTORB, BACKWARD, 40);
+                Motor_Run(MOTORA, BACKWARD, MOVE_SPEED);
+                Motor_Run(MOTORB, BACKWARD, MOVE_SPEED);
             // 目標より手前にいる場合 -> 後退 (FORWARD)
-            // 例: current=0.8, target=1.0 -> 0.8 < 1.0 - 0.1 -> true
-            } else if (current_distance_m < target_distance_m - DISTANCE_TOLERANCE) {
+            } else if (current_distance_m < target_distance_m - VERY_SMALL_TOLERANCE) {
                 printf("Moving backward to target...\n");
-                Motor_Run(MOTORA, FORWARD, 40);
-                Motor_Run(MOTORB, FORWARD, 40);
-            // 目標範囲内にいる場合 -> 停止
+                Motor_Run(MOTORA, FORWARD, MOVE_SPEED);
+                Motor_Run(MOTORB, FORWARD, MOVE_SPEED);
+            // 目標地点に到達した場合 -> 停止
             } else {
                 printf("Target reached. Stopping.\n");
                 Motor_Stop(MOTORA);

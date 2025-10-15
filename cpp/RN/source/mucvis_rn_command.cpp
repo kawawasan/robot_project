@@ -315,7 +315,7 @@ public:
         if (packet_type == "CONTROL") {
             seq = packet.get_commandSeq();
             g_lock.lock();
-            if (change_up_address != "0" or send_up_node != "0") {
+            if (change_up_address != "0") {
                 m_command_packet_queue.push(packet);
             }
             // m_command_packet_queue.push(packet);
@@ -387,6 +387,11 @@ public:
                     // 例外が発生した場合の処理
                     // std::cerr << "Error parsing command or updating routing table." << std::endl;
                 }
+                g_lock.lock();
+                if (g_command_packet_queue.size() > 0 and send_up_node == "0") {
+                    m_command_packet_queue.pop();
+                }
+                g_lock.unlock();
             }
         } else {
             cout << "Receive unknown packet type" << endl;

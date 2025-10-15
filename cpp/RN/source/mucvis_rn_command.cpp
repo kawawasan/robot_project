@@ -181,7 +181,7 @@ public:
                 std::cout << "Change up address to: " << change_up_address << std::endl;
 
                 if (change_up_address == "0") {
-                    // キュー内をべて消す 消せてないかも std::stoi(send_up_node) == 0
+                    // キュー内をべて消す 消せてないかも std::stoi(change_up_address) == 0
                     lock.lock();
                     while (!m_command_packet_queue.empty()) {
                         m_command_packet_queue.pop();
@@ -393,11 +393,13 @@ public:
         }
 
         // 上り送信先が0のとき，受け取ったパケットをキューから削除
-        // g_lock.lock();
-        // if (g_command_packet_queue.size() > 0 and std::stoi(send_up_node) == 0) {
-        //     m_command_packet_queue.pop();
-        // }
-        // g_lock.unlock();
+        g_lock.lock();
+        if (m_command_packet_queue.size() > 0 and std::stoi(send_up_node) == 0) {
+            for (int i = 0; i < int(m_command_packet_queue.size()); i++) {
+                m_command_packet_queue.pop();
+            }
+        }
+        g_lock.unlock();
         
         // ログ出力
         log->write_rn(std::chrono::duration<double>(recv_time - hr_start_time), "Recv", packet_type, "Up", seq, recv_size, video_packet_queue_size);

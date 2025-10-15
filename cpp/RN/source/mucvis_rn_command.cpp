@@ -181,7 +181,7 @@ public:
                 std::cout << "Change up address to: " << change_up_address << std::endl;
 
                 if (change_up_address == "0") {
-                    // キュー内をべて消す
+                    // キュー内をべて消す 消せてないかも std::stoi(send_up_node) == 0
                     lock.lock();
                     while (!m_command_packet_queue.empty()) {
                         m_command_packet_queue.pop();
@@ -315,7 +315,7 @@ public:
         if (packet_type == "CONTROL") {
             seq = packet.get_commandSeq();
             g_lock.lock();
-            if (change_up_address != "0") {
+            if (change_up_address != "0" or std::stoi(send_up_node) != 0) {
                 m_command_packet_queue.push(packet);
             }
             // m_command_packet_queue.push(packet);
@@ -387,15 +387,18 @@ public:
                     // 例外が発生した場合の処理
                     // std::cerr << "Error parsing command or updating routing table." << std::endl;
                 }
-                g_lock.lock();
-                if (g_command_packet_queue.size() > 0 and send_up_node == "0") {
-                    m_command_packet_queue.pop();
-                }
-                g_lock.unlock();
             }
         } else {
             cout << "Receive unknown packet type" << endl;
         }
+
+        // 上り送信先が0のとき，受け取ったパケットをキューから削除
+        // g_lock.lock();
+        // if (g_command_packet_queue.size() > 0 and std::stoi(send_up_node) == 0) {
+        //     m_command_packet_queue.pop();
+        // }
+        // g_lock.unlock();
+        
         // ログ出力
         log->write_rn(std::chrono::duration<double>(recv_time - hr_start_time), "Recv", packet_type, "Up", seq, recv_size, video_packet_queue_size);
         if (packet_type == "CONTROL") {

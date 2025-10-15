@@ -97,7 +97,7 @@ public:
         this->my_node_num = my_node_num;
         this->routing_table = routing_table;
         this->change_up_address = routing_table[my_node_num - 1][1];  // 最初の送信先を設定
-        this->change_up_address = routing_table[my_node_num - 1][1];  // 最初の送信先を設定
+        this->send_up_node = routing_table[my_node_num - 1][2];  // 最初の送信先ノードを設定
         // this->send_node_before = std::stoi(routing_table[my_node_num - 1][2]);  // 最初の送信先ノードを設定
 
         send_payload.reserve(BUFFER_MAX);

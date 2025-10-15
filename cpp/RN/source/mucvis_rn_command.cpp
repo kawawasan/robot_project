@@ -62,7 +62,8 @@ private:
     int my_node_num;
     std::vector<std::vector<std::string>> routing_table;
     std::string change_up_address;
-    int send_node_before;  // 直前に送信したノード
+    std::string send_up_node;  // 上りの送信するべきノード
+    // int send_node_before;  // 直前に送信したノード
 
     std::queue<Packet> m_video_packet_queue;  // 映像データパケットキュー
     std::queue<Packet> m_command_packet_queue;  // 制御情報パケットキュー  
@@ -96,7 +97,8 @@ public:
         this->my_node_num = my_node_num;
         this->routing_table = routing_table;
         this->change_up_address = routing_table[my_node_num - 1][1];  // 最初の送信先を設定
-        this->send_node_before = std::stoi(routing_table[my_node_num - 1][2]);  // 最初の送信先ノードを設定
+        this->change_up_address = routing_table[my_node_num - 1][1];  // 最初の送信先を設定
+        // this->send_node_before = std::stoi(routing_table[my_node_num - 1][2]);  // 最初の送信先ノードを設定
 
         send_payload.reserve(BUFFER_MAX);
         down_recv_payload.reserve(BUFFER_MAX);
@@ -313,7 +315,7 @@ public:
         if (packet_type == "CONTROL") {
             seq = packet.get_commandSeq();
             g_lock.lock();
-            if (change_up_address != "0") {
+            if (change_up_address != "0" or send_up_node != "0") {
                 m_command_packet_queue.push(packet);
             }
             // m_command_packet_queue.push(packet);
@@ -333,7 +335,7 @@ public:
                     }
                     std::string position = command.substr(0, command.find(' '));
                     command = command.substr(command.find(' ') + 1);
-                    std::string send_up_node = command.substr(0, command.find(' '));
+                    send_up_node = command.substr(0, command.find(' '));
                     std::string send_down_node;
                     if (command.find(',') == std::string::npos) {
                         // 後ろにコンマがないときは，すべて取り出す

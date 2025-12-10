@@ -6,6 +6,7 @@
 #include <sys/ioctl.h>
 #include <linux/i2c-dev.h>
 #include <time.h>
+#include <math.h> // fabsなどを使う場合に備えて一応含めますが、今回は比較演算子で対応
 
 // --- LIDAR関連の定義 ---
 const char* I2C_BUS_PATH = "/dev/i2c-1";
@@ -16,14 +17,12 @@ const int FULL_DELAY_HIGH = 0x0f;
 
 // --- 目標距離ファイル ---
 const char* TARGET_POSITION_FILE = "/tmp/robot_target_position.txt";
-const double DISTANCE_TOLERANCE = 0.1; // 10cmの誤差を許容
-const int MOVE_SPEED = 35; // 移動速度（デューティ比 0-100）。モーターが動く最低限の速度に設定。
+const int MOVE_SPEED = 35; // 移動速度
 
 int i2c_fd = -1; // I2Cファイルディスクリプタ
 
 /**
  * @brief LIDARの初期化
- * @return 0: 成功, -1: 失敗
  */
 int init_lidar() {
     i2c_fd = open(I2C_BUS_PATH, O_RDWR);
@@ -42,7 +41,6 @@ int init_lidar() {
 
 /**
  * @brief LIDARから距離(cm)を読み取る
- * @return 距離(cm)。エラー時は負の値。
  */
 int get_lidar_distance_cm() {
     if (i2c_fd < 0) return -1;
@@ -54,7 +52,7 @@ int get_lidar_distance_cm() {
         return -1;
     }
 
-    // ステータスがbusyでなくなるまで待つ
+    // ステータス待機
     unsigned char status_reg = STATUS;
     unsigned char status_value;
     int attempts = 0;
@@ -65,10 +63,10 @@ int get_lidar_distance_cm() {
             fprintf(stderr, "Error: LIDAR busy timeout.\n");
             return -4;
         }
-        usleep(1000); // 1ms待機
+        usleep(1000); 
     } while (status_value & 0x01);
 
-    // 距離データを読み込む
+    // 距離データ読み込み
     unsigned char distance_reg = FULL_DELAY_HIGH;
     unsigned char distance_buffer[2];
     if (write(i2c_fd, &distance_reg, 1) != 1) return -5;
@@ -79,27 +77,25 @@ int get_lidar_distance_cm() {
 
 /**
  * @brief ファイルから目標距離(m)を読み取る
- * @return 目標距離(m)。ファイルがない/読めない場合は負の値。
  */
 double read_target_position_m() {
     FILE *fp = fopen(TARGET_POSITION_FILE, "r");
     if (fp == NULL) {
-        return -1.0; // ファイルなし
+        return -1.0; 
     }
 
     double position_cm;
     if (fscanf(fp, "%lf", &position_cm) != 1) {
         fclose(fp);
-        return -2.0; // 読み取り失敗
+        return -2.0; 
     }
 
     fclose(fp);
-    return position_cm / 100.0; // cmからmに変換
+    return position_cm / 100.0; // cm -> m
 }
 
-void  Handler(int signo)
+void Handler(int signo)
 {
-    //System Exit
     printf("\r\nHandler:Motor Stop\r\n");
     Motor_Stop(MOTORA);
     Motor_Stop(MOTORB);
@@ -107,33 +103,24 @@ void  Handler(int signo)
         close(i2c_fd);
     }
     DEV_ModuleExit();
-
     exit(0);
 }
 
 int main(void)
 {
-    //1.System Initialization
-    if(DEV_ModuleInit())
-        exit(1);
-    
-    //2.Motor Initialization
+    if(DEV_ModuleInit()) exit(1);
     Motor_Init();
 
-    // 3. LIDAR初期化
     if (init_lidar() != 0) {
         DEV_ModuleExit();
         exit(1);
     }
 
-    // Exception handling:ctrl + c
     signal(SIGINT, Handler);
-
-    printf("Starting motor control loop...\n");
+    printf("Starting motor control loop with 5cm tolerance...\n");
 
     while(1) {
-
-        // 目標距離をファイルから取得
+        // 目標距離を取得
         double target_distance_m = read_target_position_m();
 
         // LIDARから現在距離を取得
@@ -142,89 +129,49 @@ int main(void)
             fprintf(stderr, "Failed to read distance. Stopping motors.\n");
             Motor_Stop(MOTORA);
             Motor_Stop(MOTORB);
-            usleep(200 * 1000); // 200ms待機
+            usleep(200 * 1000);
             continue;
         }
         double current_distance_m = (double)dist_cm / 100.0;
 
         if (target_distance_m >= 0) {
-            // --- 目標距離が設定されている場合 ---
             printf("Current: %.2f m, Target: %.2f m\n", current_distance_m, target_distance_m);
 
-            // 非常に小さな許容誤差（LIDARの測定誤差を考慮）
-            const double VERY_SMALL_TOLERANCE = 0.01; // 1cm
+            // 【修正箇所】 許容誤差を5cm (0.05m) に設定
+            // これにより、目標が0mの時も、現在地が0.05m(5cm)以内なら停止します
+            const double STOP_TOLERANCE = 0.05; 
 
-            // 目標より遠くにいる場合 -> 前進 (BACKWARD)
-            if (current_distance_m > target_distance_m + VERY_SMALL_TOLERANCE) {
-                printf("Moving forward to target...\n");
+            // 目標より遠くにいる場合 (現在地 > 目標 + 5cm)
+            // 実装上の「前進」(BACKWARD)
+            if (current_distance_m > target_distance_m + STOP_TOLERANCE) {
+                printf("Moving forward (BACKWARD cmd) to target...\n");
                 Motor_Run(MOTORA, BACKWARD, MOVE_SPEED);
                 Motor_Run(MOTORB, BACKWARD, MOVE_SPEED);
-            // 目標より手前にいる場合 -> 後退 (FORWARD)
-            } else if (current_distance_m < target_distance_m - VERY_SMALL_TOLERANCE) {
-                printf("Moving backward to target...\n");
+
+            // 目標より手前にいる場合 (現在地 < 目標 - 5cm)
+            // 実装上の「後退」(FORWARD)
+            } else if (current_distance_m < target_distance_m - STOP_TOLERANCE) {
+                printf("Moving backward (FORWARD cmd) to target...\n");
                 Motor_Run(MOTORA, FORWARD, MOVE_SPEED);
                 Motor_Run(MOTORB, FORWARD, MOVE_SPEED);
-            // 目標地点に到達した場合 -> 停止
+
+            // 誤差5cm以内の場合 -> 停止
             } else {
-                printf("Target reached. Stopping.\n");
+                printf("Target reached (within %.0fcm). Stopping.\n", STOP_TOLERANCE * 100);
                 Motor_Stop(MOTORA);
                 Motor_Stop(MOTORB);
             }
         } else {
-            // --- 目標距離が設定されていない場合 (デフォルトの動作) ---
+            // 目標値ファイルが無い、または読み取れない場合
             printf("Waiting for target position... Current distance: %.2f m\n", current_distance_m);
-            // 安全のため停止
             Motor_Stop(MOTORA);
             Motor_Stop(MOTORB);
         }
 
-        // 200ms待機
-        usleep(200 * 1000);
-
+        usleep(200 * 1000); // 制御周期
     }
 
-    //3.System Exit
-    // この部分は通常到達しません
     Handler(0);
     DEV_ModuleExit();
     return 0;
 }
-
-
-
-// #include "main.h"
-
-// void  Handler(int signo)
-// {
-//     //System Exit
-//     printf("\r\nHandler:Motor Stop\r\n");
-//     Motor_Stop(MOTORA);
-//     Motor_Stop(MOTORB);
-//     DEV_ModuleExit();
-
-//     exit(0);
-// }
-
-// int main(void)
-// {
-//     //1.System Initialization
-//     if(DEV_ModuleInit())
-//         exit(0);
-    
-//     //2.Motor Initialization
-//     Motor_Init();
-
-//     printf("Motor_Run\r\n");
-//     Motor_Run(MOTORA, FORWARD, 100);
-//     Motor_Run(MOTORB, BACKWARD, 100);
-
-//     // Exception handling:ctrl + c
-//     signal(SIGINT, Handler);
-//     while(1) {
-
-//     }
-
-//     //3.System Exit
-//     DEV_ModuleExit();
-//     return 0;
-// }

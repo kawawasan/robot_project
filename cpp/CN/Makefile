@@ -101,6 +101,9 @@ mucvis_cn_video_save_play_command.out: $(OBJDIR)mucvis_cn_video_save_play_comman
 	$(CC) -o $@ $^ $(LIBDIR) $(LIBS) -pthread
 	@echo "make $@"
 
+mucvis_cn_sn_3hopback.out: $(OBJDIR)mucvis_cn_sn_3hopback.o $(INCOBJECTS)
+	$(CC) -o $@ $^ $(LIBDIR) $(LIBS) -pthread
+	@echo "make $@"
 
 # オブジェクトファイル生成(.cppファイルから.oファイルを生成)
 $(OBJDIR)%.o: $(SRCDIR)%.cpp

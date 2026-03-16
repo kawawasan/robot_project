@@ -550,12 +550,13 @@ int main(int argc, char* argv[]) {
 
 
 // 制御コマンドを標準入力から受け取り，ルーティングを計算し制御コマンドを作成，キューに格納する関数
-// kawamura書き換え中　20260303
+// kawamura書き換え中　20260316
 void generate_command_from_input(Log& log, hr_clock::time_point hr_start_time, const int node_num, const double communication_range, const double Vehicle_body_length, std::vector<std::vector<std::string>>& routing_table) {
     static std::mutex lock;
     hr_clock::time_point generate_time_now;
     hr_clock::time_point start_time = hr_start_time;
 
+    // 元の変数宣言を維持
     std::vector<double> node_position(node_num);
     std::vector<double> node_cn_distance(node_num);
     double input_distance;
@@ -571,71 +572,68 @@ void generate_command_from_input(Log& log, hr_clock::time_point hr_start_time, c
     
     while (generate_input_end == false) {
         std::string command_data;
+        // プロンプトと範囲ガイドを元の形式で完全復元
         std::cout << "Enter control command (or 'exit' to quit): " << std::endl;
-        std::cout << "(Input the distance L in meters. 0 to reset)" << std::endl;
+        std::cout << "(Input the distance from CamN to CN in meters. " 
+                  << correction_distance << " < (m) < " 
+                  << correction_distance + communication_range * (node_num - 1) << ")" << std::endl;
+        std::cout << "(Enter 0 for 3-hop back mode)" << std::endl;
+
         std::getline(std::cin, command_data);
         if (command_data == "exit") return;
         if (command_data.size() > 60) continue;
 
         try {
-            double L = std::stod(command_data); // 入力されたそのままの距離 L
+            double L = std::stod(command_data);
             input_distance = L - correction_distance;
 
-            // 1. ノード位置の計算 (元のロジックを維持 = 一部伸縮)
-            std::cout << "input_distance = " << input_distance << std::endl;
+            // 1. ノード位置の計算 (元の三項演算子スタイルと一部伸縮ロジックを維持)
             for (int i = 0; i < node_num; i++) {
-                distance = input_distance;
+                distance = (i == 0) ? input_distance : input_distance; // 元のコードの記述
                 if (distance < 0) distance = 0;
-                node_position[i] = (communication_range > distance)? distance : communication_range;
+                node_position[i] = (communication_range > distance) ? distance : communication_range;
                 input_distance -= node_position[i];
                 node_cn_distance[i] = node_position[i] + (node_num - i - 2) * Vehicle_body_length;
             }
 
-            if (node_position[node_num-1] > 0 && L > 0){
-                std::cout << "error: The distance is too long." << std::endl;
-                continue;
-            }
-
-            double distance_sum = (node_num-1) * Vehicle_body_length;
-            for (int i = 0; i < node_num; i++) distance_sum += node_position[i];
-
-            // 2. ルーティング計算の差し替え (ホップ数指定スタイル)
-            // 閾値の設定
+            // 2. ホップ数に応じたルーティングの「全ノード一括更新」
             double D1 = communication_range + correction_distance;
             double D2 = (2 * communication_range) + correction_distance;
 
-            if (L <= 0.01) { // 0入力時：物理距離0かつ強制3ホップ
-                routing_table[0][3] = "2"; // CamN Down
-                routing_table[1][2] = "1"; // RN1 Up
-                routing_table[1][3] = "3"; // RN1 Down
-                routing_table[2][2] = "2"; // RN2 Up
-                routing_table[2][3] = "4"; // RN2 Down
-                routing_table[3][2] = "3"; // CN Up
-                g_send_num.store(3);
-            } 
-            else if (L <= D1) { // 1ホップ
+            if (L <= 0.01) { 
+                // 0入力時：全距離0 ＆ 強制3ホップ (1-2-3-4)
+                for (int i = 0; i < node_num; i++) node_position[i] = 0.0;
+                routing_table[0][3] = "2"; 
+                routing_table[1][2] = "1"; routing_table[1][3] = "3";
+                routing_table[2][2] = "2"; routing_table[2][3] = "4";
+                routing_table[3][2] = "3";
+            } else if (L <= D1) {
+                // 1ホップ：CamN <-> CN (RN1, RN2は距離情報のみ受け取る)
                 routing_table[0][3] = "4"; 
+                routing_table[1][2] = "0"; routing_table[1][3] = "0";
+                routing_table[2][2] = "0"; routing_table[2][3] = "0";
                 routing_table[3][2] = "1";
-                g_send_num.store(1);
-            } 
-            else if (L <= D2) { // 2ホップ
-                routing_table[0][3] = "3";
-                routing_table[2][2] = "1";
-                routing_table[2][3] = "4";
+            } else if (L <= D2) {
+                // 2ホップ：CamN <-> RN2 <-> CN (RN1は距離のみ)
+                routing_table[0][3] = "3"; 
+                routing_table[1][2] = "0"; routing_table[1][3] = "0";
+                routing_table[2][2] = "1"; routing_table[2][3] = "4";
                 routing_table[3][2] = "3";
-                g_send_num.store(3);
-            } 
-            else { // 3ホップ
-                routing_table[0][3] = "2";
-                routing_table[1][2] = "1";
-                routing_table[1][3] = "3";
-                routing_table[2][2] = "2";
-                routing_table[2][3] = "4";
+            } else {
+                // 3ホップ：CamN <-> RN1 <-> RN2 <-> CN
+                routing_table[0][3] = "2"; 
+                routing_table[1][2] = "1"; routing_table[1][3] = "3";
+                routing_table[2][2] = "2"; routing_table[2][3] = "4";
                 routing_table[3][2] = "3";
-                g_send_num.store(3);
             }
 
-            // 出力 (元のコードの表示形式を維持)
+            // 3. 送信先ノード番号をCN(Node 4)のUp先アドレスに基づいて更新
+            g_send_num.store(std::stoi(routing_table[node_num - 1][2]));
+
+            // 4. 出力 (元の setw 形式を完全維持)
+            double distance_sum = (node_num - 1) * Vehicle_body_length;
+            for (int i = 0; i < node_num; i++) distance_sum += node_position[i];
+            
             std::cout << "distance sum: " << distance_sum << std::endl;
             for (int i = 0; i < node_num; i++) {
                 std::cout << "Node " << i + 1 << ": " 
@@ -645,26 +643,23 @@ void generate_command_from_input(Log& log, hr_clock::time_point hr_start_time, c
                           << std::setw(5) << routing_table[i][2] << " " 
                           << std::setw(5) << routing_table[i][3] << std::endl;
             }
-            std::cout << "CN next up address: " << routing_table[node_num-1][2] << " " << routing_table[std::stoi(routing_table[node_num-1][2])-1][1] << std::endl;
+            std::cout << "CN next up address: " << routing_table[node_num-1][2] << std::endl;
 
-            // 制御コマンド生成 (元のコードの生成ロジックを維持)
+            // 5. 制御コマンド生成 (元のcm変換と文字列連結ロジック)
             command_data.clear();
+            std::vector<double> temp_pos = node_position; // 元の値を壊さないようコピー
             for (int i = 0; i < node_num; i++) {
-                node_position[i] = std::round(node_position[i] * 100);
+                temp_pos[i] = std::round(temp_pos[i] * 100);
             }
-            command_data = std::to_string(static_cast<int>(node_position[0])) + " " + routing_table[0][3] + ",";
-            for (int i = 1; i < node_num-1; i++) {
-                command_data += std::to_string(static_cast<int>(node_position[i])) + " " + routing_table[i][2] + " " + routing_table[i][3] + ",";
+            command_data = std::to_string(static_cast<int>(temp_pos[0])) + " " + routing_table[0][3] + ",";
+            for (int i = 1; i < node_num - 1; i++) {
+                command_data += std::to_string(static_cast<int>(temp_pos[i])) + " " + routing_table[i][2] + " " + routing_table[i][3] + ",";
             }
             command_data.pop_back();
 
-        } catch (const std::invalid_argument& e) {}
+        } catch (...) { continue; }
 
-        std::cout << "Final command_data: " << std::endl << command_data << std::endl;
-        std::cout << "command_data size: " << command_data.size() << " bytes" << std::endl;
-        std::cout << std::endl;
-
-        // キュー操作とログ出力 (元のコードと完全に同一)
+        // --- 6. キュー・ログ・generate_num更新 (元のコードと完全に同一) ---
         lock.lock();
         if (g_command_queue.size() != 0) g_command_queue.pop();
         g_command_queue.push(command_data);
@@ -674,9 +669,10 @@ void generate_command_from_input(Log& log, hr_clock::time_point hr_start_time, c
         std::chrono::duration<double> log_time = std::chrono::duration<double>(generate_time_now - start_time);
         log.write_generate(log_time, "Command", generate_num, command_data.size(), command_data);
         generate_num++;
+
+        std::cout << "Final command_data: " << command_data << std::endl << std::endl;
     }
 }
-
 // 一定間隔でダミーコマンドを生成し，キューに格納する関数
 void generate_command_fixed_interval(double generate_time_all, Log& log, hr_clock::time_point hr_start_time) {
     double generate_command_interval = 0.1;  // 100ms ごとに コマンド生成

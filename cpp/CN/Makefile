@@ -105,6 +105,10 @@ mucvis_cn_3hopback.out: $(OBJDIR)mucvis_cn_3hopback.o $(INCOBJECTS)
 	$(CC) -o $@ $^ $(LIBDIR) $(LIBS) -pthread
 	@echo "make $@"
 
+mucvis_cn_3hop_2.out: $(OBJDIR)mucvis_cn_3hop_2.o $(INCOBJECTS)
+	$(CC) -o $@ $^ $(LIBDIR) $(LIBS) -pthread
+	@echo "make $@"
+
 # オブジェクトファイル生成(.cppファイルから.oファイルを生成)
 $(OBJDIR)%.o: $(SRCDIR)%.cpp
     # オブジェクトディレクトリがない時，作成

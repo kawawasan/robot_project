@@ -17,7 +17,7 @@ const int FULL_DELAY_HIGH = 0x0f;
 
 // --- 目標距離ファイル ---
 const char* TARGET_POSITION_FILE = "/tmp/robot_target_position.txt";
-const int MOVE_SPEED = 35; // 移動速度
+const int MOVE_SPEED = 80; // 移動速度
 
 int i2c_fd = -1; // I2Cファイルディスクリプタ
 
@@ -108,70 +108,82 @@ void Handler(int signo)
 
 int main(void)
 {
+    // モジュールとモーターの初期化
     if(DEV_ModuleInit()) exit(1);
     Motor_Init();
 
+    // LIDARの初期化
     if (init_lidar() != 0) {
         DEV_ModuleExit();
         exit(1);
     }
 
     signal(SIGINT, Handler);
-    printf("Starting motor control loop with 5cm tolerance...\n");
+    printf("Starting low-frequency LIDAR control loop (1Hz)...\n");
+
+    // 時間管理用の変数
+    struct timespec last_measure_time;
+    clock_gettime(CLOCK_MONOTONIC, &last_measure_time);
+    
+    int dist_cm = 0; // 最新の測定値を保持
+    const double STOP_TOLERANCE = 0.05; // 5cmの許容誤差
 
     while(1) {
-        // 目標距離を取得
+        struct timespec now;
+        clock_gettime(CLOCK_MONOTONIC, &now);
+
+        // 前回の測定から何秒経過したか計算
+        double elapsed = (now.tv_sec - last_measure_time.tv_sec) + 
+                         (now.tv_nsec - last_measure_time.tv_nsec) / 1e9;
+
+        // --- 1.0秒ごとにLIDARの測定を実行 ---
+        if (elapsed >= 1.0) {
+            int new_dist = get_lidar_distance_cm();
+            if (new_dist >= 0) {
+                dist_cm = new_dist;
+                last_measure_time = now; // 測定成功時のみタイマーリセット
+                printf("[LIDAR] Updated Distance: %d cm\n", dist_cm);
+            } else {
+                // 測定失敗時は安全のためモーター停止
+                fprintf(stderr, "LIDAR read error! Stopping motors for safety.\n");
+                Motor_Stop(MOTORA);
+                Motor_Stop(MOTORB);
+                usleep(500 * 1000);
+                continue; 
+            }
+        }
+
+        // --- 目標距離の読み取りと制御ロジック ---
+        double current_distance_m = (double)dist_cm / 100.0;
         double target_distance_m = read_target_position_m();
 
-        // LIDARから現在距離を取得
-        int dist_cm = get_lidar_distance_cm();
-        if (dist_cm < 0) {
-            fprintf(stderr, "Failed to read distance. Stopping motors.\n");
-            Motor_Stop(MOTORA);
-            Motor_Stop(MOTORB);
-            usleep(200 * 1000);
-            continue;
-        }
-        double current_distance_m = (double)dist_cm / 100.0;
-
-        if (target_distance_m >= 0) {
-            printf("Current: %.2f m, Target: %.2f m\n", current_distance_m, target_distance_m);
-
-            // 【修正箇所】 許容誤差を5cm (0.05m) に設定
-            // これにより、目標が0mの時も、現在地が0.05m(5cm)以内なら停止します
-            const double STOP_TOLERANCE = 0.05; 
-
-            // 目標より遠くにいる場合 (現在地 > 目標 + 5cm)
-            // 実装上の「前進」(BACKWARD)
+        if (target_distance_m >= 0 && dist_cm > 0) {
+            // 目標より遠い (前進)
             if (current_distance_m > target_distance_m + STOP_TOLERANCE) {
-                printf("Moving forward (BACKWARD cmd) to target...\n");
                 Motor_Run(MOTORA, BACKWARD, MOVE_SPEED);
                 Motor_Run(MOTORB, BACKWARD, MOVE_SPEED);
-
-            // 目標より手前にいる場合 (現在地 < 目標 - 5cm)
-            // 実装上の「後退」(FORWARD)
-            } else if (current_distance_m < target_distance_m - STOP_TOLERANCE) {
-                printf("Moving backward (FORWARD cmd) to target...\n");
+            } 
+            // 目標より近い (後退)
+            else if (current_distance_m < target_distance_m - STOP_TOLERANCE) {
                 Motor_Run(MOTORA, FORWARD, MOVE_SPEED);
                 Motor_Run(MOTORB, FORWARD, MOVE_SPEED);
-
-            // 誤差5cm以内の場合 -> 停止
-            } else {
-                printf("Target reached (within %.0fcm). Stopping.\n", STOP_TOLERANCE * 100);
+            } 
+            // 範囲内 (停止)
+            else {
                 Motor_Stop(MOTORA);
                 Motor_Stop(MOTORB);
             }
         } else {
-            // 目標値ファイルが無い、または読み取れない場合
-            printf("Waiting for target position... Current distance: %.2f m\n", current_distance_m);
+            // 目標ファイルが読み込めない場合などは停止
             Motor_Stop(MOTORA);
             Motor_Stop(MOTORB);
         }
 
-        usleep(200 * 1000); // 制御周期
+        // ループ自体の待機（0.1秒）。これにより目標ファイルの更新を素早くチェックできる
+        usleep(100 * 1000); 
     }
 
+    // ここには到達しませんが、念のため
     Handler(0);
-    DEV_ModuleExit();
     return 0;
 }

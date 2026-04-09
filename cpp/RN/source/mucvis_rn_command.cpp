@@ -159,6 +159,14 @@ public:
         // std::vector<uint8_t> payload = packet.get_payload();
 
         std::string packet_type = packet.get_type();
+
+        // --- ここでseqを取り出す処理を追加 ---20260409
+        if (packet_type == "VIDEO") {
+            seq = packet.get_videoSeq();
+        } else if (packet_type == "CONTROL") {
+            seq = packet.get_commandSeq(); // 制御パケットのseqを取得
+        }
+        // ----------------------------------
         g_lock.lock();
         int video_packet_queue_size = m_video_packet_queue.size();
         g_lock.unlock();
@@ -201,10 +209,10 @@ public:
         hr_clock::time_point send_time = hr_clock::now();
         std::chrono::duration<double> duration = std::chrono::duration<double>(send_time - hr_start_time);
 
-        // ログに書き込む
-        if (packet_type == "VIDEO") {
-            seq = packet.get_videoSeq();
-        }
+        // // ログに書き込む
+        // if (packet_type == "VIDEO") {
+        //     seq = packet.get_videoSeq();
+        // }
 
         log->write_rn(duration, "Send", packet_type, "Down", seq, send_payload.size(), video_packet_queue_size);
     }

@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <thread>  // コンパイル時には-pthread
+#include <algorithm>
 #include <queue>
 #include <sys/socket.h>
 #include <netinet/in.h>

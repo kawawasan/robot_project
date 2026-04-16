@@ -287,70 +287,124 @@ public:
             std::lock_guard<std::mutex> lock(m_video_mutex);
             dummy_seq = g_dummy_seq;
             video_bytequeue_size = g_video_bytequeue.size();
-        // g_lock.unlock();
         }
 
-        if (video_bytequeue_size == 0 && dummy_seq < DUMMY_SEQ_MAX) {
+        // 映像がない間は「何度でも」DUMMYを送ってやり過ごす
+        if (video_bytequeue_size == 0) {
             packet_type = TYPE_DUMMY;
         }
 
         if (packet_type == TYPE_VIDEO) {
             video_data.clear();
-
-            // 映像データキューから映像データを取り出す
-            while (video_data.size() == 0) {
-                // g_lock.lock();河村  
-                // 修正後
-                {
-                    std::lock_guard<std::mutex> lock(m_video_mutex);
-                    video_data = g_video_bytequeue.get(MAX_VIDEO_SIZE);
-                // g_lock.unlock();
-                }
-                // 映像データキューが空の場合は待機
-                if (video_data.empty()) {
-                    // std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                    std::this_thread::yield(); //河村
-                } else {
-                    break;
-                }
-            }
-
-            // 取り出した映像データをtsファイルとして保存
-            video_file.write(reinterpret_cast<const char*>(video_data.data()), video_data.size());
-            if (!video_file) {
-                std::cerr << "Failed to write to video file" << std::endl;
-            }
-
-            // g_lock.lock();河村
-            // 修正後
-            uint32_t ack;
-            uint32_t seq;
             {
                 std::lock_guard<std::mutex> lock(m_video_mutex);
-                ack = g_ack;
-                seq = g_video_seq;
-                g_video_seq++;
-                g_dummy_seq = 0;
-            // g_lock.unlock();
+                video_data = g_video_bytequeue.get(MAX_VIDEO_SIZE);
             }
+            
+            // 万が一空だった場合も無限ループさせず、DUMMYに切り替える
+            if (video_data.empty()) {
+                packet_type = TYPE_DUMMY;
+            } else {
+                // 無事に映像が取り出せた場合の処理
+                video_file.write(reinterpret_cast<const char*>(video_data.data()), video_data.size());
+                if (!video_file) {
+                    std::cerr << "Failed to write to video file" << std::endl;
+                }
 
-            // ビデオデータパケット生成
-            Packet packet(packet_type, ack, seq, video_data);
-
-            return packet;
-        } else if (packet_type == TYPE_DUMMY) {
+                uint32_t ack;
+                uint32_t seq;
+                {
+                    std::lock_guard<std::mutex> lock(m_video_mutex);
+                    ack = g_ack;
+                    seq = g_video_seq;
+                    g_video_seq++;
+                    g_dummy_seq = 0;
+                }
+                return Packet(packet_type, ack, seq, video_data); // 映像パケット発射
+            }
+        }
+        
+        // DUMMYパケットの処理
+        if (packet_type == TYPE_DUMMY) {
             uint32_t ack;
-            // g_lock.lock();河村
             {
-                std::lock_guard<std::mutex> lock(m_video_mutex); // または m_ack_mutex 等
+                std::lock_guard<std::mutex> lock(m_video_mutex); 
                 ack = g_ack;
                 g_dummy_seq++;
-            // g_lock.unlock();
             }
-            // ダミーパケット生成
-            Packet packet(packet_type, ack);
+            return Packet(packet_type, ack); // ダミーパケット発射
+        
+        // ... 以降CONTROLパケット等の処理 ...
+        // int dummy_seq;
+        // int video_bytequeue_size;
+        // {
+        //     std::lock_guard<std::mutex> lock(m_video_mutex);
+        //     dummy_seq = g_dummy_seq;
+        //     video_bytequeue_size = g_video_bytequeue.size();
+        // // g_lock.unlock();
+        // }
 
-            return packet;
+        // if (video_bytequeue_size == 0 && dummy_seq < DUMMY_SEQ_MAX) {
+        //     packet_type = TYPE_DUMMY;
+        // }
+
+        // if (packet_type == TYPE_VIDEO) {
+        //     video_data.clear();
+
+        //     // 映像データキューから映像データを取り出す
+        //     while (video_data.size() == 0) {
+        //         // g_lock.lock();河村  
+        //         // 修正後
+        //         {
+        //             std::lock_guard<std::mutex> lock(m_video_mutex);
+        //             video_data = g_video_bytequeue.get(MAX_VIDEO_SIZE);
+        //         // g_lock.unlock();
+        //         }
+        //         // 映像データキューが空の場合は待機
+        //         if (video_data.empty()) {
+        //             // std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        //             std::this_thread::yield(); //河村
+        //         } else {
+        //             break;
+        //         }
+        //     }
+
+        //     // 取り出した映像データをtsファイルとして保存
+        //     video_file.write(reinterpret_cast<const char*>(video_data.data()), video_data.size());
+        //     if (!video_file) {
+        //         std::cerr << "Failed to write to video file" << std::endl;
+        //     }
+
+        //     // g_lock.lock();河村
+        //     // 修正後
+        //     uint32_t ack;
+        //     uint32_t seq;
+        //     {
+        //         std::lock_guard<std::mutex> lock(m_video_mutex);
+        //         ack = g_ack;
+        //         seq = g_video_seq;
+        //         g_video_seq++;
+        //         g_dummy_seq = 0;
+        //     // g_lock.unlock();
+        //     }
+
+        //     // ビデオデータパケット生成
+        //     Packet packet(packet_type, ack, seq, video_data);
+
+        //     return packet;
+        // } else if (packet_type == TYPE_DUMMY) {
+        //     uint32_t ack;
+        //     // g_lock.lock();河村
+        //     {
+        //         std::lock_guard<std::mutex> lock(m_video_mutex); // または m_ack_mutex 等
+        //         ack = g_ack;
+        //         g_dummy_seq++;
+        //     // g_lock.unlock();
+        //     }
+        //     // ダミーパケット生成
+        //     Packet packet(packet_type, ack);
+
+        //     return packet;
         } else if (packet_type == TYPE_CONTROL) {
             cout << "error: make control packet in CamN" << endl;
             uint32_t sqe;

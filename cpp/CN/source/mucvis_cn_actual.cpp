@@ -165,7 +165,7 @@ public:
     // グローバルまたはクラスメンバとしてロガーのインスタンスを渡す想定
     // 20260416_河村　追加
     template <typename TimePoint>
-    void precise_sleep_until(std::chrono::steady_clock::time_point target_time) {
+    void precise_sleep_until(TimePoint target_time) {
         using namespace std::chrono;
         using clock = steady_clock;
 
@@ -234,11 +234,13 @@ public:
 
         if (packet_type == TYPE_CONTROL) {
             // g_lock.lock(); 河村
+            uint32_t sqe;
+            std::string control_command;
             {
                 std::lock_guard<std::mutex> lock(g_command_mutex);
-                std::string control_command = g_command_queue.front();
+                control_command = g_command_queue.front();
                 g_command_queue.pop();
-                uint32_t sqe = g_control_seq;
+                sqe = g_control_seq;
                 g_control_seq++;
             // g_lock.unlock();
             }
@@ -274,9 +276,10 @@ public:
         std::chrono::duration<double> duration = std::chrono::duration<double>(send_time - hr_start_time);
 
         // g_lock.lock();
+        uint32_t ack;
         {
             std::lock_guard<std::mutex> lock(m_video_mutex);
-            uint32_t ack = g_ack;
+            ack = g_ack;
 
             // ログに書き込む
             log->write_camn_cn(duration, "Send", packet_type, ack, packet.get_commandSeq(), send_payload.size(), system_send_time);

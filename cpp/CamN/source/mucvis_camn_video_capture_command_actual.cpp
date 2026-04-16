@@ -174,10 +174,12 @@ public:
 
     // 20260416_河村追加
     // グローバルまたはクラスメンバとしてロガーのインスタンスを渡す想定
+    // ★ どんな時間の型(TimePoint)が来ても自動で対応するテンプレート関数
     template <typename TimePoint>
-    void precise_sleep_until(std::chrono::steady_clock::time_point target_time) {
+    void precise_sleep_until(TimePoint target_time) {
         using namespace std::chrono;
-        using clock = steady_clock;
+        // 呼び出し元の時計(hr_clock等)に自動で合わせる
+        using clock = typename TimePoint::clock;
 
         const auto BUSY_WAIT = 50us; 
         const auto YIELD_THRESHOLD = 30us; 
@@ -186,23 +188,23 @@ public:
             auto now = clock::now();
             if (now >= target_time) return;
 
+            // 残り時間（Duration）を計算
             auto remaining = target_time - now;
 
             if (remaining > BUSY_WAIT) {
-                auto sleep_target = target_time - BUSY_WAIT;
-                auto ns = time_point_cast<nanoseconds>(sleep_target).time_since_epoch().count();
+                // OSに休ませる時間を計算
+                auto sleep_duration = remaining - BUSY_WAIT;
+                // double型等の計算誤差を防ぐため、安全にナノ秒(整数)にキャスト
+                auto ns = duration_cast<nanoseconds>(sleep_duration).count();
 
                 struct timespec ts;
                 ts.tv_sec = ns / 1000000000LL;
                 ts.tv_nsec = ns % 1000000000LL;
 
-                // OSのスリープへ
-                while (clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, NULL) == EINTR);
-                
-                // 【論文用データ計測】OSがどれだけ寝坊したか（Wake遅延）を計測
-                // auto wake_time = clock::now();
-                // auto overshoot = duration_cast<microseconds>(wake_time - sleep_target).count();
-                // if (overshoot > 50) { /* ロガーに記録する等の処理 */ }
+                // ★ 修正ポイント：相対時間(0)でスリープする。
+                // EINTR(割り込み)で早く起きてしまった場合、残り時間が ts に自動で上書きされるため
+                // 基準時刻のズレ（Epoch不一致）を完全に回避しつつ、正確に待機できる。
+                while (clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, &ts) == EINTR);
                 
             } else {
                 // 2段階ビジーループ
@@ -211,9 +213,9 @@ public:
                     if (now >= target_time) return;
 
                     if ((target_time - now) > YIELD_THRESHOLD) {
-                        std::this_thread::yield(); // 同コアの他FIFOスレッドへ譲る
+                        std::this_thread::yield(); 
                     } else {
-                        __asm__ volatile("yield" ::: "memory"); // 最終精密スピン
+                        __asm__ volatile("yield" ::: "memory"); 
                     }
                 }
             }

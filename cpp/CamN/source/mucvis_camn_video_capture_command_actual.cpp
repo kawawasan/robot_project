@@ -21,6 +21,9 @@
 #include <sys/epoll.h>
 #include <filesystem>
 
+#include <time.h>
+#include <pthread.h>
+
 #include "../../include/header/bytequeue.hpp"  // 自作モジュール
 #include "../../include/header/log.hpp"  // 自作モジュール
 #include "../../include/header/packet.hpp"  // 自作モジュール
@@ -54,7 +57,7 @@ int g_dummy_seq = 0;  // ダミーパケットのシーケンス番号
 ByteQueue g_video_bytequeue;  // 映像データキュー
 std::queue<std::tuple<uint32_t, uint32_t, std::vector<uint8_t>>> g_video_queue;  // 映像データパケットキュー
 std::queue<std::vector<uint8_t>> g_command_queue;  // 制御情報パケットキュー
-std::mutex g_lock;
+// std::mutex g_lock; // 河村削除
 std::string g_video_file_name;  // 映像ファイル名
 
 // const double generate_time_all = 60.0;  // ビデオデータ生成時間 [s]
@@ -97,6 +100,11 @@ private:
     std::vector<uint8_t> recv_payload;
     uint8_t buffer[VIDEO_BUFFER_SIZE];
     char recv_buf[BUFFER_MAX];
+    // --- ここから追記 (ミューテックスの宣言) ---河村
+    std::mutex m_command_mutex;
+    std::mutex m_video_mutex;
+    std::mutex m_ack_mutex;
+    // --- ここまで ---
 
 public:
     Mucvis_camn(std::string my_address, int my_port, std::string down_address, int down_port, Log& log, double ipt_interval, hr_clock::time_point hr_start_time, int pipefd[2], std::string video_file_name, int my_node_num, std::vector<std::vector<std::string>>& routing_table) {
@@ -164,6 +172,71 @@ public:
     }
 
 
+    // 20260416_河村追加
+    // グローバルまたはクラスメンバとしてロガーのインスタンスを渡す想定
+    template <typename TimePoint>
+    void precise_sleep_until(std::chrono::steady_clock::time_point target_time) {
+        using namespace std::chrono;
+        using clock = steady_clock;
+
+        const auto BUSY_WAIT = 50us; 
+        const auto YIELD_THRESHOLD = 30us; 
+
+        while (true) {
+            auto now = clock::now();
+            if (now >= target_time) return;
+
+            auto remaining = target_time - now;
+
+            if (remaining > BUSY_WAIT) {
+                auto sleep_target = target_time - BUSY_WAIT;
+                auto ns = time_point_cast<nanoseconds>(sleep_target).time_since_epoch().count();
+
+                struct timespec ts;
+                ts.tv_sec = ns / 1000000000LL;
+                ts.tv_nsec = ns % 1000000000LL;
+
+                // OSのスリープへ
+                while (clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, NULL) == EINTR);
+                
+                // 【論文用データ計測】OSがどれだけ寝坊したか（Wake遅延）を計測
+                // auto wake_time = clock::now();
+                // auto overshoot = duration_cast<microseconds>(wake_time - sleep_target).count();
+                // if (overshoot > 50) { /* ロガーに記録する等の処理 */ }
+                
+            } else {
+                // 2段階ビジーループ
+                while (true) {
+                    now = clock::now();
+                    if (now >= target_time) return;
+
+                    if ((target_time - now) > YIELD_THRESHOLD) {
+                        std::this_thread::yield(); // 同コアの他FIFOスレッドへ譲る
+                    } else {
+                        __asm__ volatile("yield" ::: "memory"); // 最終精密スピン
+                    }
+                }
+            }
+        }
+    }
+    
+    //20260416_河村追加
+    void set_realtime_priority(int priority) {
+        struct sched_param param;
+        param.sched_priority = priority; 
+        if (pthread_setschedparam(pthread_self(), SCHED_FIFO, &param) != 0) {
+            std::cerr << "Failed to set SCHED_FIFO (Priority: " << priority << ")" << std::endl;
+            }
+        }
+
+    // 送信スレッドの先頭（例: down_receiver_start）
+    // set_realtime_priority(80); 
+
+    // 受信スレッドの先頭（例: up_receiver_start）
+    // set_realtime_priority(75); // 送信よりわずかに下げる
+
+
+
     // ffmpegからのデータをひたすら読み込む(映像の倍速対策) この関数を新しいスレッドで実行する
     void pipe_reader_thread() {
         uint8_t buffer[VIDEO_BUFFER_SIZE];
@@ -180,9 +253,13 @@ public:
                 ssize_t bytes_read = read(pipefd[0], buffer, VIDEO_BUFFER_SIZE);
                 if (bytes_read > 0) {
                     // 読み込んだデータを映像データキューに入れるだけ
-                    g_lock.lock();
-                    g_video_bytequeue.put(std::vector<uint8_t>(buffer, buffer + bytes_read));
-                    g_lock.unlock();
+                    // g_lock.lock();
+                    // 修正後 河村
+                    {
+                        std::lock_guard<std::mutex> lock(m_video_mutex);
+                        g_video_bytequeue.put(std::vector<uint8_t>(buffer, buffer + bytes_read));
+                    // g_lock.unlock();
+                    }
                 } else if (bytes_read == 0) {
                     // パイプが閉じた（EOF）
                     std::cout << "Pipe closed." << std::endl;
@@ -200,10 +277,16 @@ public:
         // uint8_t buffer[VIDEO_BUFFER_SIZE];
         // ssize_t bytes_read = 0;
 
-        g_lock.lock();
-        int dummy_seq = g_dummy_seq;
-        int video_bytequeue_size = g_video_bytequeue.size();
-        g_lock.unlock();
+        // g_lock.lock();　河村 
+        // 修正後
+        int dummy_seq;
+        int video_bytequeue_size;
+        {
+            std::lock_guard<std::mutex> lock(m_video_mutex);
+            dummy_seq = g_dummy_seq;
+            video_bytequeue_size = g_video_bytequeue.size();
+        // g_lock.unlock();
+        }
 
         if (video_bytequeue_size == 0 && dummy_seq < DUMMY_SEQ_MAX) {
             packet_type = TYPE_DUMMY;
@@ -214,16 +297,17 @@ public:
 
             // 映像データキューから映像データを取り出す
             while (video_data.size() == 0) {
-                g_lock.lock();
-                video_data = g_video_bytequeue.get(MAX_VIDEO_SIZE);
-                g_lock.unlock();
-
+                // g_lock.lock();河村  
+                // 修正後
+                {
+                    std::lock_guard<std::mutex> lock(m_video_mutex);
+                    video_data = g_video_bytequeue.get(MAX_VIDEO_SIZE);
+                // g_lock.unlock();
+                }
                 // 映像データキューが空の場合は待機
                 if (video_data.empty()) {
-                    // 西田さんの実装
                     // std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                    // 20260416_河村
-                    std::this_thread::yield();
+                    std::this_thread::yield(); //河村
                 } else {
                     break;
                 }
@@ -235,33 +319,46 @@ public:
                 std::cerr << "Failed to write to video file" << std::endl;
             }
 
-            g_lock.lock();
-            uint32_t ack = g_ack;
-            uint32_t seq = g_video_seq;
-            g_video_seq++;
-            g_dummy_seq = 0;
-            g_lock.unlock();
+            // g_lock.lock();河村
+            // 修正後
+            uint32_t ack;
+            uint32_t seq;
+            {
+                std::lock_guard<std::mutex> lock(m_video_mutex);
+                ack = g_ack;
+                seq = g_video_seq;
+                g_video_seq++;
+                g_dummy_seq = 0;
+            // g_lock.unlock();
+            }
 
             // ビデオデータパケット生成
             Packet packet(packet_type, ack, seq, video_data);
 
             return packet;
         } else if (packet_type == TYPE_DUMMY) {
-            g_lock.lock();
-            uint32_t ack = g_ack;
-            g_dummy_seq++;
-            g_lock.unlock();
-
+            uint32_t ack;
+            // g_lock.lock();河村
+            {
+                std::lock_guard<std::mutex> lock(m_video_mutex); // または m_ack_mutex 等
+                ack = g_ack;
+                g_dummy_seq++;
+            // g_lock.unlock();
+            }
             // ダミーパケット生成
             Packet packet(packet_type, ack);
 
             return packet;
         } else if (packet_type == TYPE_CONTROL) {
             cout << "error: make control packet in CamN" << endl;
-            g_lock.lock();
-            uint32_t sqe = g_control_seq;
-            g_control_seq++;
-            g_lock.unlock();
+            uint32_t sqe;
+            // g_lock.lock();　河村 
+            {
+                std::lock_guard<std::mutex> lock(m_command_mutex);
+                sqe = g_control_seq;
+                g_control_seq++;
+            // g_lock.unlock();
+            }
 
             // パケット生成
             Packet packet(packet_type, sqe, "control command by CamN");
@@ -309,9 +406,12 @@ public:
         packet_type = packet.get_type();
         uint32_t seq = packet.get_videoSeq();
         if (packet_type == "DUMMY") {
-            g_lock.lock();
-            seq = g_dummy_seq - 1;
-            g_lock.unlock();
+            // g_lock.lock();河村
+            {
+                std::lock_guard<std::mutex> lock(m_video_mutex);
+                seq = g_dummy_seq - 1;
+            }
+            // g_lock.unlock();
         }
 
         log->write_camn_cn(duration, "Send", packet_type, packet.get_ack(), seq, payload.size(), system_send_time);
@@ -337,10 +437,12 @@ public:
         if (packet_type == "CONTROL") {
             seq = packet.get_commandSeq();
             
-            g_lock.lock();
-            ack = g_ack;
-            g_ack = seq;
-            g_lock.unlock();
+            // g_lock.lock(); 河村
+            {std::lock_guard<std::mutex> lock(m_ack_mutex);
+                ack = g_ack;
+                g_ack = seq;
+            }
+                // g_lock.unlock();
             std::string command = packet.get_command();
 
             if (command.size() < 60) {
@@ -385,6 +487,7 @@ public:
     }
 
     int start_receive() {
+        set_realtime_priority(75); // 河村
         if (bind(recv_socket, reinterpret_cast<sockaddr*>(&my_addr), sizeof(my_addr)) == -1) {
             std::cerr << "Failed to bind socket" << endl;
             close(recv_socket);
@@ -400,6 +503,7 @@ public:
     }
 
     int start_send() {
+        set_realtime_priority(80); //追加　河村
         cout << "Start sending" << endl;
         hr_clock::time_point ipt_start;
         hr_clock::time_point ipt_end;
@@ -410,11 +514,14 @@ public:
 
             send_packet();
             
+            //最終形　河村
+            precise_sleep_until(ipt_start + std::chrono::duration<double>(ipt_interval));
+            
             // ipt_interval待機（OSに深く寝かせない）20260416_河村
-            auto target_time = ipt_start + std::chrono::duration<double>(ipt_interval);
-            while (hr_clock::now() < target_time) {
-                std::this_thread::yield(); // 他のスレッド（映像取得など）に一瞬だけCPUを譲る
-            }
+            // auto target_time = ipt_start + std::chrono::duration<double>(ipt_interval);
+            // while (hr_clock::now() < target_time) {
+            //     std::this_thread::yield(); // 他のスレッド（映像取得など）に一瞬だけCPUを譲る
+            // }
             // ipt_interval待機　西田さんの実装
             // std::this_thread::sleep_until(ipt_start + std::chrono::duration<double>(ipt_interval));
         }

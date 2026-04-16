@@ -9,9 +9,11 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <mutex>
-#include <sstream>
-
+#include <mutex> //追加20260416
+#include <sstream> //
+#include <chrono> //
+#include <time.h> //
+#include <pthread.h> //
 #include "../../include/header/bytequeue.hpp"  // 自作モジュール
 #include "../../include/header/log.hpp"  // 自作モジュール
 #include "../../include/header/packet.hpp"  // 自作モジュール
@@ -41,7 +43,8 @@ std::queue<std::tuple<uint32_t, uint32_t, std::vector<uint8_t>>> g_video_queue; 
 std::queue<std::vector<uint8_t>> g_command_queue;  // 制御情報パケットキュー
 std::queue<Packet> g_video_packet_queue;  // 映像データパケットキュー
 std::queue<Packet> g_command_packet_queue;  // 制御情報パケットキュー
-std::mutex g_lock;
+// std::mutex g_lock; 削除　20260416
+
 
 
 class Mucvis_rn {
@@ -70,6 +73,11 @@ private:
     std::vector<uint8_t> send_payload;
     std::vector<uint8_t> down_recv_payload;
     std::vector<uint8_t> up_recv_payload;
+    // --- ここから追記 (ミューテックスの宣言) 20260416_河村---
+    std::mutex m_command_mutex;
+    std::mutex m_video_mutex;
+    std::mutex m_ack_mutex;
+    // --- ここまで ---
 
 public:
     Mucvis_rn(std::string my_address, int my_port_down_receiver, int my_port_up_receiver, std::string down_address, int down_port, std::string up_address, int up_port, Log& log, double ipt_interval, hr_clock::time_point hr_start_time, int my_node_num, std::vector<std::vector<std::string>>& routing_table) {
@@ -113,37 +121,123 @@ public:
 
 
     // 下り受信用 ここから
-    // パケット作成
-    Packet make_packet_down_receiver() {
-        uint32_t packet_type;
-        g_lock.lock();
-        int video_packet_queue_size = m_video_packet_queue.size();
-        int command_packet_queue_size = m_command_packet_queue.size();
-        g_lock.unlock();
+    // // パケット作成 西田さん実装
+    // Packet make_packet_down_receiver() {
+    //     uint32_t packet_type;
+    //     g_lock.lock();
+    //     int video_packet_queue_size = m_video_packet_queue.size();
+    //     int command_packet_queue_size = m_command_packet_queue.size();
+    //     g_lock.unlock();
 
-        if (command_packet_queue_size != 0) {
-            // 制御情報パケットがあるときは制御情報パケットを送信
-            g_lock.lock();
-            Packet packet = m_command_packet_queue.front();
-            m_command_packet_queue.pop();
-            g_lock.unlock();
+    //     if (command_packet_queue_size != 0) {
+    //         // 制御情報パケットがあるときは制御情報パケットを送信
+    //         g_lock.lock();
+    //         Packet packet = m_command_packet_queue.front();
+    //         m_command_packet_queue.pop();
+    //         g_lock.unlock();
 
-            return packet;
-        } else if(video_packet_queue_size != 0) {
-            // 映像データパケットがあるときは映像データパケットを送信
-            g_lock.lock();
-            Packet packet = m_video_packet_queue.front();
-            m_video_packet_queue.pop();
-            g_lock.unlock();
-            return packet;
-        } else {  // 両方のパケットキューが空のとき，ダミーパケットを送信
-            packet_type = TYPE_DUMMY;
-            g_lock.lock();
-            uint32_t ack = m_ack;
-            g_lock.unlock();
+    //         return packet;
+    //     } else if(video_packet_queue_size != 0) {
+    //         // 映像データパケットがあるときは映像データパケットを送信
+    //         g_lock.lock();
+    //         Packet packet = m_video_packet_queue.front();
+    //         m_video_packet_queue.pop();
+    //         g_lock.unlock();
+    //         return packet;
+    //     } else {  // 両方のパケットキューが空のとき，ダミーパケットを送信
+    //         packet_type = TYPE_DUMMY;
+    //         g_lock.lock();
+    //         uint32_t ack = m_ack;
+    //         g_lock.unlock();
 
-            return Packet(packet_type, ack);
+    //         return Packet(packet_type, ack);
+    //     }
+    // }
+    // 20260416_河村_試験運用
+    void set_realtime_priority(int priority) {
+        struct sched_param param;
+        param.sched_priority = priority; 
+        if (pthread_setschedparam(pthread_self(), SCHED_FIFO, &param) != 0) {
+            std::cerr << "Failed to set SCHED_FIFO (Priority: " << priority << ")" << std::endl;
         }
+    }
+    // グローバルまたはクラスメンバとしてロガーのインスタンスを渡す想定　試験運用
+    template <typename TimePoint>
+    void precise_sleep_until(std::chrono::steady_clock::time_point target_time) {
+        using namespace std::chrono;
+        using clock = steady_clock;
+
+        const auto BUSY_WAIT = 50us; 
+        const auto YIELD_THRESHOLD = 30us; 
+
+        while (true) {
+            auto now = clock::now();
+            if (now >= target_time) return;
+
+            auto remaining = target_time - now;
+
+            if (remaining > BUSY_WAIT) {
+                auto sleep_target = target_time - BUSY_WAIT;
+                auto ns = time_point_cast<nanoseconds>(sleep_target).time_since_epoch().count();
+
+                struct timespec ts;
+                ts.tv_sec = ns / 1000000000LL;
+                ts.tv_nsec = ns % 1000000000LL;
+
+                // OSのスリープへ
+                while (clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, NULL) == EINTR);
+                
+                // 【論文用データ計測】OSがどれだけ寝坊したか（Wake遅延）を計測
+                // auto wake_time = clock::now();
+                // auto overshoot = duration_cast<microseconds>(wake_time - sleep_target).count();
+                // if (overshoot > 50) { /* ロガーに記録する等の処理 */ }
+                
+            } else {
+                // 2段階ビジーループ
+                while (true) {
+                    now = clock::now();
+                    if (now >= target_time) return;
+
+                    if ((target_time - now) > YIELD_THRESHOLD) {
+                        std::this_thread::yield(); // 同コアの他FIFOスレッドへ譲る
+                    } else {
+                        __asm__ volatile("yield" ::: "memory"); // 最終精密スピン
+                    }
+                }
+            }
+        }
+    }
+
+
+    //20260416_河村＿試験運用
+    Packet make_packet_down_receiver() {
+        // 1. 制御パケットの確認（最速でロック解放）
+        {
+            std::lock_guard<std::mutex> lock(m_command_mutex);
+            if (!m_command_packet_queue.empty()) {
+                Packet p = m_command_packet_queue.front();
+                m_command_packet_queue.pop();
+                return p;
+            }
+        }
+
+        // 2. 映像パケットの確認
+        {
+            std::lock_guard<std::mutex> lock(m_video_mutex);
+            if (!m_video_packet_queue.empty()) {
+                Packet p = m_video_packet_queue.front();
+                m_video_packet_queue.pop();
+                return p;
+            }
+        }
+
+        // 3. ダミー生成
+        uint32_t current_ack;
+        {
+            std::lock_guard<std::mutex> lock(m_ack_mutex);
+            current_ack = m_ack;
+        }
+        return Packet(TYPE_DUMMY, current_ack);
     }
 
     // 下りパケット送信
@@ -167,9 +261,15 @@ public:
             seq = packet.get_commandSeq(); // 制御パケットのseqを取得
         }
         // ----------------------------------
-        g_lock.lock();
-        int video_packet_queue_size = m_video_packet_queue.size();
-        g_lock.unlock();
+        // 20260416_河村　g_lock削除とmutex追加
+        // g_lock.lock();
+        // int video_packet_queue_size = m_video_packet_queue.size();
+        // g_lock.unlock();
+        int video_packet_queue_size;
+        {
+            std::lock_guard<std::mutex> lock(m_video_mutex);
+            video_packet_queue_size = m_video_packet_queue.size();
+        }
 
         // パケットタイプがCONTROLのときは，上りに送信
         if (packet_type == "CONTROL") {
@@ -190,14 +290,22 @@ public:
 
                 if (change_up_address == "0") {
                     // キュー内をべて消す 消せてないかも std::stoi(change_up_address) == 0
-                    lock.lock();
-                    while (!m_command_packet_queue.empty()) {
-                        m_command_packet_queue.pop();
+                    {
+                        std::lock_guard<std::mutex> lock1(m_command_mutex);
+                        while (!m_command_packet_queue.empty()) m_command_packet_queue.pop();
                     }
-                    while (!m_video_packet_queue.empty()) {
-                        m_video_packet_queue.pop();
+                    {
+                        std::lock_guard<std::mutex> lock2(m_video_mutex);
+                        while (!m_video_packet_queue.empty()) m_video_packet_queue.pop();
                     }
-                    lock.unlock();
+                    // lock.lock(); 河村　修正20260416
+                    // while (!m_command_packet_queue.empty()) {
+                    //     m_command_packet_queue.pop();
+                    // }
+                    // while (!m_video_packet_queue.empty()) {
+                    //     m_video_packet_queue.pop();
+                    // }
+                    // lock.unlock();
                     std::cout << "Clear queue and stop sending up." << std::endl;
                 }
             }
@@ -223,9 +331,16 @@ public:
         // down_buf[0] = '\0';  // バッファを初期化
         uint32_t seq = 0;
         uint32_t ack = 0;
-        g_lock.lock();
-        int video_packet_queue_size = m_video_packet_queue.size();
-        g_lock.unlock();
+        // 20260416_河村　削除と追加 
+        // g_lock.lock();
+        // int video_packet_queue_size = m_video_packet_queue.size();
+        // g_lock.unlock();
+        // 修正後
+        int video_packet_queue_size;
+        {
+            std::lock_guard<std::mutex> lock(m_video_mutex);
+            video_packet_queue_size = m_video_packet_queue.size();
+        }
 
         int recv_size = recv(down_receiver_sock, down_buf, sizeof(down_buf), 0);
 
@@ -241,15 +356,26 @@ public:
             ack = packet.get_ack();
             seq = packet.get_videoSeq();
 
-            g_lock.lock();
-            m_video_packet_queue.push(packet);
-            g_lock.unlock();
+            //20260416_河村　削除と追加
+            // g_lock.lock();
+            // m_video_packet_queue.push(packet);
+            // g_lock.unlock();
+            // 修正後
+            {
+                std::lock_guard<std::mutex> lock(m_video_mutex);
+                m_video_packet_queue.push(packet);
+            }
 
             // キューがいっぱいのときは先頭の要素を削除
             if (video_packet_queue_size + 1 > m_video_queue_maxsize) {
-                g_lock.lock();
-                m_video_packet_queue.pop();
-                g_lock.unlock();
+                {
+                    std::lock_guard<std::mutex> lock(m_video_mutex);
+                    m_video_packet_queue.pop();
+                }
+                //河村　修正20260416
+                // g_lock.lock();
+                // m_video_packet_queue.pop();
+                // g_lock.unlock();
                 std::stringstream ss;
                 ss << "T= " << std::chrono::duration<double>(recv_time - hr_start_time).count() 
                     << " Ev= Video_Packet_Drop"
@@ -272,30 +398,39 @@ public:
         // ログ出力
         log->write_rn(std::chrono::duration<double>(recv_time - hr_start_time), "Recv", packet_type, "Down", seq, recv_size, video_packet_queue_size);
 
-        g_lock.lock();
-        m_ack = ack;
-        g_lock.unlock();
+        // 20260416_河村　削除と修正
+        // g_lock.lock();
+        // m_ack = ack;
+        // g_lock.unlock();
+        {
+            std::lock_guard<std::mutex> lock(m_ack_mutex);
+            m_ack = ack;
+        }   
 
         // 精度上げるために変更してみた20260416_河村
         // 【修正後】送信間隔 I / 3 待機（厳密なスピンウェイト）
         // 目標時刻を計算
-        auto target_time = recv_time + std::chrono::duration<double>(ipt_interval / 3.0);
+        // auto target_time = recv_time + std::chrono::duration<double>(ipt_interval / 3.0);
         
-        // 目標時刻になるまでループで待機（深いsleepに入らせない）
-        while (hr_clock::now() < target_time) {
-            // 他のスレッド（モータ制御や受信処理）が完全に止まらないよう、
-            // ほんの一瞬だけCPUの実行権を譲る（yield）
-            std::this_thread::yield();
-        }
+        // // 目標時刻になるまでループで待機（深いsleepに入らせない）
+        // while (hr_clock::now() < target_time) {
+        //     // 他のスレッド（モータ制御や受信処理）が完全に止まらないよう、
+        //     // ほんの一瞬だけCPUの実行権を譲る（yield）
+        //     std::this_thread::yield();
+        // }
         // // 送信間隔 I / 3 待機
         // // if (packet_type == "DUMMY" or packet_type == "CONTROL") {
         // 本来は以下の行だったよ
         // std::this_thread::sleep_until(recv_time + std::chrono::duration<double>(ipt_interval / 3));
+        precise_sleep_until(recv_time + std::chrono::duration<double>(ipt_interval / 3));
         // // }
     }
 
     // 下りパケット受信開始
     int down_receiver_start() {
+        // 受信スレッドの先頭（例: up_receiver_start）20260416_河村
+        set_realtime_priority(80); // メインのため優先度高く
+
         // 下り受信用ソケットをバインド
         if (bind(down_receiver_sock, reinterpret_cast<sockaddr*>(&my_addr_down_receiver), sizeof(my_addr_down_receiver)) == -1) {
             std::cerr << "Failed to bind socket" << endl;
@@ -318,9 +453,15 @@ public:
         // char buf[BUFFER_MAX];
         // up_buf[0] = '\0';  // バッファを初期化
         uint32_t seq = 0;
-        g_lock.lock();
-        int video_packet_queue_size = m_video_packet_queue.size();
-        g_lock.unlock();
+        // 20260416_河村_追加と削除
+        // g_lock.lock();
+        // int video_packet_queue_size = m_video_packet_queue.size();
+        // g_lock.unlock();
+        int video_packet_queue_size;
+        {
+            std::lock_guard<std::mutex> lock(m_video_mutex);
+            video_packet_queue_size = m_video_packet_queue.size();
+        }
 
         int recv_size = recv(up_receiver_sock, up_buf, sizeof(up_buf), 0);
 
@@ -334,12 +475,17 @@ public:
 
         if (packet_type == "CONTROL") {
             seq = packet.get_commandSeq();
-            g_lock.lock();
-            if (change_up_address != "0" or std::stoi(send_up_node) != 0) {
-                m_command_packet_queue.push(packet);
-            }
+            //20260416_河村_削除と修正
+
+            // g_lock.lock();
+            {
+                std::lock_guard<std::mutex> lock(m_command_mutex);  
+                if (change_up_address != "0" or std::stoi(send_up_node) != 0) {
+                    m_command_packet_queue.push(packet);
+                }
+            }    
             // m_command_packet_queue.push(packet);
-            g_lock.unlock();
+            // g_lock.unlock();
             std::string command = packet.get_command();
             if (command.size() < 60) {
                 cout << endl << "Recv command: " << command << endl;
@@ -413,13 +559,17 @@ public:
         }
 
         // 上り送信先が0のとき，受け取ったパケットをキューから削除
-        g_lock.lock();
-        if (m_command_packet_queue.size() > 0 and std::stoi(send_up_node) == 0) {
-            for (int i = 0; i < int(m_command_packet_queue.size()); i++) {
-                m_command_packet_queue.pop();
+        //20260416_河村_削除と追加
+        // g_lock.lock();
+        {
+            std::lock_guard<std::mutex> lock(m_command_mutex);
+            if (m_command_packet_queue.size() > 0 and std::stoi(send_up_node) == 0) {
+                for (int i = 0; i < int(m_command_packet_queue.size()); i++) {
+                    m_command_packet_queue.pop();
+                }
             }
         }
-        g_lock.unlock();
+        // g_lock.unlock();
         
         // ログ出力
         log->write_rn(std::chrono::duration<double>(recv_time - hr_start_time), "Recv", packet_type, "Up", seq, recv_size, video_packet_queue_size);
@@ -430,6 +580,8 @@ public:
 
     // 上りパケット受信開始
     int up_receiver_start() {
+        // 受信スレッドの先頭（例: up_receiver_start）20260416_河村
+        set_realtime_priority(75); // 送信よりわずかに下げる
         if (bind(up_receiver_sock, reinterpret_cast<sockaddr*>(&my_addr_up_receiver), sizeof(my_addr_up_receiver)) == -1) {
             std::cerr << "Failed to bind socket" << endl;
             close(up_receiver_sock);

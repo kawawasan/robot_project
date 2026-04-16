@@ -39,7 +39,7 @@ using system_clock = std::chrono::system_clock;
 #define TYPE_CONTROL (uint32_t)(0b01 << 30)
 #define TYPE_DUMMY (uint32_t)(0b10 << 30)
 #define BUFFER_MAX 1500
-#define MAX_VIDEO_SIZE 1464  // 映像データサイズ 最大1464byte．tsファイルは188byteのため，1316
+#define MAX_VIDEO_SIZE 1316  // 映像データサイズ 最大1464byte．tsファイルは188byteのため，1316
 #define VIDEO_BUFFER_SIZE (MAX_VIDEO_SIZE * 100)  // パイプから読み込むバッファサイズ
 #define CONTROL_SEQ_MAX (1 << 30)  // 30bitの最大値
 #define VIDEO_SEQ_MAX 0xffffffff  // 32bitの最大値
@@ -262,6 +262,9 @@ public:
                         g_video_bytequeue.put(std::vector<uint8_t>(buffer, buffer + bytes_read));
                     // g_lock.unlock();
                     }
+                    //移動　20260416 河村 映像データの書き込み場所変更
+                    video_file.write(reinterpret_cast<const char*>(video_data.data()), video_data.size());
+
                 } else if (bytes_read == 0) {
                     // パイプが閉じた（EOF）
                     std::cout << "Pipe closed." << std::endl;
@@ -306,7 +309,7 @@ public:
                 packet_type = TYPE_DUMMY;
             } else {
                 // 無事に映像が取り出せた場合の処理
-                video_file.write(reinterpret_cast<const char*>(video_data.data()), video_data.size());
+                // video_file.write(reinterpret_cast<const char*>(video_data.data()), video_data.size()); 移動_河村
                 if (!video_file) {
                     std::cerr << "Failed to write to video file" << std::endl;
                 }

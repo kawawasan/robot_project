@@ -178,6 +178,26 @@ public:
         }
     }
 
+    // ⭕️ 新設：CNの裏方書き込みスレッド
+    void video_writer_thread() {
+        while (true) {
+            std::vector<uint8_t> data;
+            {
+                std::lock_guard<std::mutex> lock(m_video_mutex);
+                if (!g_video_queue.empty()) {
+                    data = std::move(g_video_queue.front());
+                    g_video_queue.pop();
+                }
+            }
+            if (!data.empty()) {
+                pipe_file.write(reinterpret_cast<const char*>(data.data()), data.size());
+                pipe_file.flush();
+                video_file.write(reinterpret_cast<const char*>(data.data()), data.size());
+            } else {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            }
+        }
+    }
 
     // グローバルまたはクラスメンバとしてロガーのインスタンスを渡す想定
     // 20260416_河村　追加
@@ -631,6 +651,10 @@ int main(int argc, char* argv[]) {
     // クラスのインスタンス化
     Mucvis_cn mucvis_cn(host, down_port, up_address, up_port, log, ipt_interval, hr_start_time, video_file_name, node_num, std::ref(routing_table));  // 実験環境用
     // Mucvis_cn mucvis_cn(host, 60204, up_address, 60203, log, start_time);  // ローカル環境用(ポートで振り分け)
+
+    // ⭕️ ここに2行追加！ 裏方の書き込みスレッドを作って、すぐに野に放つ（切り離す） 河村
+    std::thread writer_thread(&Mucvis_cn::video_writer_thread, &mucvis_cn);
+    writer_thread.detach();
 
     std::thread receiver_thread(&Mucvis_cn::start_receive, &mucvis_cn);
 

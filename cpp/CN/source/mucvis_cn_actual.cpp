@@ -97,7 +97,9 @@ class Mucvis_cn {
     std::string video_file_name;
     std::ofstream video_file;
     // 受け取った映像をストリーミング再生するための名前付きパイプを定義
-    std::ofstream pipe_file;
+    // std::ofstream pipe_file; 試しに変更　河村
+    // ⭕️ 修正後
+    std::fstream pipe_file;
 
     std::vector<uint8_t> video_data;
     std::size_t video_data_size;
@@ -139,17 +141,32 @@ public:
         }
 
         // 名前付きパイプを作成
-        if (!std::filesystem::exists("/tmp/ts_pipe")) {
-            if (mkfifo("/tmp/ts_pipe", 0666) == -1) {
-                std::cerr << "Failed to create named pipe: /tmp/ts_pipe" << std::endl;
+        // if (!std::filesystem::exists("/tmp/ts_pipe")) {
+        //     if (mkfifo("/tmp/ts_pipe", 0666) == -1) {
+        //         std::cerr << "Failed to create named pipe: /tmp/ts_pipe" << std::endl;
+        //         exit(EXIT_FAILURE);
+        //     }
+        // }
+        // ⭕️ 修正後（カレントディレクトリに作成）20260416 河村
+        if (!std::filesystem::exists("ts_pipe")) {
+            if (mkfifo("ts_pipe", 0666) == -1) {
+                std::cerr << "Failed to create named pipe: ts_pipe" << std::endl;
                 exit(EXIT_FAILURE);
             }
         }
-        cout << "名前付きパイプ生成: /tmp/ts_pipe" << endl;
-        pipe_file.open("/tmp/ts_pipe", std::ios::binary);
+
+        cout << "名前付きパイプ生成: ./ts_pipe" << endl;
+        // cout << "名前付きパイプ生成: /tmp/ts_pipe" << endl;
+        // ⭕️ 修正後（inとoutの両方をつけて開く！）
+        pipe_file.open("ts_pipe", std::ios::in | std::ios::out | std::ios::binary);
         if (!pipe_file) {
-            std::cerr << "Failed to open named pipe: /tmp/ts_pipe" << std::endl;
+            std::cerr << "Failed to open named pipe: ts_pipe" << std::endl;
             exit(EXIT_FAILURE);
+        
+        // pipe_file.open("/tmp/ts_pipe", std::ios::binary);
+        // if (!pipe_file) {
+        //     std::cerr << "Failed to open named pipe: /tmp/ts_pipe" << std::endl;
+        //     exit(EXIT_FAILURE);
         } else {
             std::cout << "Named pipe opened successfully: /tmp/ts_pipe" << std::endl;
         }

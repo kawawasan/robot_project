@@ -799,7 +799,7 @@ int main(int argc, char* argv[]) {
             " --vflip --hflip" +  //河村追加1001 画面上下左右反転
             " --codec h264 --inline -o - | "  // libcamera-vidの出力をパイプ
             // "ffmpeg -fflags +genpts -analyzeduration 100000 -i - -c copy -f mpegts "  // 入力ストリームの解析に使う最大時間を0.1秒に設定
-            "ffmpeg -fflags +genpts -analyzeduration 100000 -r " + FRAMERATE + " -i - -c copy -f mpegts "
+            "ffmpeg -fflags +genpts -analyzeduration 100000 -r " + FRAMERATE + " -i - -c copy -f mpegts -flush_packets 1 "
             "-loglevel fatal "  // ログレベルをfatalに設定;
             "-";
         execlp("sh", "sh", "-c", cmd.c_str(), nullptr);

@@ -263,7 +263,8 @@ public:
                     // g_lock.unlock();
                     }
                     //移動　20260416 河村 映像データの書き込み場所変更
-                    video_file.write(reinterpret_cast<const char*>(video_data.data()), video_data.size());
+                    // video_file.write(reinterpret_cast<const char*>(video_data.data()), video_data.size());
+                    video_file.write(reinterpret_cast<const char*>(buffer), bytes_read);
 
                 } else if (bytes_read == 0) {
                     // パイプが閉じた（EOF）

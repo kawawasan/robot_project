@@ -166,22 +166,16 @@ public:
     template <typename TimePoint>
     void precise_sleep_until(TimePoint target_time) {
         using namespace std::chrono;
-        using clock = typename TimePoint::clock;
-
-        auto now = clock::now();
-        if (now >= target_time) return;
-
-        // 残り時間を計算
-        auto remaining = target_time - now;
-        auto ns = duration_cast<nanoseconds>(remaining).count();
+        
+        // target_time をそのままエポックからのナノ秒に変換
+        auto epoch_ns = duration_cast<nanoseconds>(target_time.time_since_epoch()).count();
 
         struct timespec ts;
-        ts.tv_sec = ns / 1000000000LL;
-        ts.tv_nsec = ns % 1000000000LL;
+        ts.tv_sec = epoch_ns / 1000000000LL;
+        ts.tv_nsec = epoch_ns % 1000000000LL;
 
-        // ビジーループと yield() を完全に削除し、OSレベルで確実に休眠させる
-        // EINTR（割り込み）で早く起きた場合のみ、残り時間(ts)で再度スリープ
-        while (clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, &ts) == EINTR);
+        // 第2引数に TIMER_ABSTIME を指定し、絶対時刻でOSに厳密な休眠を委ねる
+        while (clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, nullptr) == EINTR);
     }
     //         } else {
     //             // 2段階ビジーループ

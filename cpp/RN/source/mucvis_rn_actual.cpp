@@ -29,7 +29,7 @@ using system_clock = std::chrono::system_clock;
 #define TYPE_CONTROL (uint32_t)(0b01 << 30)
 #define TYPE_DUMMY (uint32_t)(0b10 << 30)
 #define BUFFER_MAX 1500
-#define MAX_VIDEO_SIZE 1464  // 映像データサイズ 最大1464byte
+#define MAX_VIDEO_SIZE 1316  // 映像データサイズ 最大1464byte
 #define CONTROL_SEQ_MAX (1 << 30)  // 30bitの最大値
 #define VIDEO_SEQ_MAX 0xffffffff  // 32bitの最大値
 #define DUMMY_SEQ_MAX 3  // ダミーパケット送信回数上限
@@ -166,49 +166,38 @@ public:
     template <typename TimePoint>
     void precise_sleep_until(TimePoint target_time) {
         using namespace std::chrono;
-        // 呼び出し元の時計(hr_clock等)に自動で合わせる
         using clock = typename TimePoint::clock;
 
-        const auto BUSY_WAIT = 50us; 
-        const auto YIELD_THRESHOLD = 30us; 
+        auto now = clock::now();
+        if (now >= target_time) return;
 
-        while (true) {
-            auto now = clock::now();
-            if (now >= target_time) return;
+        // 残り時間を計算
+        auto remaining = target_time - now;
+        auto ns = duration_cast<nanoseconds>(remaining).count();
 
-            // 残り時間（Duration）を計算
-            auto remaining = target_time - now;
+        struct timespec ts;
+        ts.tv_sec = ns / 1000000000LL;
+        ts.tv_nsec = ns % 1000000000LL;
 
-            if (remaining > BUSY_WAIT) {
-                // OSに休ませる時間を計算
-                auto sleep_duration = remaining - BUSY_WAIT;
-                // double型等の計算誤差を防ぐため、安全にナノ秒(整数)にキャスト
-                auto ns = duration_cast<nanoseconds>(sleep_duration).count();
-
-                struct timespec ts;
-                ts.tv_sec = ns / 1000000000LL;
-                ts.tv_nsec = ns % 1000000000LL;
-
-                // ★ 修正ポイント：相対時間(0)でスリープする。
-                // EINTR(割り込み)で早く起きてしまった場合、残り時間が ts に自動で上書きされるため
-                // 基準時刻のズレ（Epoch不一致）を完全に回避しつつ、正確に待機できる。
-                while (clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, &ts) == EINTR);
-                
-            } else {
-                // 2段階ビジーループ
-                while (true) {
-                    now = clock::now();
-                    if (now >= target_time) return;
-
-                    if ((target_time - now) > YIELD_THRESHOLD) {
-                        std::this_thread::yield(); 
-                    } else {
-                        __asm__ volatile("yield" ::: "memory"); 
-                    }
-                }
-            }
-        }
+        // ビジーループと yield() を完全に削除し、OSレベルで確実に休眠させる
+        // EINTR（割り込み）で早く起きた場合のみ、残り時間(ts)で再度スリープ
+        while (clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, &ts) == EINTR);
     }
+    //         } else {
+    //             // 2段階ビジーループ
+    //             while (true) {
+    //                 now = clock::now();
+    //                 if (now >= target_time) return;
+
+    //                 if ((target_time - now) > YIELD_THRESHOLD) {
+    //                     std::this_thread::yield(); 
+    //                 } else {
+    //                     __asm__ volatile("yield" ::: "memory"); 
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
     //20260416_河村＿試験運用
     Packet make_packet_down_receiver() {
@@ -582,7 +571,7 @@ public:
     // 上りパケット受信開始
     int up_receiver_start() {
         // 受信スレッドの先頭（例: up_receiver_start）20260416_河村
-        set_realtime_priority(75); // 送信よりわずかに下げる
+        set_realtime_priority(80); // 送信よりわずかに下げる
         if (bind(up_receiver_sock, reinterpret_cast<sockaddr*>(&my_addr_up_receiver), sizeof(my_addr_up_receiver)) == -1) {
             std::cerr << "Failed to bind socket" << endl;
             close(up_receiver_sock);
@@ -736,12 +725,15 @@ int main(int argc, char* argv[]) {
         // モーター制御プログラムの実行ファイルへの絶対パス
         const char* motor_program_path = "/home/pi/robot_project/Motor_Driver_HAT_Code/Motor_Driver_HAT_Code/Raspberry Pi/c/main";
         
-        // execlでプログラムを起動
+        // execlでプログラムを起動 修正　河村 20260416
+        execlp("taskset", "taskset", "-c", "0,1,2", motor_program_path, (char *)NULL);
+    
+        perror("execlp failed");
         // この通信プログラム自体をsudoで実行する必要があります
-        execl(motor_program_path, motor_program_path, (char *)NULL);
+        // execl(motor_program_path, motor_program_path, (char *)NULL);
         
         // execlが失敗した場合のみ、以下のコードが実行される
-        perror("execl failed to run motor program");
+        // perror("execl failed to run motor program");
         exit(1); // 子プロセスを終了
     }
     // --- ここまで ---

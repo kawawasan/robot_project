@@ -220,10 +220,7 @@ public:
 
                 // 映像データキューが空の場合は待機
                 if (video_data.empty()) {
-                    // 西田さんの実装
-                    // std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                    // 20260416_河村
-                    std::this_thread::yield();
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 } else {
                     break;
                 }
@@ -409,14 +406,9 @@ public:
             ipt_start = hr_clock::now();
 
             send_packet();
-            
-            // ipt_interval待機（OSに深く寝かせない）20260416_河村
-            auto target_time = ipt_start + std::chrono::duration<double>(ipt_interval);
-            while (hr_clock::now() < target_time) {
-                std::this_thread::yield(); // 他のスレッド（映像取得など）に一瞬だけCPUを譲る
-            }
-            // ipt_interval待機　西田さんの実装
-            // std::this_thread::sleep_until(ipt_start + std::chrono::duration<double>(ipt_interval));
+
+            // ipt_interval待機
+            std::this_thread::sleep_until(ipt_start + std::chrono::duration<double>(ipt_interval));
         }
         return 0;
     }

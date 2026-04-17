@@ -160,7 +160,7 @@ public:
 
         std::string packet_type = packet.get_type();
 
-        // --- ここでseqを取り出す処理を追加 ---20260409
+        // --- ここでseqを取り出す処理を追加 ---
         if (packet_type == "VIDEO") {
             seq = packet.get_videoSeq();
         } else if (packet_type == "CONTROL") {
@@ -209,10 +209,10 @@ public:
         hr_clock::time_point send_time = hr_clock::now();
         std::chrono::duration<double> duration = std::chrono::duration<double>(send_time - hr_start_time);
 
-        // // ログに書き込む
-        // if (packet_type == "VIDEO") {
-        //     seq = packet.get_videoSeq();
-        // }
+        // ログに書き込む
+        if (packet_type == "VIDEO") {
+            seq = packet.get_videoSeq();
+        }
 
         log->write_rn(duration, "Send", packet_type, "Down", seq, send_payload.size(), video_packet_queue_size);
     }
@@ -276,22 +276,10 @@ public:
         m_ack = ack;
         g_lock.unlock();
 
-        // 精度上げるために変更してみた20260416_河村
-        // 【修正後】送信間隔 I / 3 待機（厳密なスピンウェイト）
-        // 目標時刻を計算
-        auto target_time = recv_time + std::chrono::duration<double>(ipt_interval / 3.0);
-        
-        // 目標時刻になるまでループで待機（深いsleepに入らせない）
-        while (hr_clock::now() < target_time) {
-            // 他のスレッド（モータ制御や受信処理）が完全に止まらないよう、
-            // ほんの一瞬だけCPUの実行権を譲る（yield）
-            std::this_thread::yield();
-        }
-        // // 送信間隔 I / 3 待機
-        // // if (packet_type == "DUMMY" or packet_type == "CONTROL") {
-        // 本来は以下の行だったよ
-        // std::this_thread::sleep_until(recv_time + std::chrono::duration<double>(ipt_interval / 3));
-        // // }
+        // 送信間隔 I / 3 待機
+        // if (packet_type == "DUMMY" or packet_type == "CONTROL") {
+        std::this_thread::sleep_until(recv_time + std::chrono::duration<double>(ipt_interval / 3));
+        // }
     }
 
     // 下りパケット受信開始

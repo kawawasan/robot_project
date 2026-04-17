@@ -565,7 +565,7 @@ public:
     // 上りパケット受信開始
     int up_receiver_start() {
         // 受信スレッドの先頭（例: up_receiver_start）20260416_河村
-        set_realtime_priority(80); // 送信よりわずかに下げる
+        set_realtime_priority(80); // 同じに
         if (bind(up_receiver_sock, reinterpret_cast<sockaddr*>(&my_addr_up_receiver), sizeof(my_addr_up_receiver)) == -1) {
             std::cerr << "Failed to bind socket" << endl;
             close(up_receiver_sock);

@@ -132,6 +132,8 @@ public:
         send_payload.reserve(MAX_VIDEO_SIZE + 8);  // ヘッダ8byte + 映像データ最大1464byte
         recv_payload.reserve(MAX_VIDEO_SIZE + 8);  // ヘッダ8byte + 映像データ最大1464byte
 
+        const int VIDEO_QUEUE_MAX_SIZE = 100;  // 約130KB前後に制限　追加　河村
+
         // 映像ファイルを開く
         std::string file_name_pass = FILE_NAME_PREFIX + video_file_name + "/" + video_file_name + ".ts";
         video_file.open(file_name_pass, std::ios::binary);
@@ -225,7 +227,7 @@ public:
             }
         }
 
-        
+
     // パケット生成
     Packet make_packet() {
         uint32_t packet_type = (0b11 << 30);  // UNKNOWN
@@ -344,6 +346,13 @@ public:
             // g_lock.lock();河村
             {
             std::lock_guard<std::mutex> lock(m_video_mutex);
+            if (g_video_queue.size() < VIDEO_QUEUE_MAX_SIZE) {
+                // キューがいっぱいなら古いデータを破棄
+                if (g_video_queue.size() >= VIDEO_QUEUE_MAX_SIZE) {
+                    g_video_queue.pop();  // FIFO の先頭を破棄
+                    log->write("Video queue overflow: oldest frame dropped");
+                }
+                
                 g_video_queue.push(packet.get_videoData());
                 pre_ack = g_ack;
                 g_ack = ack;
@@ -370,17 +379,20 @@ public:
             // std::size_t video_data_size = video_data.size();
             // video_data.clear();  // 映像データをクリア
             // video_data = packet.get_videoData();
-            video_data = std::move(packet.get_videoData());  // 映像データをムーブ
-            video_data_size = video_data.size();
+
+            //以下２行を削除　河村
+            // video_data = std::move(packet.get_videoData());  // 映像データをムーブ
+            // video_data_size = video_data.size();
+            
             // cout << "映像データ受信サイズ: " << video_data_size << " byte" << endl;
 
             // 映像データを名前付きパイプに渡す．ストリーミング再生用
             // pipe_file.write(reinterpret_cast<const char*>(packet.get_videoData().data()), packet.get_videoData().size());
-            pipe_file.write(reinterpret_cast<const char*>(video_data.data()), video_data_size);
+            // pipe_file.write(reinterpret_cast<const char*>(video_data.data()), video_data_size);　削除　河村
             // pipe_file.flush();  
             // 映像データをファイルに書き込む
             // video_file.write(reinterpret_cast<const char*>(packet.get_videoData().data()), packet.get_videoData().size());
-            video_file.write(reinterpret_cast<const char*>(video_data.data()), video_data_size);
+            // video_file.write(reinterpret_cast<const char*>(video_data.data()), video_data_size);　河村
             // video_file.flush();
             // cout << "映像データ書き込みサイズ: " << packet.get_videoData().size() << " byte" << endl;
             // g_write_size += packet.get_videoData().size();

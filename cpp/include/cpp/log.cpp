@@ -68,7 +68,7 @@ void Log::write_camn_cn(std::chrono::duration<double> time, std::string event, s
     write(log_message);
 }
 
-void Log::write_rn(std::chrono::duration<double> time, std::string event, std::string packet_type, std::string direction, int seq, int payload_size, int video_queue_size) {
+void Log::write_rn(std::chrono::duration<double> time, std::string event, std::string packet_type, std::string direction, int ack, int seq, int payload_size, int video_queue_size) {
     std::string log_message = 
     "T= " + std::to_string(time.count()) +
     " Ev= " + event +

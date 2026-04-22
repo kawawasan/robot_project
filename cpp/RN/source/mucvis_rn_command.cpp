@@ -144,9 +144,7 @@ public:
             
             // --- 【修正追加】RNが自発的に送るDUMMYにも連番を振る ---
             static uint32_t rn_generated_dummy_seq = 0;
-            Packet p(packet_type, ack);
-            p.set_dummySeq(rn_generated_dummy_seq++); // ※ご自身のpacket.hppの仕様に合わせてメソッド名を変更してください
-            return p;
+            return Packet(packet_type, ack, rn_generated_dummy_seq++);
             // return Packet(packet_type, ack);
         }
     }
@@ -188,7 +186,7 @@ public:
             std::chrono::duration<double> duration = std::chrono::duration<double>(send_time - hr_start_time);
 
             // ログに書き込む
-            log->write_rn(duration, "Send", packet_type, "Up", seq, send_payload.size(), video_packet_queue_size);
+            log->write_rn(duration, "Send", packet_type, "Up", ack, seq, send_payload.size(), video_packet_queue_size);
 
             // 送信後，送信先をルーティングテーブルを参照し更新
             // ここ怪しい

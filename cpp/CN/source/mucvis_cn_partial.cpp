@@ -155,6 +155,7 @@ public:
     // パケット生成
     Packet make_packet() {
         uint32_t packet_type = (0b11 << 30);  // UNKNOWN
+        static uint32_t unknown_seq = 0;
         g_lock.lock();
         int g_command_queue_size = g_command_queue.size();
         g_lock.unlock();
@@ -176,7 +177,7 @@ public:
 
             return packet;
         }
-        Packet packet(packet_type, 0);  // UNKNOWN packet
+        Packet packet(packet_type, 0, unknown_seq++);  // UNKNOWN packet
         return packet;
     }
 

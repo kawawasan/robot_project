@@ -298,13 +298,15 @@ public:
         // DUMMYパケットの処理
         if (packet_type == TYPE_DUMMY) {
             uint32_t ack;
+            uint32_t seq;
             {
                 std::lock_guard<std::mutex> lock(m_video_mutex); 
                 ack = g_ack;
+                seq = g_dummy_seq;
                 g_dummy_seq++;
             }
-            return Packet(packet_type, ack); // ダミーパケット発射
-        
+            return Packet(packet_type, ack, seq); // ダミーパケット発射
+
         // ... 以降CONTROLパケット等の処理 ...
         // int dummy_seq;
         // int video_bytequeue_size;
@@ -392,7 +394,8 @@ public:
             
             return packet;
         }
-        Packet packet(0b11 << 30, 0);
+        static uint32_t camn_unknown_seq = 0;
+        Packet packet(0b11 << 30, 0, camn_unknown_seq++);  // UNKNOWN packet
         return packet;
     }
 

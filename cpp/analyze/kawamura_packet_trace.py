@@ -27,13 +27,13 @@ def resolve_log_files(file_pattern):
 
 def parse_logs(log_files):
     events = []
-    pattern = re.compile(r'T=\s*([\d\.]+)\s+Ev=\s*(Send|Recv|Send_outside_num_\d+)\s+Type=\s*([A-Z]+).*?Seq=\s*(\d+)')
     
     # 大まかな時刻合わせ（time_pref_counter）
     time_prefs = {}
     for node, filepath in log_files.items():
         try:
-            with open(filepath, 'r') as f:
+            # errors='replace' で文字化けによるクラッシュを防止
+            with open(filepath, 'r', encoding='utf-8', errors='replace') as f:
                 for line in f:
                     if 'time_pref_counter=' in line:
                         m = re.search(r'time_pref_counter=\s*(\d+)', line)
@@ -53,26 +53,42 @@ def parse_logs(log_files):
         t_offset = (node_pref - min_pref) / 1e9 
         
         try:
-            with open(filepath, 'r') as f:
+            with open(filepath, 'r', encoding='utf-8', errors='replace') as f:
                 for line in f:
-                    match = pattern.search(line)
-                    if match:
-                        t_sec = float(match.group(1))
-                        ev_type = match.group(2)
+                    # 対象外のログはスキップ
+                    if 'Ev=' not in line or 'Type=' not in line or 'Seq=' not in line:
+                        continue
                         
-                        if 'Send' in ev_type:
-                            ev_type = 'Send'
-                            
-                        p_type = match.group(3)
-                        seq = int(match.group(4))
-                        
-                        events.append({
-                            'node': node,
-                            'time': t_sec + t_offset,
-                            'event': ev_type,
-                            'type': p_type,
-                            'seq': seq
-                        })
+                    t_match = re.search(r'T=\s*([\d\.]+)', line)
+                    if not t_match: continue
+                    t_sec = float(t_match.group(1))
+
+                    ev_match = re.search(r'Ev=\s*(\S+)', line)
+                    ev_type = ev_match.group(1) if ev_match else ''
+                    if 'Send' in ev_type: 
+                        ev_type = 'Send' # Send_outside_num 等をSendに統一
+
+                    type_match = re.search(r'Type=\s*([A-Z]+)', line)
+                    p_type = type_match.group(1) if type_match else ''
+                    
+                    seq_match = re.search(r'Seq=\s*(\d+)', line)
+                    seq = int(seq_match.group(1)) if seq_match else 0
+
+                    ack_match = re.search(r'ACK=\s*(\d+)', line)
+                    ack = int(ack_match.group(1)) if ack_match else None
+
+                    dir_match = re.search(r'Direction=\s*([A-Za-z]+)', line)
+                    direction = dir_match.group(1) if dir_match else None
+                    
+                    events.append({
+                        'node': node,
+                        'time': t_sec + t_offset,
+                        'event': ev_type,
+                        'type': p_type,
+                        'seq': seq,
+                        'ack': ack,
+                        'direction': direction
+                    })
         except Exception as e:
             print(f"Read Error: {filepath}: {e}")
             
@@ -116,9 +132,10 @@ def apply_initial_packet_sync(events, base_delay=0.001):
     hop_delays = {'RN1': base_delay * 1, 'RN2': base_delay * 2, 'CamN': base_delay * 3}
     
     for node in target_nodes:
-        t_recv = packet_events[key]['recvs'][node]['time']
-        ideal_time = t_cn + hop_delays[node]
-        offsets[node] = ideal_time - t_recv
+        if node in packet_events[key]['recvs']:
+            t_recv = packet_events[key]['recvs'][node]['time']
+            ideal_time = t_cn + hop_delays[node]
+            offsets[node] = ideal_time - t_recv
 
     # 全パケットにオフセットを適用して時計を完全同期
     for e in events:
@@ -129,6 +146,7 @@ def apply_initial_packet_sync(events, base_delay=0.001):
 
 def extract_links(events):
     links = []
+    # (Type, Seq) の組み合わせでパケットをグループ化
     groups = defaultdict(lambda: {'sends': [], 'recvs': []})
     
     for ev in events:
@@ -139,21 +157,43 @@ def extract_links(events):
             groups[key]['recvs'].append(ev)
             
     for key, group in groups.items():
-        for r in group['recvs']:
+        sends = group['sends']
+        recvs = group['recvs']
+
+        for r in recvs:
+            r_id = nodes[r['node']]
             best_s = None
             min_diff = float('inf')
             
-            for s in group['sends']:
+            for s in sends:
+                # 自身への送信は無視
                 if s['node'] == r['node']: 
                     continue
-                    
+
+                # VIDEOとDUMMYの場合はACKの一致も確認（CONTROLはACKを無視）
+                if r['type'] != 'CONTROL':
+                    if s['ack'] is not None and r['ack'] is not None and s['ack'] != r['ack']:
+                        continue
+
+                # トポロジの隣接チェック (ノードの飛び越えを防止)
+                s_id = nodes[s['node']]
+                is_valid = False
+
+                if s['direction'] == 'Up' and r_id == s_id + 1: 
+                    is_valid = True
+                elif s['direction'] == 'Down' and r_id == s_id - 1: 
+                    is_valid = True
+                elif not s['direction']: # CtlNやCamNなどの始点
+                    if s['node'] == 'CtlN' and r_id == s_id + 1: is_valid = True
+                    elif s['node'] == 'CamN' and r_id == s_id - 1: is_valid = True
+
+                if not is_valid:
+                    continue
+
+                # 時間差の許容範囲チェック
                 diff = r['time'] - s['time']
-                
-                # 時計が合っているため、方向(上り/下り)に関わらず「少し過去の送信」が常に正解になる
-                # わずかな揺らぎ(-0.05秒)〜長めの遅延(1.0秒)を許容
                 if -0.05 <= diff <= 1.0:
                     abs_diff = abs(diff)
-                    # 一番時間差が小さい＝一番手前で中継してくれたノード
                     if abs_diff < min_diff:
                         min_diff = abs_diff
                         best_s = s
@@ -187,17 +227,25 @@ def plot_sequence(links, start_time, duration):
         
         if link['type'] == 'CONTROL':
             color = 'blue'
+            alpha = 1.0
+            linewidth = 1.5
         elif link['type'] == 'VIDEO':
             color = 'orange'
+            alpha = 0.7
+            linewidth = 1.0
         elif link['type'] == 'DUMMY':
             color = 'gray'
+            alpha = 0.5
+            linewidth = 1.0
         else:
             color = 'black'
+            alpha = 0.5
+            linewidth = 1.0
             
-        ax.plot(x, y, color=color, linewidth=1.0, alpha=0.7, marker='o', markersize=2)
+        ax.plot(x, y, color=color, linewidth=linewidth, alpha=alpha, marker='o', markersize=2)
 
     ax.set_ylim(end_time, start_time)
-    ax.set_ylabel(f'Synchronized Time (s) [Hop Interval = 0.001s]')
+    ax.set_ylabel('Synchronized Time (s) [Hop Interval = 0.001s]')
     ax.set_title(f'MUCViS Packet Trace\nRange: {start_time}s - {end_time}s')
     plt.tight_layout()
     plt.show()
@@ -210,7 +258,6 @@ if __name__ == '__main__':
     log_files = resolve_log_files(sys.argv[1])
     events = parse_logs(log_files)
     
-    # ここでご指定の「間隔 0.001s」を引数として渡しています
     events = apply_initial_packet_sync(events, base_delay=0.001) 
     
     links = extract_links(events)

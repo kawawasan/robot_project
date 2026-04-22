@@ -244,28 +244,32 @@ public:
 
             return packet;
         } else if (packet_type == TYPE_DUMMY) {
+            uint32_t ack;
+            uint32_t seq;
             g_lock.lock();
-            uint32_t ack = g_ack;
+            seq = g_dummy_seq;
+            ack = g_ack;
             g_dummy_seq++;
             g_lock.unlock();
 
             // ダミーパケット生成
-            Packet packet(packet_type, ack);
+            Packet packet(packet_type, ack, seq);
 
             return packet;
         } else if (packet_type == TYPE_CONTROL) {
             cout << "error: make control packet in CamN" << endl;
             g_lock.lock();
-            uint32_t sqe = g_control_seq;
+            uint32_t seq = g_control_seq;
             g_control_seq++;
             g_lock.unlock();
 
             // パケット生成
-            Packet packet(packet_type, sqe, "control command by CamN");
-            
+            Packet packet(packet_type, seq, "control command by CamN");
+
             return packet;
         }
-        Packet packet(0b11 << 30, 0);
+        static uint32_t camn_unknown_seq = 0;
+        Packet packet(0b11 << 30, 0, camn_unknown_seq++);  // UNKNOWN packet
         return packet;
     }
 

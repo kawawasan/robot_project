@@ -32,7 +32,7 @@ class Packet {
         Packet(uint32_t type, uint32_t seq, std::string command);
 
         // ダミーパケット生成時のコンストラクタ
-        Packet(uint32_t type, uint32_t ack);
+        Packet(uint32_t type, uint32_t ack, uint32_t seq);
 
         std::string get_type();
         std::vector<uint8_t> get_payload();
@@ -40,6 +40,7 @@ class Packet {
         int get_ack();
         int get_videoSeq();
         int get_commandSeq();
+        int get_dummySeq();
         std::vector<uint8_t> get_videoData();
         // uint8_t* get_videoData();
         std::string get_command();

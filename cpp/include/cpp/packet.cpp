@@ -58,14 +58,19 @@ Packet::Packet(uint32_t type, uint32_t seq, std::string command) {
 }
 
 // ダミーパケット生成時のコンストラクタ
-Packet::Packet(uint32_t type, uint32_t ack) {
+Packet::Packet(uint32_t type, uint32_t ack, uint32_t seq) {
     payload.clear();
     payload.reserve(NAX_PAYLOAD_SIZE);
     this->type = type;
     this->ack = ack;
+    this->seq = seq;
+    // 繋げてペイロードに変形（VIDEOと同じく8バイトのヘッダーにする）　河村　修正してダミーを8バイトのヘッダーにする　20260422
+    uint32_t header[2] = {this->type + this->ack, this->seq};
+    payload.insert(payload.end(), reinterpret_cast<uint8_t*>(header), reinterpret_cast<uint8_t*>(header) + sizeof(header));
+
     // 繋げてペイロードに変形
-    top4bytes = this->type + this->ack;
-    payload.insert(payload.end(), reinterpret_cast<uint8_t*>(&top4bytes), reinterpret_cast<uint8_t*>(&top4bytes) + sizeof(top4bytes));
+    // top4bytes = this->type + this->ack;
+    // payload.insert(payload.end(), reinterpret_cast<uint8_t*>(&top4bytes), reinterpret_cast<uint8_t*>(&top4bytes) + sizeof(top4bytes));
 
     // memcpy(payload, &top4bytes, 4);
 }
@@ -99,6 +104,14 @@ int Packet::get_videoSeq() {
 
 int Packet::get_commandSeq() {
     seq = top4bytes - type;
+    return seq;
+}
+
+int Packet::get_dummySeq() {
+    // ペイロードに8バイト以上のデータがある場合のみSeqを読み出す（安全対策）
+    if (payload.size() >= 8) {
+        memcpy(&seq, payload.data() + 4, sizeof(seq));
+    }
     return seq;
 }
 

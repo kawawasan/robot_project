@@ -74,6 +74,7 @@ void Log::write_rn(std::chrono::duration<double> time, std::string event, std::s
     " Ev= " + event +
     " Type= " + packet_type +
     " Direction= " + direction +
+    " ACK= " + std::to_string(ack) +
     " Seq= " + std::to_string(seq) +
     " PayloadSize= " + std::to_string(payload_size) +
     " VideoQueueSize= " + std::to_string(video_queue_size);

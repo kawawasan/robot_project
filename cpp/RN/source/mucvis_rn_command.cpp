@@ -141,8 +141,13 @@ public:
             g_lock.lock();
             uint32_t ack = m_ack;
             g_lock.unlock();
-
-            return Packet(packet_type, ack);
+            
+            // --- 【修正追加】RNが自発的に送るDUMMYにも連番を振る ---
+            static uint32_t rn_generated_dummy_seq = 0;
+            Packet p(packet_type, ack);
+            p.set_dummySeq(rn_generated_dummy_seq++); // ※ご自身のpacket.hppの仕様に合わせてメソッド名を変更してください
+            return p;
+            // return Packet(packet_type, ack);
         }
     }
 
@@ -165,7 +170,10 @@ public:
             seq = packet.get_videoSeq();
         } else if (packet_type == "CONTROL") {
             seq = packet.get_commandSeq(); // 制御パケットのseqを取得
+        } else if (packet_type == "DUMMY") {
+            seq = packet.get_dummySeq();
         }
+        uint32_t ack = packet.get_ack();
         // ----------------------------------
         g_lock.lock();
         int video_packet_queue_size = m_video_packet_queue.size();
@@ -214,7 +222,7 @@ public:
             seq = packet.get_videoSeq();
         }
 
-        log->write_rn(duration, "Send", packet_type, "Down", seq, send_payload.size(), video_packet_queue_size);
+        log->write_rn(duration, "Send", packet_type, "Down", ack, seq, send_payload.size(), video_packet_queue_size);
     }
 
     // 下りパケット受信
@@ -258,19 +266,25 @@ public:
             }
         } else if (packet_type == "DUMMY") {
             ack = packet.get_ack();
+            // 河村　以下４行追加　20260422
+            seq = packet.get_dummySeq();
 
-            // 送信間隔 I / 3 待機
-            // std::this_thread::sleep_until(recv_time + std::chrono::duration<double>(ipt_interval / 3));
+            g_lock.lock();
+            m_video_packet_queue.push(packet);
+            g_lock.unlock();
+
+            // 送信間隔 I / 3 待機　河村　戻した
+            std::this_thread::sleep_until(recv_time + std::chrono::duration<double>(ipt_interval / 3));
 
         } else {  // CONTROL
             seq = packet.get_commandSeq();
             std::string command = packet.get_command();
 
-            // 送信間隔 I / 3 待機
-            // std::this_thread::sleep_until(recv_time + std::chrono::duration<double>(ipt_interval / 3));
+            // 送信間隔 I / 3 待機　河村　戻した
+            std::this_thread::sleep_until(recv_time + std::chrono::duration<double>(ipt_interval / 3));
         }
         // ログ出力
-        log->write_rn(std::chrono::duration<double>(recv_time - hr_start_time), "Recv", packet_type, "Down", seq, recv_size, video_packet_queue_size);
+        log->write_rn(std::chrono::duration<double>(recv_time - hr_start_time), "Recv", packet_type, "Down", ack, seq, recv_size, video_packet_queue_size);
 
         g_lock.lock();
         m_ack = ack;
@@ -278,7 +292,7 @@ public:
 
         // 送信間隔 I / 3 待機
         // if (packet_type == "DUMMY" or packet_type == "CONTROL") {
-        std::this_thread::sleep_until(recv_time + std::chrono::duration<double>(ipt_interval / 3));
+        // std::this_thread::sleep_until(recv_time + std::chrono::duration<double>(ipt_interval / 3));　河村
         // }
     }
 
@@ -322,16 +336,16 @@ public:
 
         if (packet_type == "CONTROL") {
             seq = packet.get_commandSeq();
-            g_lock.lock();
-            if (change_up_address != "0" or std::stoi(send_up_node) != 0) {
-                m_command_packet_queue.push(packet);
-            }
-            // m_command_packet_queue.push(packet);
-            g_lock.unlock();
-            std::string command = packet.get_command();
+            std::string command = packet.get_command(); //移動，先に処理する　河村  
             if (command.size() < 60) {
                 cout << endl << "Recv command: " << command << endl;
             }
+            // g_lock.lock();
+            // if (change_up_address != "0" or std::stoi(send_up_node) != 0) {
+            //     m_command_packet_queue.push(packet);
+            // }
+            // // m_command_packet_queue.push(packet);
+            // g_lock.unlock();
             // command内にコンマがあるか確認
             if (command.find(',') != std::string::npos) {
                 // 制御コマンドがルーティングのとき，ルーティングテーブルを参照し送信先を更新
@@ -395,6 +409,12 @@ public:
                     // 例外が発生した場合の処理
                     // std::cerr << "Error parsing command or updating routing table." << std::endl;
                 }
+                // ★修正ポイント：解析結果（send_up_node）をもとに、本当に転送が必要な場合だけキューに入れる
+                g_lock.lock();
+                if (std::stoi(send_up_node) != 0) {
+                    m_command_packet_queue.push(packet);
+                }
+                g_lock.unlock();
             }
         } else {
             cout << "Receive unknown packet type" << endl;
@@ -409,8 +429,9 @@ public:
         }
         g_lock.unlock();
         
+        uint32_t ack = packet.get_ack();
         // ログ出力
-        log->write_rn(std::chrono::duration<double>(recv_time - hr_start_time), "Recv", packet_type, "Up", seq, recv_size, video_packet_queue_size);
+        log->write_rn(std::chrono::duration<double>(recv_time - hr_start_time), "Recv", packet_type, "Up", ack, seq, recv_size, video_packet_queue_size);
         if (packet_type == "CONTROL") {
             log->write_command(std::chrono::duration<double>(recv_time - hr_start_time), "Command", seq, packet.get_command());
         } 

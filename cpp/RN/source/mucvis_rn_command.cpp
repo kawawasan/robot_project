@@ -334,19 +334,23 @@ public:
 
         if (packet_type == "CONTROL") {
             seq = packet.get_commandSeq();
-            std::string command = packet.get_command(); //移動，先に処理する　河村  
+            // std::string command = packet.get_command(); //移動，先に処理する　河村  
+            // if (command.size() < 60) {
+            //     cout << endl << "Recv command: " << command << endl;
+            // }
+            // g_lock.lock();
+            // m_command_packet_queue.push(packet);
+            // g_lock.unlock();
+            g_lock.lock();
+            if (change_up_address != "0" or std::stoi(send_up_node) != 0) {
+                m_command_packet_queue.push(packet);
+            }
+            // m_command_packet_queue.push(packet);
+            g_lock.unlock();
+            std::string command = packet.get_command();
             if (command.size() < 60) {
                 cout << endl << "Recv command: " << command << endl;
             }
-            g_lock.lock();
-            m_command_packet_queue.push(packet);
-            g_lock.unlock();
-            // g_lock.lock();
-            // if (change_up_address != "0" or std::stoi(send_up_node) != 0) {
-            //     m_command_packet_queue.push(packet);
-            // }
-            // // m_command_packet_queue.push(packet);
-            // g_lock.unlock();
             // command内にコンマがあるか確認
             if (command.find(',') != std::string::npos) {
                 // 制御コマンドがルーティングのとき，ルーティングテーブルを参照し送信先を更新

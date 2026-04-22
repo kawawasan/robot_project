@@ -64,6 +64,8 @@ Packet::Packet(uint32_t type, uint32_t ack, uint32_t seq) {
     this->type = type;
     this->ack = ack;
     this->seq = seq;
+    // この1行を追加（これがないと get_ack() がゴミデータを返します）
+    top4bytes = this->type + this->ack;
     // 繋げてペイロードに変形（VIDEOと同じく8バイトのヘッダーにする）　河村　修正してダミーを8バイトのヘッダーにする　20260422
     uint32_t header[2] = {this->type + this->ack, this->seq};
     payload.insert(payload.end(), reinterpret_cast<uint8_t*>(header), reinterpret_cast<uint8_t*>(header) + sizeof(header));

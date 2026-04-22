@@ -236,7 +236,7 @@ public:
             uint32_t ack = g_ack;
             uint32_t seq = g_video_seq;
             g_video_seq++;
-            g_dummy_seq = 0;
+            // g_dummy_seq = 0;
             g_lock.unlock();
 
             // ビデオデータパケット生成

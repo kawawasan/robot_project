@@ -306,6 +306,7 @@ public:
             }
         } else if (packet_type == "DUMMY") {
             ack = packet.get_ack();
+            seq = packet.get_dummySeq();
             
             g_lock.lock();
             pre_ack = g_ack;

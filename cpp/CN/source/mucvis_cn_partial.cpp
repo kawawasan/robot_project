@@ -598,6 +598,10 @@ void generate_command_from_input(Log& log, hr_clock::time_point hr_start_time, c
             routing_table[1][3] = (k <= 2) ? "4" : "3"; // RN2 -> CN(4) または RN1(3)
             routing_table[2][3] = "4";                  // RN1 -> CN(4)
 
+            // ★ ここを追加：上りパス（制御コマンドがCamNへ向かう道： routing_table[i][2] ）
+            routing_table[1][2] = (k >= 2) ? "1" : "0"; // RN2 -> CamN(1) （2-hop以上の時だけCamNへ）
+            routing_table[2][2] = (k == 3) ? "2" : "0"; // RN1 -> RN2(2)  （3-hopの時だけRN2へ）
+
             // 4. コマンド文字列生成
             std::string final_command;
             for (int i = 0; i < robot_num; i++) {

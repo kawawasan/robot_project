@@ -341,21 +341,16 @@ public:
             // g_lock.lock();
             // m_command_packet_queue.push(packet);
             // g_lock.unlock();
-
-            // 0501 削除
-            // g_lock.lock();
-            // if (change_up_address != "0" or std::stoi(send_up_node) != 0) {
-            //     m_command_packet_queue.push(packet);
-            // }
-            // // m_command_packet_queue.push(packet);
-            // g_lock.unlock();
+            g_lock.lock();
+            if (change_up_address != "0" or std::stoi(send_up_node) != 0) {
+                m_command_packet_queue.push(packet);
+            }
+            // m_command_packet_queue.push(packet);
+            g_lock.unlock();
             std::string command = packet.get_command();
             if (command.size() < 60) {
                 cout << endl << "Recv command: " << command << endl;
             }
-            // まず、受信した時点での中継参加状態を確認しておく　20260501 河村
-            bool should_forward = (send_up_node != "0");
-
             // command内にコンマがあるか確認
             if (command.find(',') != std::string::npos) {
                 // 制御コマンドがルーティングのとき，ルーティングテーブルを参照し送信先を更新
@@ -366,19 +361,8 @@ public:
                         // cout << "command after cut: " << command << endl;
                     }
                     std::string position = command.substr(0, command.find(' '));
-
-                    // 端末間距離をファイル出力 --------------------
-                    // 受信したposition（距離情報）をファイルに書き出す河村追加
-                    std::ofstream pos_file("/tmp/robot_target_position.txt");
-                    if (pos_file.is_open()) {
-                        pos_file << position;
-                        pos_file.close();
-                    }
-                    // -------------------- 提案コード20250930 --------------------
-
                     command = command.substr(command.find(' ') + 1);
                     send_up_node = command.substr(0, command.find(' '));
-
                     std::string send_down_node;
                     if (command.find(',') == std::string::npos) {
                         // 後ろにコンマがないときは，すべて取り出す
@@ -391,7 +375,15 @@ public:
                     std::cout << "send_up_node: " << send_up_node << std::endl;
                     std::cout << "send_down_node: " << send_down_node << std::endl;
 
-    
+                           // 端末間距離をファイル出力 --------------------
+                    // 受信したposition（距離情報）をファイルに書き出す河村追加
+                    std::ofstream pos_file("/tmp/robot_target_position.txt");
+                    if (pos_file.is_open()) {
+                        pos_file << position;
+                        pos_file.close();
+                    }
+                    // -------------------- 提案コード20250930 --------------------
+
                     if (send_up_node != "0") {
                         // change_up_address = routing_table[std::stoi(send_node)-1][1];  // down
                         // up_addr.sin_addr.s_addr = inet_addr(change_up_address.c_str());
@@ -422,24 +414,13 @@ public:
                     // 例外が発生した場合の処理
                     // std::cerr << "Error parsing command or updating routing table." << std::endl;
                 }
-                // ルーティング解析の結果、自分が中継に参加することになったなら転送フラグを更新する
-                should_forward = (send_up_node != "0");
-
-                // // ★修正ポイント：解析結果（send_up_node）をもとに、本当に転送が必要な場合だけキューに入れる
+                // ★修正ポイント：解析結果（send_up_node）をもとに、本当に転送が必要な場合だけキューに入れる
                 // g_lock.lock();
                 // if (std::stoi(send_up_node) != 0) {
                 //     m_command_packet_queue.push(packet);
                 // }
                 // g_lock.unlock();
             }
-
-            //河村
-            if (should_forward) {
-                g_lock.lock();
-                m_command_packet_queue.push(packet);
-                g_lock.unlock();
-            }
-
         } else {
             cout << "Receive unknown packet type" << endl;
         }

@@ -180,7 +180,7 @@ public:
         Packet packet(packet_type, 0, unknown_seq++);  // UNKNOWN packet
         return packet;
     }
-
+    
     void send_packet() {
         // パケット生成
         Packet packet = make_packet();
@@ -190,46 +190,90 @@ public:
             return;
         }
 
-        // std::vector<uint8_t> send_payload = packet.get_payload();
-        // send_payload.clear();
-        // send_payload = packet.get_payload();
         send_payload = std::move(packet.get_payload());  // ムーブで効率的に転送
 
-        // 上りへ送信
-        sendto(send_socket, send_payload.data(), send_payload.size(), 0, (struct sockaddr *)&up_addr, sizeof(up_addr));
-
+        // --- ログ・時間計測の準備 ---
         system_clock::time_point system_send_time = system_clock::now();
         hr_clock::time_point send_time = hr_clock::now();
         std::chrono::duration<double> duration = std::chrono::duration<double>(send_time - hr_start_time);
 
         g_lock.lock();
         uint32_t ack = g_ack;
-
-        // ログに書き込む
-        log->write_camn_cn(duration, "Send", packet_type, ack, packet.get_commandSeq(), send_payload.size(), system_send_time);
         g_lock.unlock();
 
-        
-        // 中継外の送信先を決める
+        // 現在のホップ数（正規ルートの入り口）を取得
         int send_node = g_send_num.load();
-        if (send_node_before > send_node) {
-            send_node_before = send_node;
-        }
-        // 中継外のノードに制御情報を送信する
-        for (int i = send_node_before; i < my_node_num - 1; i++) {
-            up_addr.sin_addr.s_addr = inet_addr(routing_table[i][1].c_str());  // 送信先アドレスを更新
-            
+        
+        // --- 1. 中継外のノード（お休み中）に制御情報を送信する ---
+        // send_node_before は不要。現在の send_node からスタートするだけで完璧に判定可能。
+        for (int i = send_node; i < my_node_num - 1; i++) {
+            up_addr.sin_addr.s_addr = inet_addr(routing_table[i][1].c_str());
             sendto(send_socket, send_payload.data(), send_payload.size(), 0, (struct sockaddr *)&up_addr, sizeof(up_addr));
 
-            // ログに書き込む
+            // お休みノードへの送信ログ
             std::string event = "Send_outside_num_" + std::to_string(i + 1);
             log->write_camn_cn(duration, event, packet_type, ack, packet.get_commandSeq(), send_payload.size(), system_send_time);
-            send_node_before = send_node;
         }
 
-        up_addr.sin_addr.s_addr = inet_addr(routing_table[send_node - 1][1].c_str());  // 送信先アドレスを更新
-        // up_addr.sin_port = htons(std::stoi(routing_table[send_node - 1][1].c_str()));  // ローカルのため，ポート番号を変更
+        // --- 2. 本命（正規の中継ルートの入り口）に送信する ---
+        up_addr.sin_addr.s_addr = inet_addr(routing_table[send_node - 1][1].c_str());
+        sendto(send_socket, send_payload.data(), send_payload.size(), 0, (struct sockaddr *)&up_addr, sizeof(up_addr));
+        
+        // 本命への送信ログ
+        log->write_camn_cn(duration, "Send", packet_type, ack, packet.get_commandSeq(), send_payload.size(), system_send_time);
     }
+
+    // void send_packet() {
+    //     // パケット生成
+    //     Packet packet = make_packet();
+
+    //     std::string packet_type = packet.get_type();
+    //     if (packet_type == "UNKNOWN") {
+    //         return;
+    //     }
+
+    //     // std::vector<uint8_t> send_payload = packet.get_payload();
+    //     // send_payload.clear();
+    //     // send_payload = packet.get_payload();
+    //     send_payload = std::move(packet.get_payload());  // ムーブで効率的に転送
+
+    //     // 上りへ送信
+    //     // sendto(send_socket, send_payload.data(), send_payload.size(), 0, (struct sockaddr *)&up_addr, sizeof(up_addr));
+
+    //     system_clock::time_point system_send_time = system_clock::now();
+    //     hr_clock::time_point send_time = hr_clock::now();
+    //     std::chrono::duration<double> duration = std::chrono::duration<double>(send_time - hr_start_time);
+
+    //     g_lock.lock();
+    //     uint32_t ack = g_ack;
+
+    //     // ログに書き込む
+    //     log->write_camn_cn(duration, "Send", packet_type, ack, packet.get_commandSeq(), send_payload.size(), system_send_time);
+    //     g_lock.unlock();
+
+        
+    //     // 中継外の送信先を決める
+    //     int send_node = g_send_num.load();
+    //     if (send_node_before > send_node) {
+    //         send_node_before = send_node;
+    //     }
+    //     // 中継外のノードに制御情報を送信する
+    //     for (int i = send_node_before; i < my_node_num - 1; i++) {
+    //         up_addr.sin_addr.s_addr = inet_addr(routing_table[i][1].c_str());  // 送信先アドレスを更新
+            
+    //         sendto(send_socket, send_payload.data(), send_payload.size(), 0, (struct sockaddr *)&up_addr, sizeof(up_addr));
+
+    //         // ログに書き込む
+    //         std::string event = "Send_outside_num_" + std::to_string(i + 1);
+    //         log->write_camn_cn(duration, event, packet_type, ack, packet.get_commandSeq(), send_payload.size(), system_send_time);
+    //         send_node_before = send_node;
+    //     }
+
+    //     up_addr.sin_addr.s_addr = inet_addr(routing_table[send_node - 1][1].c_str());  // 送信先アドレスを更新
+    //     // up_addr.sin_port = htons(std::stoi(routing_table[send_node - 1][1].c_str()));  // ローカルのため，ポート番号を変更
+    //     sendto(send_socket, send_payload.data(), send_payload.size(), 0, (struct sockaddr *)&up_addr, sizeof(up_addr));
+
+    // }
 
     void receive_packet() {
         // char buf[BUFFER_MAX];

@@ -341,12 +341,15 @@ public:
             // g_lock.lock();
             // m_command_packet_queue.push(packet);
             // g_lock.unlock();
-            g_lock.lock();
-            if (change_up_address != "0" or std::stoi(send_up_node) != 0) {
-                m_command_packet_queue.push(packet);
-            }
-            // m_command_packet_queue.push(packet);
-            g_lock.unlock();
+
+            // 20260511 修正中
+            // g_lock.lock();
+            // if (change_up_address != "0" or std::stoi(send_up_node) != 0) {
+            //     m_command_packet_queue.push(packet);
+            // }
+            // // m_command_packet_queue.push(packet);
+            // g_lock.unlock();
+
             std::string command = packet.get_command();
             if (command.size() < 60) {
                 cout << endl << "Recv command: " << command << endl;
@@ -415,11 +418,11 @@ public:
                     // std::cerr << "Error parsing command or updating routing table." << std::endl;
                 }
                 // ★修正ポイント：解析結果（send_up_node）をもとに、本当に転送が必要な場合だけキューに入れる
-                // g_lock.lock();
-                // if (std::stoi(send_up_node) != 0) {
-                //     m_command_packet_queue.push(packet);
-                // }
-                // g_lock.unlock();
+                g_lock.lock();
+                if (std::stoi(send_up_node) != 0) {
+                    m_command_packet_queue.push(packet);
+                }
+                g_lock.unlock();
             }
         } else {
             cout << "Receive unknown packet type" << endl;

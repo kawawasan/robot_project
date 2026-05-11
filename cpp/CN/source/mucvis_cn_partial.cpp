@@ -653,8 +653,8 @@ void generate_command_from_input(Log& log, hr_clock::time_point hr_start_time, c
                 if (i == 0) {
                     final_command += std::to_string(cm) + " " + routing_table[0][3] + ",";
                 } else {
-                    // final_command += std::to_string(cm) + " " + routing_table[i][2] + " " + routing_table[i][3] + ",";
-                    final_command += std::to_string(cm) + " " + routing_table[i][3] + " " + routing_table[i][2] + ",";
+                    final_command += std::to_string(cm) + " " + routing_table[i][2] + " " + routing_table[i][3] + ",";
+                    // final_command += std::to_string(cm) + " " + routing_table[i][3] + " " + routing_table[i][2] + ",";
                 }
             }
             final_command.pop_back();

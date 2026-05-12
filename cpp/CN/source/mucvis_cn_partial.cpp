@@ -17,7 +17,8 @@
 #include <sys/stat.h>
 #include <atomic>
 #include <cmath>
-
+#include <fcntl.h>
+#include <unistd.h> 
 
 #include "../../include/header/bytequeue.hpp"  // 自作モジュール
 #include "../../include/header/log.hpp"  // 自作モジュール
@@ -93,7 +94,8 @@ class Mucvis_cn {
     std::string video_file_name;
     std::ofstream video_file;
     // 受け取った映像をストリーミング再生するための名前付きパイプを定義
-    std::ofstream pipe_file;
+    // std::ofstream pipe_file; 0512河村
+    int pipe_fd;
 
     std::vector<uint8_t> video_data;
     std::size_t video_data_size;
@@ -137,16 +139,23 @@ public:
             }
         }
         cout << "名前付きパイプ生成: /tmp/ts_pipe" << endl;
-        pipe_file.open("/tmp/ts_pipe", std::ios::binary);
-        if (!pipe_file) {
-            std::cerr << "Failed to open named pipe: /tmp/ts_pipe" << std::endl;
+        // --- 追加 ---kawamura
+        // ※必ずファイルの先頭に #include <fcntl.h> と #include <unistd.h> を入れてください
+        this->pipe_fd = open("/tmp/ts_pipe", O_RDWR | O_NONBLOCK);
+        if (this->pipe_fd == -1) {
+            perror("Failed to open named pipe with O_NONBLOCK");
             exit(EXIT_FAILURE);
+        
+        // pipe_file.open("/tmp/ts_pipe", std::ios::binary);
+        // if (!pipe_file) {
+        //     std::cerr << "Failed to open named pipe: /tmp/ts_pipe" << std::endl;
+        //     exit(EXIT_FAILURE);
         } else {
             std::cout << "Named pipe opened successfully: /tmp/ts_pipe" << std::endl;
         }
 
         // 受信ソケットのバッファサイズを設定
-        int recv_buffer_size = 1024 * 1024 * 10;  // 1MB
+        int recv_buffer_size = 1024 * 100;  // 1MB
         if (setsockopt(recv_socket, SOL_SOCKET, SO_RCVBUF, &recv_buffer_size, sizeof(recv_buffer_size)) == -1) {
             perror("setsockopt failed");
         }
@@ -331,7 +340,23 @@ public:
 
             // 映像データを名前付きパイプに渡す．ストリーミング再生用
             // pipe_file.write(reinterpret_cast<const char*>(packet.get_videoData().data()), packet.get_videoData().size());
-            pipe_file.write(reinterpret_cast<const char*>(video_data.data()), video_data_size);
+            // pipe_file.write(reinterpret_cast<const char*>(video_data.data()), video_data_size);河村削除0512
+
+            // --- 追加（非ブロッキングで強行突破する 河村
+            ssize_t bytes_written = write(this->pipe_fd, video_data.data(), video_data_size);
+            if (bytes_written == -1) {
+                // EAGAIN または EWOULDBLOCK は「パイプが満杯」という意味
+                if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                    // 【超重要】再生側（Mac）が詰まっているので、このパケットは諦めて捨てる！
+                    // 何もせずに次へ進むことで、CNのプログラムは「絶対に」止まらなくなります。
+                } else {
+                    // 本当のエラー（パイプが壊れた等）
+                    perror("pipe write failed");
+                }
+            }
+            // --------------------------------------------------------
+
+            //
             // pipe_file.flush();  
             // 映像データをファイルに書き込む
             // video_file.write(reinterpret_cast<const char*>(packet.get_videoData().data()), packet.get_videoData().size());

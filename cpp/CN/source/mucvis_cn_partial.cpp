@@ -436,7 +436,10 @@ public:
         close(send_socket);
         close(recv_socket);
         video_file.close();
-        pipe_file.close();
+        // pipe_file.close();削除　河村0512
+        if (pipe_fd >= 0) {
+            close(pipe_fd); 
+        }
 
         // cout << "受信映像データサイズ: " << g_recv_size << " byte" << endl;
         // cout << "書き込み映像データサイズ: " << g_write_size << " byte" << endl;

@@ -142,7 +142,7 @@ public:
             uint32_t ack = m_ack;
             g_lock.unlock();
 
-            return Packet(packet_type, ack);
+            return Packet(packet_type, ack, seq);
         }
     }
 
@@ -180,7 +180,7 @@ public:
             std::chrono::duration<double> duration = std::chrono::duration<double>(send_time - hr_start_time);
 
             // ログに書き込む
-            log->write_rn(duration, "Send", packet_type, "Up", seq, send_payload.size(), video_packet_queue_size);
+            log->write_rn(duration, "Send", packet_type, "Up", ack, seq, send_payload.size(), video_packet_queue_size);
 
             // 送信後，送信先をルーティングテーブルを参照し更新
             // ここ怪しい
@@ -214,7 +214,7 @@ public:
         //     seq = packet.get_videoSeq();
         // }
 
-        log->write_rn(duration, "Send", packet_type, "Down", seq, send_payload.size(), video_packet_queue_size);
+        log->write_rn(duration, "Send", packet_type, "Down", ack, seq, send_payload.size(), video_packet_queue_size);
     }
 
     // 下りパケット受信

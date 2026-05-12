@@ -142,7 +142,7 @@ public:
             uint32_t ack = m_ack;
             g_lock.unlock();
 
-            return Packet(packet_type, ack, seq);
+            return Packet(packet_type, ack);
         }
     }
 
@@ -160,7 +160,7 @@ public:
 
         std::string packet_type = packet.get_type();
 
-        // --- ここでseqを取り出す処理を追加 ---20260409
+        // --- ここでseqを取り出す処理を追加 ---
         if (packet_type == "VIDEO") {
             seq = packet.get_videoSeq();
         } else if (packet_type == "CONTROL") {
@@ -180,7 +180,7 @@ public:
             std::chrono::duration<double> duration = std::chrono::duration<double>(send_time - hr_start_time);
 
             // ログに書き込む
-            log->write_rn(duration, "Send", packet_type, "Up", ack, seq, send_payload.size(), video_packet_queue_size);
+            log->write_rn(duration, "Send", packet_type, "Up", seq, send_payload.size(), video_packet_queue_size);
 
             // 送信後，送信先をルーティングテーブルを参照し更新
             // ここ怪しい
@@ -209,12 +209,12 @@ public:
         hr_clock::time_point send_time = hr_clock::now();
         std::chrono::duration<double> duration = std::chrono::duration<double>(send_time - hr_start_time);
 
-        // // ログに書き込む
-        // if (packet_type == "VIDEO") {
-        //     seq = packet.get_videoSeq();
-        // }
+        // ログに書き込む
+        if (packet_type == "VIDEO") {
+            seq = packet.get_videoSeq();
+        }
 
-        log->write_rn(duration, "Send", packet_type, "Down", ack, seq, send_payload.size(), video_packet_queue_size);
+        log->write_rn(duration, "Send", packet_type, "Down", seq, send_payload.size(), video_packet_queue_size);
     }
 
     // 下りパケット受信

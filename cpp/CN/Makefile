@@ -117,6 +117,10 @@ mucvis_cn_actual.out: $(OBJDIR)mucvis_cn_actual.o $(INCOBJECTS)
 	$(CC) -o $@ $^ $(LIBDIR) $(LIBS) -pthread
 	@echo "make $@"
 
+mucvis_cn_partial_for_UWB.out: $(OBJDIR)mucvis_cn_partial_for_UWB.o $(INCOBJECTS)
+	$(CC) -o $@ $^ $(LIBDIR) $(LIBS) -pthread
+	@echo "make $@"
+
 # オブジェクトファイル生成(.cppファイルから.oファイルを生成)
 $(OBJDIR)%.o: $(SRCDIR)%.cpp
     # オブジェクトディレクトリがない時，作成

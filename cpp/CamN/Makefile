@@ -138,6 +138,10 @@ mucvis_camn_video_capture_command_actual.out: $(OBJDIR)mucvis_camn_video_capture
 	$(CC) -o $@ $^ $(LIBDIR) $(LIBS) -pthread
 	@echo "make $@"
 
+mucvis_camn_video_capture_command_pipethread_forUWB.out: $(OBJDIR)mucvis_camn_video_capture_command_pipethread_forUWB.o $(INCOBJECTS)  # UWBから情報を得る版
+	$(CC) -o $@ $^ $(LIBDIR) $(LIBS) -pthread
+	@echo "make $@"
+
 # オブジェクトファイル生成(.cppファイルから.oファイルを生成)
 $(OBJDIR)%.o: $(SRCDIR)%.cpp
     # オブジェクトディレクトリがない時，作成

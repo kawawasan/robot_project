@@ -102,32 +102,55 @@ int get_lidar_distance_cm() {
 // ---------------------------------------------------------
 // UWB制御ロジック
 // ---------------------------------------------------------
+// main.c の run_uwb_mode 内の該当箇所
 void run_uwb_mode() {
-    printf("--- UWBモードで制御開始 ---\n");
-    while(1) {
+    while (1) {
         double target_m = read_target_position_m();
         FILE *fp = fopen(UWB_CURRENT_FILE, "r");
-        if (fp) {
+        
+        if (fp != NULL) {
             int nlos; double current_cm;
+            // fscanfの戻り値を確認し、期待する2つの変数が読み取れた場合のみ実行
             if (fscanf(fp, "%d,%lf", &nlos, &current_cm) == 2) {
                 double current_m = current_cm / 100.0;
+                // ここで制御ロジックを実行
                 if (target_m >= 0) {
-                    if (current_m > target_m + STOP_TOLERANCE) {
-                        Motor_Run(MOTORA, BACKWARD, MOVE_SPEED);
-                        Motor_Run(MOTORB, BACKWARD, MOVE_SPEED);
-                    } else if (current_m < target_m - STOP_TOLERANCE) {
-                        Motor_Run(MOTORA, FORWARD, MOVE_SPEED);
-                        Motor_Run(MOTORB, FORWARD, MOVE_SPEED);
-                    } else {
-                        Motor_Stop(MOTORA); Motor_Stop(MOTORB);
-                    }
+                   // ... (既存の制御) ...
                 }
+            } else {
+                // 読み取り失敗（ファイルが空の瞬間など）は無視して次へ
             }
             fclose(fp);
         }
-        usleep(100000); // 100ms周期
+        usleep(100000); // 0.1秒待機
     }
 }
+// void run_uwb_mode() {
+//     printf("--- UWBモードで制御開始 ---\n");
+//     while(1) {
+//         double target_m = read_target_position_m();
+//         FILE *fp = fopen(UWB_CURRENT_FILE, "r");
+//         if (fp) {
+//             int nlos; double current_cm;
+//             if (fscanf(fp, "%d,%lf", &nlos, &current_cm) == 2) {
+//                 double current_m = current_cm / 100.0;
+//                 if (target_m >= 0) {
+//                     if (current_m > target_m + STOP_TOLERANCE) {
+//                         Motor_Run(MOTORA, BACKWARD, MOVE_SPEED);
+//                         Motor_Run(MOTORB, BACKWARD, MOVE_SPEED);
+//                     } else if (current_m < target_m - STOP_TOLERANCE) {
+//                         Motor_Run(MOTORA, FORWARD, MOVE_SPEED);
+//                         Motor_Run(MOTORB, FORWARD, MOVE_SPEED);
+//                     } else {
+//                         Motor_Stop(MOTORA); Motor_Stop(MOTORB);
+//                     }
+//                 }
+//             }
+//             fclose(fp);
+//         }
+//         usleep(100000); // 100ms周期
+//     }
+// }
 
 // ---------------------------------------------------------
 // 共通補助関数

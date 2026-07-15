@@ -351,31 +351,77 @@ public:
             }
 
             // ====================================================
-            // ✨ [修正] 1ホップ（デモ）用：コマンド受信処理
+            // 1. 目標距離（position）の抽出と、安全なファイル書き出し
+            // ====================================================
+            std::string position_str = command;
+            if (command.find(' ') != std::string::npos) {
+                position_str = command.substr(0, command.find(' '));
+            }
+
+            // 一時ファイルに書いてからリネームし、main.c側との競合（空ファイル読み込み）を防ぐ
+            std::string tmp_path = "/tmp/robot_target_position.tmp";
+            std::string target_path = "/tmp/robot_target_position.txt";
+            
+            std::ofstream pos_file(tmp_path, std::ios::trunc);
+            if (pos_file.is_open()) {
+                pos_file << position_str << endl;
+                pos_file.close();
+                if (rename(tmp_path.c_str(), target_path.c_str()) == 0) {
+                    cout << "DEBUG: ファイル更新成功 [" << position_str << "]" << endl;
+                } else {
+                    perror("DEBUG: ファイルのリネームに失敗");
+                }
+            } else {
+                cerr << "DEBUG: ファイルのオープンに失敗" << endl;
+            }
+
+            // ====================================================
+            // 2. ルーティング情報（IPアドレス等）の更新
             // ====================================================
             if (command.find(',') != std::string::npos) {
-                // ルーティング情報を含む場合
                 try {
-                    std::string position = command.substr(0, command.find(' '));
                     std::string send_node = command.substr(command.find(' ') + 1, command.find(',') - command.find(' ') - 1);
-                    std::string down_address = routing_table[std::stoi(send_node) - 1][1]; 
-                    down_addr.sin_addr.s_addr = inet_addr(down_address.c_str());
                     
-                    std::ofstream pos_file("/tmp/robot_target_position.txt");
-                    if (pos_file.is_open()) {
-                        pos_file << position;
-                        pos_file.close();
+                    int node_idx = std::stoi(send_node) - 1;
+                    if (node_idx >= 0 && node_idx < (int)routing_table.size()) {
+                        std::string down_address = routing_table[node_idx][1]; 
+                        down_addr.sin_addr.s_addr = inet_addr(down_address.c_str());
+                        // cout << "DEBUG: Routing updated to " << down_address << endl;
+                    } else {
+                        cerr << "DEBUG: Routing index error!" << endl;
                     }
                 }
-                catch (...) {}
-            } else {
-                // コマンドが数値のみ（例："2.5"）の場合
-                std::ofstream pos_file("/tmp/robot_target_position.txt");
-                if (pos_file.is_open()) {
-                    pos_file << command;
-                    pos_file.close();
+                catch (const std::exception& e) {
+                    cerr << "DEBUG: Routing parsing error: " << e.what() << endl;
                 }
             }
+
+            // ====================================================
+            // ✨ [修正] 1ホップ（デモ）用：コマンド受信処理
+            // ====================================================
+            // if (command.find(',') != std::string::npos) {
+            //     // ルーティング情報を含む場合
+            //     try {
+            //         std::string position = command.substr(0, command.find(' '));
+            //         std::string send_node = command.substr(command.find(' ') + 1, command.find(',') - command.find(' ') - 1);
+            //         std::string down_address = routing_table[std::stoi(send_node) - 1][1]; 
+            //         down_addr.sin_addr.s_addr = inet_addr(down_address.c_str());
+                    
+            //         std::ofstream pos_file("/tmp/robot_target_position.txt");
+            //         if (pos_file.is_open()) {
+            //             pos_file << position;
+            //             pos_file.close();
+            //         }
+            //     }
+            //     catch (...) {}
+            // } else {
+            //     // コマンドが数値のみ（例："2.5"）の場合
+            //     std::ofstream pos_file("/tmp/robot_target_position.txt");
+            //     if (pos_file.is_open()) {
+            //         pos_file << command;
+            //         pos_file.close();
+            //     }
+            // }
             // ====================================================
             // // command内にコンマがあるか確認
             // if (command.find(',') != std::string::npos) {

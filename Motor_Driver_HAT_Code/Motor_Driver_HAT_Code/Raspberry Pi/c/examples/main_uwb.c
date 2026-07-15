@@ -115,7 +115,15 @@ void run_uwb_mode() {
                 double current_m = current_cm / 100.0;
                 // ここで制御ロジックを実行
                 if (target_m >= 0) {
-                   // ... (既存の制御) ...
+                   if (current_m > target_m + STOP_TOLERANCE) {
+                        Motor_Run(MOTORA, BACKWARD, MOVE_SPEED);
+                        Motor_Run(MOTORB, BACKWARD, MOVE_SPEED);
+                    } else if (current_m < target_m - STOP_TOLERANCE) {
+                        Motor_Run(MOTORA, FORWARD, MOVE_SPEED);
+                        Motor_Run(MOTORB, FORWARD, MOVE_SPEED);
+                    } else {
+                        Motor_Stop(MOTORA); Motor_Stop(MOTORB);
+                    }
                 }
             } else {
                 // 読み取り失敗（ファイルが空の瞬間など）は無視して次へ
@@ -158,9 +166,20 @@ void run_uwb_mode() {
 double read_target_position_m() {
     FILE *fp = fopen(TARGET_POSITION_FILE, "r");
     double pos = -1.0;
-    if (fp) { fscanf(fp, "%lf", &pos); fclose(fp); }
+    if (fp) { 
+        if (fscanf(fp, "%lf", &pos) == 1) {
+            pos = pos / 100.0; // cm を m に正しく変換
+        }
+        fclose(fp); 
+    }
     return pos;
 }
+// double read_target_position_m() {
+//     FILE *fp = fopen(TARGET_POSITION_FILE, "r");
+//     double pos = -1.0;
+//     if (fp) { fscanf(fp, "%lf", &pos); fclose(fp); }
+//     return pos;
+// }
 
 void Handler(int signo) {
     printf("\r\nHandler:Motor Stop\r\n");

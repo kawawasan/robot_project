@@ -49,9 +49,20 @@ uint32_t g_ack = -1;  // ack 0~2^30
 ByteQueue g_video_bytequeue;  // 映像データキュー
 ByteQueue g_command_bytequeue;  // 制御情報キュー
 std::queue<std::vector<uint8_t>> g_video_queue;  // 映像データパケットキュー
-std::queue<std::string> g_command_queue;  // 制御コマンドキュー
 std::mutex g_lock;
 std::string g_video_file_name;  // 映像ファイル名
+
+// ====================================================================
+// ✨ [修正] 「キュー」ではなく「現在値レジスタ」に変更
+// 理由: 送信トリガーはCamNからの下りパケット受信であり(receive_packet内)、
+//       CN側は「その時点で最新の制御コマンド」を毎回乗せて返すのが正しい。
+//       popして消費するキューにすると、別スレッド(旧ダミー生成)が同じ
+//       キューに割り込んだ際に実コマンドが埋もれてしまう問題があった。
+//       空文字列("")の間はまだ何も入力されていない状態を表し、
+//       make_packet()側でDUMMYを送る判断に使う。
+// ====================================================================
+std::string g_current_command = "";  // 直近で計算された実コマンド（空文字=未入力）
+uint32_t g_dummy_seq_cn = 0;          // 未入力時に送るDUMMYパケット用シーケンス
 
 bool generate_input_end = false;  // コマンド生成終了フラグ
 int generate_num = 0;  // 生成したコマンド数
@@ -59,7 +70,6 @@ std::atomic<int> g_send_num;  // 送信先のノード番号
 
 // 関数の宣言
 void generate_command_from_input(Log& log, std::chrono::high_resolution_clock::time_point start_time, const int node_num, const double communication_range, const double Vehicle_body_length, std::vector<std::vector<std::string>>& routing_table);
-void generate_command_fixed_interval(double generate_time_all, Log& log, std::chrono::high_resolution_clock::time_point start_time);
 
 
 void signal_handler(int sig) {
@@ -141,29 +151,36 @@ public:
         }
     }
 
+    // ====================================================================
+    // ✨ [修正] g_current_command（現在値レジスタ）を参照する方式に変更
+    // - 空文字列でなければ、その時点の最新コマンドをCONTROLとして毎回返す
+    //   （popして消費しないので、下りパケットが来るたびに同じ内容を
+    //    繰り返し送り続けられる＝設計で求められている継続送信と一致）
+    // - 空文字列（＝まだユーザーが何も入力していない）の間はDUMMYを返し、
+    //   CamN側との応答継続（ACK/シーケンスのやり取り）を絶やさない
+    // ====================================================================
     Packet make_packet() {
-        uint32_t packet_type = (0b11 << 30);
-        static uint32_t unknown_seq = 0;
         g_lock.lock();
-        int g_command_queue_size = g_command_queue.size();
+        std::string control_command = g_current_command;
         g_lock.unlock();
 
-        if (g_command_queue_size != 0) {
-            packet_type = TYPE_CONTROL;
-        }
-
-        if (packet_type == TYPE_CONTROL) {
+        if (!control_command.empty()) {
             g_lock.lock();
-            std::string control_command = g_command_queue.front();
-            g_command_queue.pop();
             uint32_t sqe = g_control_seq;
             g_control_seq++;
             g_lock.unlock();
 
-            Packet packet(packet_type, sqe, control_command);
+            Packet packet(TYPE_CONTROL, sqe, control_command);
             return packet;
         }
-        Packet packet(packet_type, 0, unknown_seq++);
+
+        g_lock.lock();
+        uint32_t ack = g_ack;
+        uint32_t seq = g_dummy_seq_cn;
+        g_dummy_seq_cn++;
+        g_lock.unlock();
+
+        Packet packet(TYPE_DUMMY, ack, seq);
         return packet;
     }
     
@@ -414,12 +431,14 @@ int main(int argc, char* argv[]) {
         continue;
     }
     
-    std::thread command_generate_thread(generate_command_fixed_interval, generate_time_all, std::ref(log), hr_start_time);
+    // ✨ [修正] generate_command_fixed_interval（60byteダミー生成スレッド）は廃止。
+    // 「未入力時にDUMMYを送る」役割はmake_packet()側に統合したので、
+    // 起動すべきスレッドはユーザー入力を受け付ける1本だけになる。
     std::thread command_input_thread(generate_command_from_input, std::ref(log), hr_start_time, node_num, communication_range, Vehicle_body_length, std::ref(routing_table));
 
-    command_generate_thread.join();
+    // "exit"入力でgenerate_input_endが立てられ、input threadが終了する
+    command_input_thread.join();
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    generate_input_end = true;
     usleep(1000);
 
     mucvis_cn.~Mucvis_cn();
@@ -446,7 +465,6 @@ double read_uwb_distance_cn(int &nlos) {
 // ✨ [修正] 任意のノード数 (robot_num) に対応できる完全汎用化アルゴリズム
 // ========================================================================
 void generate_command_from_input(Log& log, hr_clock::time_point hr_start_time, const int node_num, const double communication_range, const double Vehicle_body_length, std::vector<std::vector<std::string>>& routing_table) {
-    static std::mutex lock;
     hr_clock::time_point start_time = hr_start_time;
     int robot_num = node_num - 1; // CNを除いたロボットの総数
 
@@ -470,7 +488,10 @@ void generate_command_from_input(Log& log, hr_clock::time_point hr_start_time, c
 
         std::string input;
         std::getline(std::cin, input);
-        if (input == "exit") return;
+        if (input == "exit") {
+            generate_input_end = true;  // このスレッドがjoin対象になったのでここで終了フラグを立てる
+            return;
+        }
         if (input.empty()) continue;
 
         try {
@@ -550,11 +571,12 @@ void generate_command_from_input(Log& log, hr_clock::time_point hr_start_time, c
             }
             final_command.pop_back();
 
-            // 5. 送信
-            lock.lock();
-            if (!g_command_queue.empty()) g_command_queue.pop();
-            g_command_queue.push(final_command);
-            lock.unlock();
+            // 5. 送信（現在値レジスタを更新するだけ。実際の送信はmake_packet()が
+            //    下りパケット受信のたびに行う。popで消費されないので、
+            //    次にLが入力されるまでこの値を送り続けられる）
+            g_lock.lock();
+            g_current_command = final_command;
+            g_lock.unlock();
 
             log.write_generate(std::chrono::duration<double>(hr_clock::now() - start_time), "Command", generate_num++, final_command.size(), final_command);
             printf(">> Target: %.2fm (%d-hop), Command: %s\n", L, k, final_command.c_str());
@@ -563,35 +585,45 @@ void generate_command_from_input(Log& log, hr_clock::time_point hr_start_time, c
     }
 }
 
-void generate_command_fixed_interval(double generate_time_all, Log& log, hr_clock::time_point hr_start_time) {
-    double generate_command_interval = 0.1;
-    std::string command_data = "The control command is generated so that it is 60 bytes long";
-    std::chrono::duration<double> duration;
-    std::chrono::duration<double> log_time;
-
-    std::cout << "Start generate command data" << std::endl;
-    hr_clock::time_point generate_time_now;
-    hr_clock::time_point start_time = hr_start_time;
-
-    while (true) {
-        generate_time_now = hr_clock::now();
-        duration = std::chrono::duration<double>(generate_time_now - start_time);
-        if (duration.count() >= generate_time_all) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            return;
-        }
-
-        g_lock.lock();
-        g_command_queue.push(command_data);
-        g_lock.unlock();
-
-        log_time = std::chrono::duration<double>(generate_time_now - start_time);
-        log.write_generate(log_time, "Command", generate_num, command_data.size());
-        generate_num++;
-        
-        std::this_thread::sleep_for(std::chrono::milliseconds((int)(generate_command_interval*1000)));
-    }
-}
+// ========================================================================
+// ✨ [廃止] generate_command_fixed_interval
+// 60byteの固定ダミー文字列を100msごとにg_command_queueへ積み続けていた関数。
+// generate_command_from_input が push する実コマンドと同じキューを取り合い、
+// 「入力した距離コマンドがダミーに埋もれてCamNに届かない/上書きされる」
+// バグの直接の原因だったため廃止。
+// 「未入力時にDUMMYを送り続ける」という本来の役割は、
+// Mucvis_cn::make_packet() が g_current_command の空/非空を見て
+// CONTROL/DUMMYを都度生成する形に統合した。
+// ========================================================================
+// void generate_command_fixed_interval(double generate_time_all, Log& log, hr_clock::time_point hr_start_time) {
+//     double generate_command_interval = 0.1;
+//     std::string command_data = "The control command is generated so that it is 60 bytes long";
+//     std::chrono::duration<double> duration;
+//     std::chrono::duration<double> log_time;
+//
+//     std::cout << "Start generate command data" << std::endl;
+//     hr_clock::time_point generate_time_now;
+//     hr_clock::time_point start_time = hr_start_time;
+//
+//     while (true) {
+//         generate_time_now = hr_clock::now();
+//         duration = std::chrono::duration<double>(generate_time_now - start_time);
+//         if (duration.count() >= generate_time_all) {
+//             std::this_thread::sleep_for(std::chrono::milliseconds(100));
+//             return;
+//         }
+//
+//         g_lock.lock();
+//         g_command_queue.push(command_data);
+//         g_lock.unlock();
+//
+//         log_time = std::chrono::duration<double>(generate_time_now - start_time);
+//         log.write_generate(log_time, "Command", generate_num, command_data.size());
+//         generate_num++;
+//
+//         std::this_thread::sleep_for(std::chrono::milliseconds((int)(generate_command_interval*1000)));
+//     }
+// }
 // // UWB用で修正するよ 20260710~
 
 // // 制御ノード  同軸環境用

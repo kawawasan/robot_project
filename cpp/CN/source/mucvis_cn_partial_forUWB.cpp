@@ -63,6 +63,10 @@ std::string g_video_file_name;  // 映像ファイル名
 // ====================================================================
 std::string g_current_command = "";  // 直近で計算された実コマンド（空文字=未入力）
 uint32_t g_dummy_seq_cn = 0;          // 未入力時に送るDUMMYパケット用シーケンス
+std::string g_last_sent_command = "";
+hr_clock::time_point g_last_control_send_time = hr_clock::time_point::min();
+const std::chrono::milliseconds CONTROL_RESEND_INTERVAL(100);  // 旧ダミー生成と同じ100ms間隔
+
 
 bool generate_input_end = false;  // コマンド生成終了フラグ
 int generate_num = 0;  // 生成したコマンド数
@@ -153,7 +157,7 @@ public:
 
     // ====================================================================
     // ✨ [修正] g_current_command（現在値レジスタ）を参照する方式に変更
-    // - 空文字列でなければ、その時点の最新コマンドをCONTROLとして毎回返す
+    // - 空文字列でなければ、その時点の最新コマンドをCONTROLとして毎回返す（これは変更する）
     //   （popして消費しないので、下りパケットが来るたびに同じ内容を
     //    繰り返し送り続けられる＝設計で求められている継続送信と一致）
     // - 空文字列（＝まだユーザーが何も入力していない）の間はDUMMYを返し、
@@ -161,28 +165,75 @@ public:
     // ====================================================================
     Packet make_packet() {
         g_lock.lock();
-        std::string control_command = g_current_command;
+        std::string cmd = g_current_command;
         g_lock.unlock();
 
-        if (!control_command.empty()) {
-            g_lock.lock();
-            uint32_t sqe = g_control_seq;
-            g_control_seq++;
-            g_lock.unlock();
+        if (!cmd.empty()) {
+            hr_clock::time_point now = hr_clock::now();
+            bool changed = (cmd != g_last_sent_command);
+            bool interval_elapsed = (now - g_last_control_send_time) >= CONTROL_RESEND_INTERVAL;
 
-            Packet packet(TYPE_CONTROL, sqe, control_command);
+            if (changed || interval_elapsed) {
+                // ★新しい値が来た時は即時送信（下りトリガー即応の要件を満たす）
+                // ★同じ値なら100ms間隔でのみ再送（過剰な送信でCamNを詰まらせない）
+                g_lock.lock();
+                uint32_t sqe = g_control_seq++;
+                g_lock.unlock();
+
+                g_last_sent_command = cmd;
+                g_last_control_send_time = now;
+
+                Packet packet(TYPE_CONTROL, sqe, cmd);
+                return packet;
+            } else {
+                // 送るべき新しい内容が無い間はUNKNOWNを返し、send_packet()側で
+                // 実際には何も送信しない（旧設計と同じ挙動に戻す）
+                Packet packet((uint32_t)(0b11 << 30), 0, 0);
+                return packet;
+            }
+        }
+
+        // 未入力時のDUMMYも同様に間隔を空ける
+        hr_clock::time_point now = hr_clock::now();
+        static hr_clock::time_point last_dummy_time = hr_clock::time_point::min();
+        if (now - last_dummy_time < CONTROL_RESEND_INTERVAL) {
+            Packet packet((uint32_t)(0b11 << 30), 0, 0);
             return packet;
         }
+        last_dummy_time = now;
 
         g_lock.lock();
         uint32_t ack = g_ack;
-        uint32_t seq = g_dummy_seq_cn;
-        g_dummy_seq_cn++;
+        uint32_t seq = g_dummy_seq_cn++;
         g_lock.unlock();
 
         Packet packet(TYPE_DUMMY, ack, seq);
         return packet;
     }
+    // Packet make_packet() {
+    //     g_lock.lock();
+    //     std::string control_command = g_current_command;
+    //     g_lock.unlock();
+
+    //     if (!control_command.empty()) {
+    //         g_lock.lock();
+    //         uint32_t sqe = g_control_seq;
+    //         g_control_seq++;
+    //         g_lock.unlock();
+
+    //         Packet packet(TYPE_CONTROL, sqe, control_command);
+    //         return packet;
+    //     }
+
+    //     g_lock.lock();
+    //     uint32_t ack = g_ack;
+    //     uint32_t seq = g_dummy_seq_cn;
+    //     g_dummy_seq_cn++;
+    //     g_lock.unlock();
+
+    //     Packet packet(TYPE_DUMMY, ack, seq);
+    //     return packet;
+    // }
     
     void send_packet() {
         Packet packet = make_packet();

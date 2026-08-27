@@ -32,24 +32,24 @@ else ifeq ($(USELIB), USE_WIRINGPI_LIB)
 endif
 
 ${TARGET}:${OBJ_O}
-    $(CC) $(CFLAGS) $(OBJ_O) -o $@ $(LIB) -lm
+	$(CC) $(CFLAGS) $(OBJ_O) -o $@ $(LIB) -lm
 
 ${DIR_BIN}/%.o : $(DIR_Examples)/%.c
-    $(CC) $(CFLAGS) -c  $< -o $@ $(LIB) -I $(DIR_OBJ) -I $(DIR_Config) -I $(DIR_MotorDriver) -I $(DIR_PCA9685)
+	$(CC) $(CFLAGS) -c  $< -o $@ $(LIB) -I $(DIR_OBJ) -I $(DIR_Config) -I $(DIR_MotorDriver) -I $(DIR_PCA9685)
 
 ${DIR_BIN}/%.o : $(DIR_OBJ)/%.c
-    $(CC) $(CFLAGS) -c  $< -o $@ $(LIB) -I $(DIR_Config)
-    
+	$(CC) $(CFLAGS) -c  $< -o $@ $(LIB) -I $(DIR_Config)
+
 ${DIR_BIN}/%.o : $(DIR_Config)/%.c
-    $(CC) $(CFLAGS) -c  $< -o $@ $(LIB)
+	$(CC) $(CFLAGS) -c  $< -o $@ $(LIB)
 
 ${DIR_BIN}/%.o : $(DIR_PCA9685)/%.c
-    $(CC) $(CFLAGS) -c  $< -o $@ $(LIB) -I $(DIR_Config)
+	$(CC) $(CFLAGS) -c  $< -o $@ $(LIB) -I $(DIR_Config)
 
 ${DIR_BIN}/%.o : $(DIR_MotorDriver)/%.c
-    $(CC) $(CFLAGS) -c  $< -o $@ $(LIB) -I $(DIR_Config) -I $(DIR_PCA9685)
+	$(CC) $(CFLAGS) -c  $< -o $@ $(LIB) -I $(DIR_Config) -I $(DIR_PCA9685)
 
 
 clean :
     rm -f $(DIR_BIN)/*.o 
-    rm -f main main_lidar main_uwb
+	rm -f main main_lidar main_uwb

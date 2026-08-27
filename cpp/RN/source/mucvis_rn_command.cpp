@@ -267,9 +267,10 @@ public:
             // 河村　以下４行追加　20260422
             seq = packet.get_dummySeq();
 
-            g_lock.lock();
-            m_video_packet_queue.push(packet);
-            g_lock.unlock();
+            //河村　ここがミスの原因　0518
+            //g_lock.lock();
+            //m_video_packet_queue.push(packet);
+            //g_lock.unlock();
 
             // 送信間隔 I / 3 待機　河村　戻した
             std::this_thread::sleep_until(recv_time + std::chrono::duration<double>(ipt_interval / 3));

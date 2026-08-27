@@ -41,8 +41,8 @@ using system_clock = std::chrono::system_clock;
 #define CONTROL_SEQ_MAX (1 << 30)  // 30bitの最大値
 #define VIDEO_SEQ_MAX 0xffffffff  // 32bitの最大値
 #define DUMMY_SEQ_MAX 3  // ダミーパケット送信回数上限
-#define WIDTH "1920"  // 映像幅 1280 1920 
-#define HEIGHT "1080"  // 映像高さ 720 1080
+#define WIDTH "1280"  // 映像幅 1280 1920 
+#define HEIGHT "720"  // 映像高さ 720 1080
 #define FRAMERATE "24"  // フレームレート
 #define FILE_NAME_PREFIX "videos/IPT_"  // 映像ファイル名プレフィックス
 

@@ -372,7 +372,7 @@ public:
                     perror("DEBUG: ファイルのリネームに失敗");
                 }
             } else {
-                cerr << "DEBUG: ファイルのオープンに失敗" << endl;
+                std::cerr << "DEBUG: ファイルのオープンに失敗" << endl;
             }
 
             // ====================================================
@@ -388,7 +388,7 @@ public:
                         down_addr.sin_addr.s_addr = inet_addr(down_address.c_str());
                         // cout << "DEBUG: Routing updated to " << down_address << endl;
                     } else {
-                        cerr << "DEBUG: Routing index error!" << endl;
+                        std::cerr << "DEBUG: Routing index error!" << endl;
                     }
                 }
                 catch (const std::exception& e) {

@@ -81,11 +81,24 @@ def main():
             jitter = sum(abs(fixed_delays[j] - fixed_delays[j-1]) for j in range(1, len(fixed_delays))) / (len(fixed_delays) - 1) if len(fixed_delays) > 1 else 0
             loss = (1 - len(common_seqs) / len(src_sends)) * 100 if len(src_sends) > 0 else 0
             
+            # +++++ ここからスループット計算を追加 +++++
+            # 宛先ノードで受信した全パケットを抽出
+            recv_packets = [d for d in nodes[dst_n] if d['Type'] == p_type and d['Ev'] == 'Recv']
+            if len(recv_packets) > 1:
+                total_bits = sum(p['Size'] for p in recv_packets) * 8
+                # 最初のパケットから最後のパケットまでの時間を計算
+                duration = max(p['T'] for p in recv_packets) - min(p['T'] for p in recv_packets)
+                throughput_mbps = (total_bits / duration) / 1_000_000 if duration > 0 else 0.0
+            else:
+                throughput_mbps = 0.0
+            # +++++++++++++++++++++++++++++++++++++++++
+            
             print(f"区間 [{src_n} -> {dst_n}]:")
             print(f"  補正オフセット: {offset:8.4f} ms")
             print(f"  平均遅延(補正): {avg:8.4f} ms")
             print(f"  ジッタ        : {jitter:8.4f} ms")
             print(f"  ロス率        : {loss:6.2f} %")
+            print(f"  スループット  : {throughput_mbps:6.2f} Mbps") # 追加
             print()
 
         # End-to-End の計算

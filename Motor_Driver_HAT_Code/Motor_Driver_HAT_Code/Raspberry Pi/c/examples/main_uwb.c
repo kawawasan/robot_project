@@ -168,15 +168,6 @@ void run_uwb_mode() {
 // 共通補助関数
 // ---------------------------------------------------------
 double read_target_position_m() {
-    void write_current_distance(int dist_cm) {
-        FILE *fp = fopen(CURRENT_DISTANCE_FILE_TMP, "w");
-        if (fp == NULL) return;
-        struct timespec ts;
-        clock_gettime(CLOCK_MONOTONIC, &ts);
-        fprintf(fp, "%d %ld", dist_cm, (long)ts.tv_sec);
-        fclose(fp);
-        rename(CURRENT_DISTANCE_FILE_TMP, CURRENT_DISTANCE_FILE);
-    }
     FILE *fp = fopen(TARGET_POSITION_FILE, "r");
     double pos = -1.0;
     if (fp) { 
@@ -187,6 +178,17 @@ double read_target_position_m() {
     }
     return pos;
 }
+
+void write_current_distance(int dist_cm) {
+    FILE *fp = fopen(CURRENT_DISTANCE_FILE_TMP, "w");
+    if (fp == NULL) return;
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    fprintf(fp, "%d %ld", dist_cm, (long)ts.tv_sec);
+    fclose(fp);
+    rename(CURRENT_DISTANCE_FILE_TMP, CURRENT_DISTANCE_FILE);
+}
+
 // double read_target_position_m() {
 //     FILE *fp = fopen(TARGET_POSITION_FILE, "r");
 //     double pos = -1.0;

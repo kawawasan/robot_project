@@ -81,17 +81,6 @@ int get_lidar_distance_cm() {
  * @brief ファイルから目標距離(m)を読み取る
  */
 double read_target_position_m() {
-    // 河村追加20260827
-    void write_current_distance(int dist_cm) {
-        FILE *fp = fopen(CURRENT_DISTANCE_FILE_TMP, "w");
-        if (fp == NULL) return;
-        struct timespec ts;
-        clock_gettime(CLOCK_MONOTONIC, &ts);
-        fprintf(fp, "%d %ld", dist_cm, (long)ts.tv_sec);
-        fclose(fp);
-        rename(CURRENT_DISTANCE_FILE_TMP, CURRENT_DISTANCE_FILE);
-    }
-
     FILE *fp = fopen(TARGET_POSITION_FILE, "r");
     if (fp == NULL) {
         return -1.0; 
@@ -105,6 +94,16 @@ double read_target_position_m() {
 
     fclose(fp);
     return position_cm / 100.0; // cm -> m
+}
+// 河村追加20260827
+void write_current_distance(int dist_cm) {
+    FILE *fp = fopen(CURRENT_DISTANCE_FILE_TMP, "w");
+    if (fp == NULL) return;
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    fprintf(fp, "%d %ld", dist_cm, (long)ts.tv_sec);
+    fclose(fp);
+    rename(CURRENT_DISTANCE_FILE_TMP, CURRENT_DISTANCE_FILE);
 }
 
 void Handler(int signo)

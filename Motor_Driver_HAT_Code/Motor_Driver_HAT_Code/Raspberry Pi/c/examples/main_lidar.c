@@ -17,6 +17,8 @@ const int FULL_DELAY_HIGH = 0x0f;
 
 // --- 目標距離ファイル ---
 const char* TARGET_POSITION_FILE = "/tmp/robot_target_position.txt";
+const char* CURRENT_DISTANCE_FILE = "/tmp/robot_current_distance.txt";
+const char* CURRENT_DISTANCE_FILE_TMP = "/tmp/robot_current_distance.tmp";
 const int MOVE_SPEED = 80; // 移動速度
 
 int i2c_fd = -1; // I2Cファイルディスクリプタ
@@ -79,6 +81,17 @@ int get_lidar_distance_cm() {
  * @brief ファイルから目標距離(m)を読み取る
  */
 double read_target_position_m() {
+    // 河村追加20260827
+    void write_current_distance(int dist_cm) {
+        FILE *fp = fopen(CURRENT_DISTANCE_FILE_TMP, "w");
+        if (fp == NULL) return;
+        struct timespec ts;
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+        fprintf(fp, "%d %ld", dist_cm, (long)ts.tv_sec);
+        fclose(fp);
+        rename(CURRENT_DISTANCE_FILE_TMP, CURRENT_DISTANCE_FILE);
+    }
+
     FILE *fp = fopen(TARGET_POSITION_FILE, "r");
     if (fp == NULL) {
         return -1.0; 
@@ -143,6 +156,7 @@ int main(void)
             if (new_dist > 0) {
                 dist_cm = new_dist;
                 last_measure_time = now; // 測定成功時のみタイマーリセット
+                write_current_distance(dist_cm); // 河村20260827
                 printf("[LIDAR] Updated Distance: %d cm\n", dist_cm);
             } else {
                 printf("[WARNING] Invalid data (0cm). Keeping last distance.\n");

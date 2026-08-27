@@ -11,6 +11,8 @@
 #include <string.h>
 
 // --- 共通の定数・変数 ---
+const char* CURRENT_DISTANCE_FILE = "/tmp/robot_current_distance.txt";
+const char* CURRENT_DISTANCE_FILE_TMP = "/tmp/robot_current_distance.tmp";
 const char* TARGET_POSITION_FILE = "/tmp/robot_target_position.txt";
 const char* UWB_CURRENT_FILE     = "/tmp/uwb_current_distance.txt";
 const int MOVE_SPEED = 80;
@@ -62,6 +64,7 @@ void run_lidar_mode() {
     printf("--- LiDARモードで制御開始 ---\n");
     while(1) {
         int dist_cm = get_lidar_distance_cm();
+        if (dist_cm > 0) write_current_distance(dist_cm);   // 河村0827
         double target_m = read_target_position_m();
         
         if (target_m >= 0 && dist_cm > 0) {
@@ -112,6 +115,7 @@ void run_uwb_mode() {
             int nlos; double current_cm;
             // fscanfの戻り値を確認し、期待する2つの変数が読み取れた場合のみ実行
             if (fscanf(fp, "%d,%lf", &nlos, &current_cm) == 2) {
+                write_current_distance((int)current_cm);  // 河村20260827
                 double current_m = current_cm / 100.0;
                 // ここで制御ロジックを実行
                 if (target_m >= 0) {
@@ -164,6 +168,15 @@ void run_uwb_mode() {
 // 共通補助関数
 // ---------------------------------------------------------
 double read_target_position_m() {
+    void write_current_distance(int dist_cm) {
+        FILE *fp = fopen(CURRENT_DISTANCE_FILE_TMP, "w");
+        if (fp == NULL) return;
+        struct timespec ts;
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+        fprintf(fp, "%d %ld", dist_cm, (long)ts.tv_sec);
+        fclose(fp);
+        rename(CURRENT_DISTANCE_FILE_TMP, CURRENT_DISTANCE_FILE);
+    }
     FILE *fp = fopen(TARGET_POSITION_FILE, "r");
     double pos = -1.0;
     if (fp) { 

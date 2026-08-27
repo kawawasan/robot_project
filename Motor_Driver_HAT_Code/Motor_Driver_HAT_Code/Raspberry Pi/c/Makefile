@@ -5,11 +5,15 @@ DIR_MotorDriver = ./lib/MotorDriver
 DIR_PCA9685 = ./lib/PCA9685
 DIR_Examples = ./examples
 
-OBJ_C = $(wildcard ${DIR_OBJ}/*.c ${DIR_Examples}/*.c ${DIR_Config}/*.c ${DIR_MotorDriver}/*.c ${DIR_PCA9685}/*.c )
-OBJ_O = $(patsubst %.c,${DIR_BIN}/%.o,$(notdir ${OBJ_C}))
+# デフォルトのターゲット（何も指定しない場合は main）
+TARGET ?= main
 
-TARGET = main
-#BIN_TARGET = ${DIR_BIN}/${TARGET}
+# ★修正点: examples/ からは TARGET で指定したファイル（例: main_lidar.c）だけをピックアップする
+OBJ_C = $(wildcard ${DIR_OBJ}/*.c) \
+        ${DIR_Examples}/${TARGET}.c \
+        $(wildcard ${DIR_Config}/*.c ${DIR_MotorDriver}/*.c ${DIR_PCA9685}/*.c)
+
+OBJ_O = $(patsubst %.c,${DIR_BIN}/%.o,$(notdir ${OBJ_C}))
 
 CC = gcc
 
@@ -28,24 +32,24 @@ else ifeq ($(USELIB), USE_WIRINGPI_LIB)
 endif
 
 ${TARGET}:${OBJ_O}
-	$(CC) $(CFLAGS) $(OBJ_O) -o $@ $(LIB) -lm
+    $(CC) $(CFLAGS) $(OBJ_O) -o $@ $(LIB) -lm
 
 ${DIR_BIN}/%.o : $(DIR_Examples)/%.c
-	$(CC) $(CFLAGS) -c  $< -o $@ $(LIB) -I $(DIR_OBJ) -I $(DIR_Config) -I $(DIR_MotorDriver) -I $(DIR_PCA9685)
+    $(CC) $(CFLAGS) -c  $< -o $@ $(LIB) -I $(DIR_OBJ) -I $(DIR_Config) -I $(DIR_MotorDriver) -I $(DIR_PCA9685)
 
 ${DIR_BIN}/%.o : $(DIR_OBJ)/%.c
-	$(CC) $(CFLAGS) -c  $< -o $@ $(LIB) -I $(DIR_Config)
+    $(CC) $(CFLAGS) -c  $< -o $@ $(LIB) -I $(DIR_Config)
     
 ${DIR_BIN}/%.o : $(DIR_Config)/%.c
-	$(CC) $(CFLAGS) -c  $< -o $@ $(LIB)
+    $(CC) $(CFLAGS) -c  $< -o $@ $(LIB)
 
 ${DIR_BIN}/%.o : $(DIR_PCA9685)/%.c
-	$(CC) $(CFLAGS) -c  $< -o $@ $(LIB) -I $(DIR_Config)
+    $(CC) $(CFLAGS) -c  $< -o $@ $(LIB) -I $(DIR_Config)
 
 ${DIR_BIN}/%.o : $(DIR_MotorDriver)/%.c
-	$(CC) $(CFLAGS) -c  $< -o $@ $(LIB) -I $(DIR_Config) -I $(DIR_PCA9685)
+    $(CC) $(CFLAGS) -c  $< -o $@ $(LIB) -I $(DIR_Config) -I $(DIR_PCA9685)
 
 
 clean :
-	rm $(DIR_BIN)/*.* 
-	rm $(TARGET) 
+    rm -f $(DIR_BIN)/*.o 
+    rm -f main main_lidar main_uwb

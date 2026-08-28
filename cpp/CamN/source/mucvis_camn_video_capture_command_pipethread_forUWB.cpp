@@ -416,7 +416,7 @@ public:
                     }
                 }
                 catch (const std::exception& e) {
-                    cerr << "DEBUG: Routing parsing error: " << e.what() << endl;
+                    std::cerr << "DEBUG: Routing parsing error: " << e.what() << endl;
                 }
             }
 

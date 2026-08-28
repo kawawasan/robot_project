@@ -1,6 +1,6 @@
 //テスト用，河村20260827
 
-#include "packet.hpp"
+#include "../header/packet.hpp"
 #include <cassert>
 #include <iostream>
 

@@ -21,6 +21,7 @@
 #include <sys/epoll.h>
 #include <filesystem>
 #include <time.h>
+#include <atomic>
 
 #include "../../include/header/bytequeue.hpp"  // 自作モジュール
 #include "../../include/header/log.hpp"  // 自作モジュール

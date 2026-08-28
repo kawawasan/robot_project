@@ -10,7 +10,9 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <mutex>
+#include <atomic>   // 既にincludeされていなければ追加
 #include <sstream>
+#include <time.h>
 
 #include "../../include/header/bytequeue.hpp"  // 自作モジュール
 #include "../../include/header/log.hpp"  // 自作モジュール
@@ -27,7 +29,7 @@ using system_clock = std::chrono::system_clock;
 #define TYPE_CONTROL (uint32_t)(0b01 << 30)
 #define TYPE_DUMMY (uint32_t)(0b10 << 30)
 #define BUFFER_MAX 1500
-#define MAX_VIDEO_SIZE 1464  // 映像データサイズ 最大1464byte
+#define MAX_VIDEO_SIZE 1458  // 映像データサイズ 最大1458byteに変更0827
 #define CONTROL_SEQ_MAX (1 << 30)  // 30bitの最大値
 #define VIDEO_SEQ_MAX 0xffffffff  // 32bitの最大値
 #define DUMMY_SEQ_MAX 3  // ダミーパケット送信回数上限
@@ -42,7 +44,28 @@ std::queue<std::vector<uint8_t>> g_command_queue;  // 制御情報パケット�
 std::queue<Packet> g_video_packet_queue;  // 映像データパケットキュー
 std::queue<Packet> g_command_packet_queue;  // 制御情報パケットキュー
 std::mutex g_lock;
+std::atomic<int16_t> g_current_distance_cm{Packet::DIST_NO_DATA};
 
+void distance_reader_thread() {//追加関数　河村0828
+    while (true) {
+        FILE* fp = fopen("/tmp/robot_current_distance.txt", "r");
+        if (fp != nullptr) {
+            int dist_cm = 0;
+            long ts_sec = 0;
+            if (fscanf(fp, "%d %ld", &dist_cm, &ts_sec) == 2) {
+                struct timespec now;
+                clock_gettime(CLOCK_MONOTONIC, &now);
+                if (now.tv_sec - ts_sec < 2) {
+                    g_current_distance_cm.store(static_cast<int16_t>(dist_cm));
+                } else {
+                    g_current_distance_cm.store(Packet::DIST_NO_DATA);
+                }
+            }
+            fclose(fp);
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    }
+}
 
 class Mucvis_rn {
 private:
@@ -592,6 +615,16 @@ int main(int argc, char* argv[]) {
 
     // --- 河村追加0930 ここからモーター制御プログラムをバックグラウンドで起動する処理 ---
     pid_t motor_pid = fork();
+    std::thread(distance_reader_thread).detach();//追加0828
+
+    std::thread([]() {    
+        while (true) {        
+            std::cout << "[DEBUG] g_current_distance_cm = " << g_current_distance_cm.load() << std::endl;        
+            std::this_thread::sleep_for(std::chrono::seconds(1));    
+        }
+    }).detach();
+
+    
     if (motor_pid == -1) {
         // forkに失敗した場合
         perror("fork failed to start motor control program");

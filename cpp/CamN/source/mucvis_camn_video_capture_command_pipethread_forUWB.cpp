@@ -38,7 +38,7 @@ using system_clock = std::chrono::system_clock;
 #define TYPE_CONTROL (uint32_t)(0b01 << 30)
 #define TYPE_DUMMY (uint32_t)(0b10 << 30)
 #define BUFFER_MAX 1500
-#define MAX_VIDEO_SIZE 1464  // 映像データサイズ 最大1464byte．tsファイルは188byteのため，1316
+#define MAX_VIDEO_SIZE 1458  // 映像データサイズ 最大1458byteに変更0827．tsファイルは188byteのため，1316
 #define VIDEO_BUFFER_SIZE (MAX_VIDEO_SIZE * 100)  // パイプから読み込むバッファサイズ
 #define CONTROL_SEQ_MAX (1 << 30)  // 30bitの最大値
 #define VIDEO_SEQ_MAX 0xffffffff  // 32bitの最大値

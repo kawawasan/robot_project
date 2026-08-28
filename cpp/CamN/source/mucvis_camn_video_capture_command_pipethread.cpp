@@ -20,6 +20,7 @@
 #include <sys/wait.h>
 #include <sys/epoll.h>
 #include <filesystem>
+#include <time.h>
 
 #include "../../include/header/bytequeue.hpp"  // 自作モジュール
 #include "../../include/header/log.hpp"  // 自作モジュール
@@ -36,7 +37,7 @@ using system_clock = std::chrono::system_clock;
 #define TYPE_CONTROL (uint32_t)(0b01 << 30)
 #define TYPE_DUMMY (uint32_t)(0b10 << 30)
 #define BUFFER_MAX 1500
-#define MAX_VIDEO_SIZE 1464  // 映像データサイズ 最大1464byte．tsファイルは188byteのため，1316
+#define MAX_VIDEO_SIZE 1458  // 映像データサイズ 最大1458byteに変更0827．tsファイルは188byteのため，1316
 #define VIDEO_BUFFER_SIZE (MAX_VIDEO_SIZE * 100)  // パイプから読み込むバッファサイズ
 #define CONTROL_SEQ_MAX (1 << 30)  // 30bitの最大値
 #define VIDEO_SEQ_MAX 0xffffffff  // 32bitの最大値
@@ -56,7 +57,7 @@ std::queue<std::tuple<uint32_t, uint32_t, std::vector<uint8_t>>> g_video_queue; 
 std::queue<std::vector<uint8_t>> g_command_queue;  // 制御情報パケットキュー
 std::mutex g_lock;
 std::string g_video_file_name;  // 映像ファイル名
-
+std::atomic<int16_t> g_current_distance_cm{Packet::DIST_NO_DATA};
 // const double generate_time_all = 60.0;  // ビデオデータ生成時間 [s]
 
 // void generate_video_fixed_interval(double generate_time_all, double video_bit_rate, Log& log, hr_clock::time_point start_time);
@@ -70,6 +71,27 @@ void signal_handler(int sig) {
     std::cout << "Program end" << std::endl;
 
     exit(0);
+}
+
+void distance_reader_thread() {//追加　0828
+    while (true) {
+        FILE* fp = fopen("/tmp/robot_current_distance.txt", "r");
+        if (fp != nullptr) {
+            int dist_cm = 0;
+            long ts_sec = 0;
+            if (fscanf(fp, "%d %ld", &dist_cm, &ts_sec) == 2) {
+                struct timespec now;
+                clock_gettime(CLOCK_MONOTONIC, &now);
+                if (now.tv_sec - ts_sec < 2) {
+                    g_current_distance_cm.store(static_cast<int16_t>(dist_cm));
+                } else {
+                    g_current_distance_cm.store(Packet::DIST_NO_DATA);
+                }
+            }
+            fclose(fp);
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    }
 }
 
 
@@ -576,6 +598,15 @@ int main(int argc, char* argv[]) {
     // --- ここからモーター制御プログラムをバックグラウンドで起動する処理 ---
     //河村追加20250930
     pid_t motor_pid = fork();
+    std::thread(distance_reader_thread).detach(); //追加0828
+
+    std::thread([]() {
+    while (true) {
+        std::cout << "[DEBUG] g_current_distance_cm = " << g_current_distance_cm.load() << std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+}).detach();
+
     if (motor_pid == -1) {
         // forkに失敗した場合
         perror("fork failed to start motor control program");

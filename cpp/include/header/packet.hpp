@@ -6,6 +6,8 @@
 #include <string>
 #include <cstring>
 #include <vector>
+#include <array>
+#include <cstdint>
 
 class Packet {
     private:
@@ -20,6 +22,9 @@ class Packet {
         std::vector<uint8_t> payload;  // ペイロード
 
     public:
+        static constexpr int DIST_SLOT_COUNT = 3;              // RN1, RN2, CamN
+        static constexpr int16_t DIST_NO_DATA = INT16_MIN;      // このサイクルで更新なし
+        static constexpr int DIST_BYTES = DIST_SLOT_COUNT * sizeof(int16_t);  // 6
         // パケット受信時のコンストラクタ
         Packet(std::vector<uint8_t> payload);
         // Packet(uint8_t *payload);
@@ -44,6 +49,8 @@ class Packet {
         std::vector<uint8_t> get_videoData();
         // uint8_t* get_videoData();
         std::string get_command();
+        std::array<int16_t, DIST_SLOT_COUNT> get_distances();
+        void set_distance(int node_idx, int16_t distance_cm);
 };
 
 #endif // PACKET_HPP

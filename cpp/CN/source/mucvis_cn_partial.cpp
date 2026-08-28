@@ -34,7 +34,7 @@ using system_clock = std::chrono::system_clock;
 #define TYPE_CONTROL (uint32_t)(0b01 << 30)
 #define TYPE_DUMMY (uint32_t)(0b10 << 30)
 #define BUFFER_MAX 1500
-#define MAX_VIDEO_SIZE 1464  // 映像データサイズ 最大1464byte(1500-UDPヘッダ-自作ヘッダ(8byte))．以前は1456，tsファイルは188byteのため，1316
+#define MAX_VIDEO_SIZE 1458  // 映像データサイズ 最大1458byteに変更0827(1500-UDPヘッダ-自作ヘッダ(8byte))．以前は1456，tsファイルは188byteのため，1316
 #define CONTROL_SEQ_MAX (1 << 30)  // 30bitの最大値
 #define VIDEO_SEQ_MAX 0xffffffff  // 32bitの最大値
 #define DUMMY_SEQ_MAX 3  // ダミーパケット送信回数上限

@@ -34,6 +34,10 @@ Packet::Packet(uint32_t type, uint32_t ack, uint32_t seq, std::vector<uint8_t> v
     // 繋げてペイロードに変形
     uint32_t header[2] = {this->type + this->ack, this->seq};
     payload.insert(payload.end(), reinterpret_cast<uint8_t*>(header), reinterpret_cast<uint8_t*>(header) + sizeof(header));
+     // ↓ ここから追加
+    int16_t dist_init[DIST_SLOT_COUNT] = {DIST_NO_DATA, DIST_NO_DATA, DIST_NO_DATA};
+    payload.insert(payload.end(), reinterpret_cast<uint8_t*>(dist_init), reinterpret_cast<uint8_t*>(dist_init) + sizeof(dist_init));
+    // ↑ ここまで追加
     payload.insert(payload.end(), videoData.begin(), videoData.end());
 
     // uint32_t header[2] = {top4bytes, this->seq};
@@ -69,6 +73,11 @@ Packet::Packet(uint32_t type, uint32_t ack, uint32_t seq) {
     // 繋げてペイロードに変形（VIDEOと同じく8バイトのヘッダーにする）　河村　修正してダミーを8バイトのヘッダーにする　20260422
     uint32_t header[2] = {this->type + this->ack, this->seq};
     payload.insert(payload.end(), reinterpret_cast<uint8_t*>(header), reinterpret_cast<uint8_t*>(header) + sizeof(header));
+
+    // ↓ ここから追加
+    int16_t dist_init[DIST_SLOT_COUNT] = {DIST_NO_DATA, DIST_NO_DATA, DIST_NO_DATA};
+    payload.insert(payload.end(), reinterpret_cast<uint8_t*>(dist_init), reinterpret_cast<uint8_t*>(dist_init) + sizeof(dist_init));
+    // ↑ ここまで追加
 
     // 繋げてペイロードに変形
     // top4bytes = this->type + this->ack;
@@ -119,7 +128,8 @@ int Packet::get_dummySeq() {
 
 std::vector<uint8_t> Packet::get_videoData() {
     videoData.clear();
-    videoData.insert(videoData.end(), payload.begin() + 8, payload.end());
+    // videoData.insert(videoData.end(), payload.begin() + 8, payload.end());
+    videoData.insert(videoData.end(), payload.begin() + 8 + DIST_BYTES, payload.end());  // 8 → 8+DIST_BYTES
     // memcpy(videoData, payload + 8, MAX_VIDEO_SIZE);
     return videoData;
 }
@@ -128,4 +138,19 @@ std::string Packet::get_command() {
     command = std::string(payload.begin() + 4, payload.end());
     // command = std::string(payload + 4, payload + 4 + MAX_COMMAND_SIZE);
     return command;
+}
+
+std::array<int16_t, Packet::DIST_SLOT_COUNT> Packet::get_distances() {
+    std::array<int16_t, DIST_SLOT_COUNT> dists = {DIST_NO_DATA, DIST_NO_DATA, DIST_NO_DATA};
+    if (payload.size() >= 8 + DIST_BYTES) {
+        memcpy(dists.data(), payload.data() + 8, DIST_BYTES);
+    }
+    return dists;
+}
+
+void Packet::set_distance(int node_idx, int16_t distance_cm) {
+    if (node_idx < 0 || node_idx >= DIST_SLOT_COUNT) return;
+    if (payload.size() >= 8 + DIST_BYTES) {
+        memcpy(payload.data() + 8 + node_idx * sizeof(int16_t), &distance_cm, sizeof(int16_t));
+    }
 }

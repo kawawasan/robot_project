@@ -22,6 +22,8 @@
 #include <sys/wait.h>
 #include <sys/epoll.h>
 #include <filesystem>
+#include <atomic>
+#include <time.h>
 
 #include "../../include/header/bytequeue.hpp"  // 自作モジュール
 #include "../../include/header/log.hpp"  // 自作モジュール
@@ -72,6 +74,27 @@ void signal_handler(int sig) {
     std::cout << "Program end" << std::endl;
 
     exit(0);
+}
+
+void distance_reader_thread() {
+    while (true) {
+        FILE* fp = fopen("/tmp/robot_current_distance.txt", "r");
+        if (fp != nullptr) {
+            int dist_cm = 0;
+            long ts_sec = 0;
+            if (fscanf(fp, "%d %ld", &dist_cm, &ts_sec) == 2) {
+                struct timespec now;
+                clock_gettime(CLOCK_MONOTONIC, &now);
+                if (now.tv_sec - ts_sec < 2) {
+                    g_current_distance_cm.store(static_cast<int16_t>(dist_cm));
+                } else {
+                    g_current_distance_cm.store(Packet::DIST_NO_DATA);
+                }
+            }
+            fclose(fp);
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    }
 }
 
 
@@ -665,6 +688,14 @@ int main(int argc, char* argv[]) {
     // --- ここからモーター制御プログラムをバックグラウンドで起動する処理 ---
     //河村追加20250930
     pid_t motor_pid = fork();
+    std::thread(distance_reader_thread).detach();
+    std::thread([]() {
+        while (true) {
+            std::cout << "[DEBUG] g_current_distance_cm = " << g_current_distance_cm.load() << std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+    }).detach();
+    
     if (motor_pid == -1) {
         // forkに失敗した場合
         perror("fork failed to start motor control program");

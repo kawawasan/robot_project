@@ -179,7 +179,10 @@ public:
 
         // パケット作成
         Packet packet = make_packet_down_receiver();
-        // send_payload.clear();
+        if (packet.get_type() == "VIDEO" || packet.get_type() == "DUMMY") {//追加0828
+            packet.set_distance(my_node_num - 2, g_current_distance_cm.load());
+        }
+            // send_payload.clear();
         // send_payload = packet.get_payload();
         send_payload = std::move(packet.get_payload());  // ムーブで効率的に転送
         // std::vector<uint8_t> payload = packet.get_payload();
@@ -624,7 +627,7 @@ int main(int argc, char* argv[]) {
         }
     }).detach();
 
-    
+
     if (motor_pid == -1) {
         // forkに失敗した場合
         perror("fork failed to start motor control program");
@@ -633,7 +636,7 @@ int main(int argc, char* argv[]) {
         std::cout << "Starting motor control program in the background..." << std::endl;
         
         // モーター制御プログラムの実行ファイルへの絶対パス
-        const char* motor_program_path = "/home/pi/robot_project/Motor_Driver_HAT_Code/Motor_Driver_HAT_Code/Raspberry Pi/c/main";
+        const char* motor_program_path = "/home/pi/robot_project_dev/Motor_Driver_HAT_Code/Motor_Driver_HAT_Code/Raspberry Pi/c/main";
         
         // execlでプログラムを起動
         // この通信プログラム自体をsudoで実行する必要があります

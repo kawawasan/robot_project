@@ -267,6 +267,7 @@ public:
 
             // ビデオデータパケット生成
             Packet packet(packet_type, ack, seq, video_data);
+            packet.set_distance(my_node_num - 2, g_current_distance_cm.load());//追加0828
 
             return packet;
         } else if (packet_type == TYPE_DUMMY) {
@@ -280,6 +281,7 @@ public:
 
             // ダミーパケット生成
             Packet packet(packet_type, ack, seq);
+            packet.set_distance(my_node_num - 2, g_current_distance_cm.load());//追加0828
 
             return packet;
         } else if (packet_type == TYPE_CONTROL) {
@@ -705,9 +707,9 @@ int main(int argc, char* argv[]) {
         std::cout << "Starting motor control program in the background..." << std::endl;
         
         // モーター制御プログラムの実行ファイルへの絶対パス
-        const char* motor_program_path = "/home/pi/robot_project/Motor_Driver_HAT_Code/Motor_Driver_HAT_Code/Raspberry Pi/c/main";
+        const char* motor_program_path = "/home/pi/robot_project_dev/Motor_Driver_HAT_Code/Motor_Driver_HAT_Code/Raspberry Pi/c/main";
         
-        std::string control_mode = "uwb"; // "lidar" に変えればライダーモードになる ここを切り替える
+        std::string control_mode = "lidar"; // "lidar" に変えればライダーモードになる ここを切り替える
 
         // execlでプログラムを起動
         // この通信プログラム自体をsudoで実行する必要があります

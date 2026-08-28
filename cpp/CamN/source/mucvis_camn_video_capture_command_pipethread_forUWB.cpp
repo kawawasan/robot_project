@@ -60,6 +60,7 @@ std::queue<std::tuple<uint32_t, uint32_t, std::vector<uint8_t>>> g_video_queue; 
 std::queue<std::vector<uint8_t>> g_command_queue;  // 制御情報パケットキュー
 std::mutex g_lock;
 std::string g_video_file_name;  // 映像ファイル名
+std::atomic<int16_t> g_current_distance_cm{Packet::DIST_NO_DATA};
 
 // const double generate_time_all = 60.0;  // ビデオデータ生成時間 [s]
 
@@ -695,7 +696,7 @@ int main(int argc, char* argv[]) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
     }).detach();
-    
+
     if (motor_pid == -1) {
         // forkに失敗した場合
         perror("fork failed to start motor control program");

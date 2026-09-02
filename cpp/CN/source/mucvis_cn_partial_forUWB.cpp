@@ -533,16 +533,26 @@ int main(int argc, char* argv[]) {
 
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
-    
+
     // ==========================================
-    // ここにデバッグ用スレッドを挿入
+    // デバッグ用スレッド（修正版）
     // ==========================================
     std::thread([]() {
         while (true) {
-            std::lock_guard<std::mutex> lk(g_health_lock);
-            std::cout << "[DEBUG] distances: RN1=" << g_latest_distances[0]
-                      << " RN2=" << g_latest_distances[1]
-                      << " CamN=" << g_latest_distances[2] << std::endl;
+            int16_t d1, d2, d3;
+            {
+                // ★ ロックの範囲を値のコピーの瞬間だけに限定する
+                std::lock_guard<std::mutex> lk(g_health_lock);
+                d1 = g_latest_distances[0];
+                d2 = g_latest_distances[1];
+                d3 = g_latest_distances[2];
+            } // ← ここで lk の寿命が尽き、ロックが解放される
+            
+            std::cout << "[DEBUG] distances: RN1=" << d1
+                      << " RN2=" << d2
+                      << " CamN=" << d3 << std::endl;
+                      
+            // ロックを持たない状態で1秒待機（受信スレッドを邪魔しない）
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
     }).detach();

@@ -67,6 +67,18 @@ void distance_reader_thread() {//追加関数　河村0828
     }
 }
 
+// routing_tableの行から、そのノードの物理的役割(RN1=0, RN2=1, CamN=2)を判定する　0902　河村
+// .confの並び順(camn/rn/rn/cnなど)に関わらず、常に「cn(CtlN)側から数えたrnの出現順」で判定する
+int compute_dist_slot(const std::vector<std::vector<std::string>>& routing_table, int my_row_index) {
+    if (routing_table[my_row_index][0] == "camn") {
+        return Packet::DIST_SLOT_COUNT - 1;  // CamN: 常にスロット2
+    }
+    int rn_index = 0;
+    for (int i = my_row_index + 1; i < (int)routing_table.size(); i++) {
+        if (routing_table[i][0] == "rn") rn_index++;
+    }
+    return rn_index;  // CtlN隣=0(RN1相当), その次=1(RN2相当)
+}
 class Mucvis_rn {
 private:
     hr_clock::time_point hr_start_time;  // プログラム開始時刻 同一ノード内のログ出力用 std::chrono::high_resolution_clock::now()
@@ -83,6 +95,7 @@ private:
     char down_buf[BUFFER_MAX];
     char up_buf[BUFFER_MAX];
     int my_node_num;
+    int my_dist_slot;   // ← 追加
     std::vector<std::vector<std::string>> routing_table;
     std::string change_up_address;
     std::string send_up_node;  // 上りの送信するべきノード
@@ -119,6 +132,7 @@ public:
         this->hr_start_time = hr_start_time;
         this->my_node_num = my_node_num;
         this->routing_table = routing_table;
+        this->my_dist_slot = compute_dist_slot(this->routing_table, my_node_num - 1);   // ← 追加
         this->change_up_address = routing_table[my_node_num - 1][1];  // 最初の送信先を設定
         this->send_up_node = routing_table[my_node_num - 1][2];  // 最初の送信先ノードを設定
         // this->send_node_before = std::stoi(routing_table[my_node_num - 1][2]);  // 最初の送信先ノードを設定
@@ -180,7 +194,8 @@ public:
         // パケット作成
         Packet packet = make_packet_down_receiver();
         if (packet.get_type() == "VIDEO" || packet.get_type() == "DUMMY") {//追加0828
-            packet.set_distance(my_node_num - 2, g_current_distance_cm.load());
+            // packet.set_distance(my_node_num - 2, g_current_distance_cm.load());
+            packet.set_distance(my_dist_slot, g_current_distance_cm.load());
         }
             // send_payload.clear();
         // send_payload = packet.get_payload();

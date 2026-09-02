@@ -98,6 +98,18 @@ void distance_reader_thread() {
     }
 }
 
+// routing_tableの行から、そのノードの物理的役割(RN1=0, RN2=1, CamN=2)を判定する　0902河村
+// .confの並び順(camn/rn/rn/cnなど)に関わらず、常に「cn(CtlN)側から数えたrnの出現順」で判定する
+int compute_dist_slot(const std::vector<std::vector<std::string>>& routing_table, int my_row_index) {
+    if (routing_table[my_row_index][0] == "camn") {
+        return Packet::DIST_SLOT_COUNT - 1;  // CamN: 常にスロット2
+    }
+    int rn_index = 0;
+    for (int i = my_row_index + 1; i < (int)routing_table.size(); i++) {
+        if (routing_table[i][0] == "rn") rn_index++;
+    }
+    return rn_index;  // CtlN隣=0(RN1相当), その次=1(RN2相当)
+}
 
 // MUCViS_CamNクラス
 class Mucvis_camn {
@@ -110,6 +122,7 @@ private:
     Log *log;
     double ipt_interval;
     int my_node_num;
+    int my_dist_slot;   // ← 追加
     std::vector<std::vector<std::string>> routing_table;
 
     int pipefd[2];  // パイプのファイルディスクリプタ
@@ -137,6 +150,7 @@ public:
         this->hr_start_time = hr_start_time;
         this->my_node_num = my_node_num;
         this->routing_table = routing_table;
+        this->my_dist_slot = compute_dist_slot(this->routing_table, my_node_num - 1);   // ← 追加
 
         this->pipefd[0] = pipefd[0];
         this->pipefd[1] = pipefd[1];
@@ -267,7 +281,8 @@ public:
 
             // ビデオデータパケット生成
             Packet packet(packet_type, ack, seq, video_data);
-            packet.set_distance(my_node_num - 2, g_current_distance_cm.load());//追加0828
+            // packet.set_distance(my_node_num - 2, g_current_distance_cm.load());//追加0828
+            packet.set_distance(my_dist_slot, g_current_distance_cm.load());//追加0828
 
             return packet;
         } else if (packet_type == TYPE_DUMMY) {

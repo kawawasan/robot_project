@@ -21,6 +21,8 @@
 #include <cmath>
 #include <fcntl.h>
 #include <unistd.h> 
+#include <array>
+#include <map>
 
 #include "../../include/header/bytequeue.hpp"  // 自作モジュール
 #include "../../include/header/log.hpp"  // 自作モジュール
@@ -36,7 +38,7 @@ using system_clock = std::chrono::system_clock;
 #define TYPE_CONTROL (uint32_t)(0b01 << 30)
 #define TYPE_DUMMY (uint32_t)(0b10 << 30)
 #define BUFFER_MAX 1500
-#define MAX_VIDEO_SIZE 1464  // 映像データサイズ 最大1464byte(1500-UDPヘッダ-自作ヘッダ(8byte))．以前は1456，tsファイルは188byteのため，1316
+#define MAX_VIDEO_SIZE 1458  // 映像データサイズ 最大1458byte(1500-UDPヘッダ-自作ヘッダ(8byte))．以前は1456，tsファイルは188byteのため，1316
 #define CONTROL_SEQ_MAX (1 << 30)  // 30bitの最大値
 #define VIDEO_SEQ_MAX 0xffffffff  // 32bitの最大値
 #define DUMMY_SEQ_MAX 3  // ダミーパケット送信回数上限
@@ -51,6 +53,10 @@ ByteQueue g_command_bytequeue;  // 制御情報キュー
 std::queue<std::vector<uint8_t>> g_video_queue;  // 映像データパケットキュー
 std::mutex g_lock;
 std::string g_video_file_name;  // 映像ファイル名
+
+std::array<int16_t, Packet::DIST_SLOT_COUNT> g_latest_distances = {Packet::DIST_NO_DATA, Packet::DIST_NO_DATA, Packet::DIST_NO_DATA};
+std::map<uint32_t, hr_clock::time_point> g_control_send_time;  // control seq -> 送信時刻
+std::mutex g_health_lock;
 
 // ====================================================================
 // ✨ [修正] 「キュー」ではなく「現在値レジスタ」に変更
@@ -252,6 +258,11 @@ public:
         uint32_t ack = g_ack;
         log->write_camn_cn(duration, "Send", packet_type, ack, packet.get_commandSeq(), send_payload.size(), system_send_time);
         g_lock.unlock();
+
+        if (packet_type == "CONTROL") {
+            std::lock_guard<std::mutex> lk(g_health_lock);
+            g_control_send_time[packet.get_commandSeq()] = send_time;
+        }
         
         int send_node = g_send_num.load();
         if (send_node_before > send_node) {
@@ -286,9 +297,9 @@ public:
         //追加0830 河村
         if (packet_type == "VIDEO" || packet_type == "DUMMY") {
             auto dists = packet.get_distances();
-            std::cout << "[DEBUG] distances: RN1=" << dists[0]
-                    << " RN2=" << dists[1]
-                    << " CamN=" << dists[2] << std::endl;
+            // std::cout << "[DEBUG] distances: RN1=" << dists[0]
+            //         << " RN2=" << dists[1]
+            //         << " CamN=" << dists[2] << std::endl;
         }
 
         if (packet_type == "VIDEO") {
@@ -302,6 +313,25 @@ public:
             pre_video_seq = g_video_seq;
             g_video_seq = seq;
             g_lock.unlock();
+
+            // ↓ 追加：測距値キャッシュ更新 + RTT算出
+            {
+                auto dists = packet.get_distances();
+                std::lock_guard<std::mutex> lk(g_health_lock);
+                for (int i = 0; i < Packet::DIST_SLOT_COUNT; i++) {
+                    if (dists[i] != Packet::DIST_NO_DATA) g_latest_distances[i] = dists[i];
+                }
+                auto it = g_control_send_time.find(ack);
+                if (it != g_control_send_time.end()) {
+                    double rtt_ms = std::chrono::duration<double, std::milli>(recv_time - it->second).count();
+                    std::stringstream ss;
+                    ss << "T= " << std::chrono::duration<double>(recv_time - hr_start_time).count()
+                    << " Ev= RTT_measured Ack= " << ack << " RTT_ms= " << rtt_ms;
+                    log->write(ss.str());
+                    g_control_send_time.erase(g_control_send_time.begin(), std::next(it));  // 古いエントリを掃除
+                }
+            }
+            // ↑ ここまで
 
             if (seq != pre_video_seq + 1 and seq != 0) {
                 std::stringstream ss;
@@ -341,6 +371,25 @@ public:
             pre_ack = g_ack;
             g_ack = ack;
             g_lock.unlock();
+
+            // ↓ VIDEO分岐と同じ内容を追加
+            {
+                auto dists = packet.get_distances();
+                std::lock_guard<std::mutex> lk(g_health_lock);
+                for (int i = 0; i < Packet::DIST_SLOT_COUNT; i++) {
+                    if (dists[i] != Packet::DIST_NO_DATA) g_latest_distances[i] = dists[i];
+                }
+                auto it = g_control_send_time.find(ack);
+                if (it != g_control_send_time.end()) {
+                    double rtt_ms = std::chrono::duration<double, std::milli>(recv_time - it->second).count();
+                    std::stringstream ss;
+                    ss << "T= " << std::chrono::duration<double>(recv_time - hr_start_time).count()
+                    << " Ev= RTT_measured Ack= " << ack << " RTT_ms= " << rtt_ms;
+                    log->write(ss.str());
+                    g_control_send_time.erase(g_control_send_time.begin(), std::next(it));
+                }
+            }
+            // ↑ ここまで
             
             if (ack > pre_ack + 1) {
                 std::stringstream ss;
@@ -484,6 +533,20 @@ int main(int argc, char* argv[]) {
 
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
+    
+    // ==========================================
+    // ここにデバッグ用スレッドを挿入
+    // ==========================================
+    std::thread([]() {
+        while (true) {
+            std::lock_guard<std::mutex> lk(g_health_lock);
+            std::cout << "[DEBUG] distances: RN1=" << g_latest_distances[0]
+                      << " RN2=" << g_latest_distances[1]
+                      << " CamN=" << g_latest_distances[2] << std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+    }).detach();
+    // ==========================================
 
     while (g_video_queue.size() == 0) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));

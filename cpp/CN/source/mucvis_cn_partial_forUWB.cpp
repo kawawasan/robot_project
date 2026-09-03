@@ -58,6 +58,13 @@ std::array<int16_t, Packet::DIST_SLOT_COUNT> g_latest_distances = {Packet::DIST_
 std::map<uint32_t, hr_clock::time_point> g_control_send_time;  // control seq -> 送信時刻
 std::mutex g_health_lock;
 
+std::atomic<uint32_t> g_video_recv_count_window{0};
+std::atomic<uint32_t> g_video_lost_count_window{0};
+std::atomic<uint64_t> g_video_bytes_window{0};
+hr_clock::time_point g_metrics_window_start = hr_clock::now();
+std::atomic<double> g_latest_throughput_mbps{0.0};
+std::atomic<double> g_latest_loss_rate{0.0};
+
 // ====================================================================
 // ✨ [修正] 「キュー」ではなく「現在値レジスタ」に変更
 // 理由: 送信トリガーはCamNからの下りパケット受信であり(receive_packet内)、
@@ -334,12 +341,25 @@ public:
             // ↑ ここまで
 
             if (seq != pre_video_seq + 1 and seq != 0) {
+                g_video_lost_count_window++;   // ← 追加
                 std::stringstream ss;
                 ss << "T= " << std::chrono::duration<double>(recv_time - hr_start_time).count() 
                     << " Ev= Video_seq_lost"
                     << " Pre_Seq= " << pre_video_seq 
                     << " Seq= " << seq;
                 log->write(ss.str());
+            }
+            g_video_recv_count_window++;   // ← 追加（ロスの有無に関わらず必ずカウント）
+
+            g_video_bytes_window += recv_size;   // ← 追加
+            double elapsed = std::chrono::duration<double>(recv_time - g_throughput_window_start).count();
+            if (elapsed >= 1.0) {
+                g_latest_throughput_mbps.store((g_video_bytes_window.load() * 8) / elapsed / 1e6);
+                g_latest_loss_rate.store((double)g_video_lost_count_window.load() / std::max(1u, g_video_recv_count_window.load()));
+                g_video_bytes_window = 0;
+                g_video_recv_count_window = 0;   // ← ウィンドウごとにリセット
+                g_video_lost_count_window = 0;   // ← 同上
+                g_throughput_window_start = recv_time;
             }
 
             video_data = std::move(packet.get_videoData());
@@ -548,13 +568,16 @@ int main(int argc, char* argv[]) {
                 d3 = g_latest_distances[2];
             } // ← ここで lk の寿命が尽き、ロックが解放される
             
-            std::cout << "[DEBUG] distances: RN1=" << d1
-                      << " RN2=" << d2
-                      << " CamN=" << d3 << std::endl;
-                      
-            // ロックを持たない状態で1秒待機（受信スレッドを邪魔しない）
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-        }
+            std::stringstream ss;
+            ss << "Ev= HealthMetrics"
+               << " LossRate= " << g_latest_loss_rate.load()
+               << " Throughput_Mbps= " << g_latest_throughput_mbps.load()
+               << " Dist_RN1= " << d1
+               << " Dist_RN2= " << d2
+               << " Dist_CamN= " << d3;
+            log.write(ss.str());
+            std::this_thread::sleep_for(std::chrono::seconds(1));  // ロックを持たない状態で待機
+    }
     }).detach();
     // ==========================================
 

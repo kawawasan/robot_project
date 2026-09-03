@@ -304,6 +304,15 @@ public:
         Packet packet(recv_payload);
         std::string packet_type = packet.get_type();
 
+
+         //追加0830 河村
+        if (packet_type == "VIDEO" || packet_type == "DUMMY") {
+            auto dists = packet.get_distances();
+            std::cout << "[DEBUG] distances: RN1=" << dists[0]
+                    << " RN2=" << dists[1]
+                    << " CamN=" << dists[2] << std::endl;
+        }
+        
         if (packet_type == "VIDEO") {
             ack = packet.get_ack();
             seq = packet.get_videoSeq();

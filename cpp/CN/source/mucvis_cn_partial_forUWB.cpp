@@ -352,14 +352,14 @@ public:
             g_video_recv_count_window++;   // ← 追加（ロスの有無に関わらず必ずカウント）
 
             g_video_bytes_window += recv_size;   // ← 追加
-            double elapsed = std::chrono::duration<double>(recv_time - g_throughput_window_start).count();
+            double elapsed = std::chrono::duration<double>(recv_time - g_metrics_window_start).count();
             if (elapsed >= 1.0) {
                 g_latest_throughput_mbps.store((g_video_bytes_window.load() * 8) / elapsed / 1e6);
                 g_latest_loss_rate.store((double)g_video_lost_count_window.load() / std::max(1u, g_video_recv_count_window.load()));
                 g_video_bytes_window = 0;
                 g_video_recv_count_window = 0;   // ← ウィンドウごとにリセット
                 g_video_lost_count_window = 0;   // ← 同上
-                g_throughput_window_start = recv_time;
+                g_metrics_window_start = recv_time;
             }
 
             video_data = std::move(packet.get_videoData());
@@ -557,7 +557,7 @@ int main(int argc, char* argv[]) {
     // ==========================================
     // デバッグ用スレッド（修正版）
     // ==========================================
-    std::thread([]() {
+    std::thread([&log]() {
         while (true) {
             int16_t d1, d2, d3;
             {

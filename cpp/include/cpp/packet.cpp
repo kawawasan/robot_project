@@ -38,6 +38,10 @@ Packet::Packet(uint32_t type, uint32_t ack, uint32_t seq, std::vector<uint8_t> v
     int16_t dist_init[DIST_SLOT_COUNT] = {DIST_NO_DATA, DIST_NO_DATA, DIST_NO_DATA};
     payload.insert(payload.end(), reinterpret_cast<uint8_t*>(dist_init), reinterpret_cast<uint8_t*>(dist_init) + sizeof(dist_init));
     // ↑ ここまで追加
+    // ↓ RSSI相乗り用に追加
+    int16_t rssi_init[RSSI_SLOT_COUNT] = {RSSI_NO_DATA, RSSI_NO_DATA, RSSI_NO_DATA};
+    payload.insert(payload.end(), reinterpret_cast<uint8_t*>(rssi_init), reinterpret_cast<uint8_t*>(rssi_init) + sizeof(rssi_init));
+    // ↑ ここまで追加
     payload.insert(payload.end(), videoData.begin(), videoData.end());
 
     // uint32_t header[2] = {top4bytes, this->seq};
@@ -77,6 +81,10 @@ Packet::Packet(uint32_t type, uint32_t ack, uint32_t seq) {
     // ↓ ここから追加
     int16_t dist_init[DIST_SLOT_COUNT] = {DIST_NO_DATA, DIST_NO_DATA, DIST_NO_DATA};
     payload.insert(payload.end(), reinterpret_cast<uint8_t*>(dist_init), reinterpret_cast<uint8_t*>(dist_init) + sizeof(dist_init));
+    // ↑ ここまで追加
+    // ↓ RSSI相乗り用に追加
+    int16_t rssi_init[RSSI_SLOT_COUNT] = {RSSI_NO_DATA, RSSI_NO_DATA, RSSI_NO_DATA};
+    payload.insert(payload.end(), reinterpret_cast<uint8_t*>(rssi_init), reinterpret_cast<uint8_t*>(rssi_init) + sizeof(rssi_init));
     // ↑ ここまで追加
 
     // 繋げてペイロードに変形
@@ -129,7 +137,7 @@ int Packet::get_dummySeq() {
 std::vector<uint8_t> Packet::get_videoData() {
     videoData.clear();
     // videoData.insert(videoData.end(), payload.begin() + 8, payload.end());
-    videoData.insert(videoData.end(), payload.begin() + 8 + DIST_BYTES, payload.end());  // 8 → 8+DIST_BYTES
+    videoData.insert(videoData.end(), payload.begin() + 8 + DIST_BYTES + RSSI_BYTES, payload.end());  // 8 → 8+DIST_BYTES+RSSI_BYTES
     // memcpy(videoData, payload + 8, MAX_VIDEO_SIZE);
     return videoData;
 }
@@ -152,5 +160,20 @@ void Packet::set_distance(int node_idx, int16_t distance_cm) {
     if (node_idx < 0 || node_idx >= DIST_SLOT_COUNT) return;
     if (payload.size() >= 8 + DIST_BYTES) {
         memcpy(payload.data() + 8 + node_idx * sizeof(int16_t), &distance_cm, sizeof(int16_t));
+    }
+}
+
+std::array<int16_t, Packet::RSSI_SLOT_COUNT> Packet::get_rssis() {
+    std::array<int16_t, RSSI_SLOT_COUNT> rssis = {RSSI_NO_DATA, RSSI_NO_DATA, RSSI_NO_DATA};
+    if (payload.size() >= 8 + DIST_BYTES + RSSI_BYTES) {
+        memcpy(rssis.data(), payload.data() + 8 + DIST_BYTES, RSSI_BYTES);
+    }
+    return rssis;
+}
+
+void Packet::set_rssi(int node_idx, int16_t rssi_dbm) {
+    if (node_idx < 0 || node_idx >= RSSI_SLOT_COUNT) return;
+    if (payload.size() >= 8 + DIST_BYTES + RSSI_BYTES) {
+        memcpy(payload.data() + 8 + DIST_BYTES + node_idx * sizeof(int16_t), &rssi_dbm, sizeof(int16_t));
     }
 }

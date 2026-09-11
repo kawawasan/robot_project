@@ -51,5 +51,5 @@ ${DIR_BIN}/%.o : $(DIR_MotorDriver)/%.c
 
 
 clean :
-    rm -f $(DIR_BIN)/*.o 
+	rm -f $(DIR_BIN)/*.o 
 	rm -f main main_lidar main_uwb

@@ -40,7 +40,7 @@ using system_clock = std::chrono::system_clock;
 #define TYPE_CONTROL (uint32_t)(0b01 << 30)
 #define TYPE_DUMMY (uint32_t)(0b10 << 30)
 #define BUFFER_MAX 1500
-#define MAX_VIDEO_SIZE 1458  // 映像データサイズ 最大1458byteに変更0827．tsファイルは188byteのため，1316
+#define MAX_VIDEO_SIZE 1452  // 映像データサイズ 最大1452byte．RSSI相乗り分(6byte)を1458から追加で削減
 #define VIDEO_BUFFER_SIZE (MAX_VIDEO_SIZE * 100)  // パイプから読み込むバッファサイズ
 #define CONTROL_SEQ_MAX (1 << 30)  // 30bitの最大値
 #define VIDEO_SEQ_MAX 0xffffffff  // 32bitの最大値
@@ -61,6 +61,8 @@ std::queue<std::vector<uint8_t>> g_command_queue;  // 制御情報パケット�
 std::mutex g_lock;
 std::string g_video_file_name;  // 映像ファイル名
 std::atomic<int16_t> g_current_distance_cm{Packet::DIST_NO_DATA};
+std::atomic<int16_t> g_current_rssi{Packet::RSSI_NO_DATA};
+std::atomic<uint32_t> g_down_ip_netorder{0};  // down_addrの現在のIP(ネットワークバイトオーダー)。ルーティング変更で隣接ノードが変わっても追従させる
 
 // const double generate_time_all = 60.0;  // ビデオデータ生成時間 [s]
 
@@ -94,6 +96,63 @@ void distance_reader_thread() {
             }
             fclose(fp);
         }
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    }
+}
+
+// IPアドレスからMACアドレスを解決し(IBSS/meshで直接通信しているためARPキャッシュに乗る)、
+// そのMACのstation統計からsignal(RSSI)を取得する。
+// IBSS/meshはstation dumpに電波の届く全ピアが列挙されるため、
+// MACで絞り込まないと論理的な隣接ノード以外のRSSIを拾ってしまう。
+int16_t get_rssi_for_neighbor(const std::string& neighbor_ip) {
+    std::string mac;
+    {
+        std::string cmd = "ip neigh show " + neighbor_ip + " dev wlan0 2>/dev/null";
+        FILE* fp = popen(cmd.c_str(), "r");
+        if (fp != nullptr) {
+            char line[256];
+            char lladdr[32] = {0};
+            if (fgets(line, sizeof(line), fp) != nullptr &&
+                sscanf(line, "%*s dev %*s lladdr %31s", lladdr) == 1) {
+                mac = lladdr;
+            }
+            pclose(fp);
+        }
+    }
+    if (mac.empty()) return Packet::RSSI_NO_DATA;
+
+    int16_t rssi_dbm = Packet::RSSI_NO_DATA;
+    std::string cmd = "iw dev wlan0 station get " + mac + " 2>/dev/null";
+    FILE* fp = popen(cmd.c_str(), "r");
+    if (fp != nullptr) {
+        char line[256];
+        int sig = 0;
+        while (fgets(line, sizeof(line), fp) != nullptr) {
+            if (sscanf(line, " signal: %d", &sig) == 1) {
+                rssi_dbm = static_cast<int16_t>(sig);
+                break;
+            }
+        }
+        pclose(fp);
+    }
+    return rssi_dbm;
+}
+
+// 自ノードの無線リンク品質(RSSI)を定期的に読み、g_current_rssiにキャッシュする
+// distance_reader_threadと対のスレッド。新規パケット送信は発生しないため通信負荷はほぼゼロ。
+void rssi_reader_thread() {
+    while (true) {
+        int16_t rssi_dbm = Packet::RSSI_NO_DATA;
+        uint32_t ip_raw = g_down_ip_netorder.load();
+        if (ip_raw != 0) {
+            struct in_addr addr;
+            addr.s_addr = ip_raw;
+            char ip_str[INET_ADDRSTRLEN];
+            if (inet_ntop(AF_INET, &addr, ip_str, sizeof(ip_str)) != nullptr) {
+                rssi_dbm = get_rssi_for_neighbor(ip_str);
+            }
+        }
+        g_current_rssi.store(rssi_dbm);
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
 }
@@ -145,6 +204,7 @@ public:
         down_addr.sin_family = AF_INET;
         down_addr.sin_addr.s_addr = inet_addr(down_address.c_str());
         down_addr.sin_port = htons(down_port);
+        g_down_ip_netorder.store(down_addr.sin_addr.s_addr);
         this->log = &log;
         this->ipt_interval = ipt_interval;
         this->hr_start_time = hr_start_time;
@@ -283,6 +343,7 @@ public:
             Packet packet(packet_type, ack, seq, video_data);
             // packet.set_distance(my_node_num - 2, g_current_distance_cm.load());//追加0828
             packet.set_distance(my_dist_slot, g_current_distance_cm.load());//追加0828
+            packet.set_rssi(my_dist_slot, g_current_rssi.load());//追加RSSI相乗り
 
             return packet;
         } else if (packet_type == TYPE_DUMMY) {
@@ -297,6 +358,7 @@ public:
             // ダミーパケット生成
             Packet packet(packet_type, ack, seq);
             packet.set_distance(my_node_num - 2, g_current_distance_cm.load());//追加0828
+            packet.set_rssi(my_dist_slot, g_current_rssi.load());//追加RSSI相乗り
 
             return packet;
         } else if (packet_type == TYPE_CONTROL) {
@@ -425,8 +487,9 @@ public:
                     
                     int node_idx = std::stoi(send_node) - 1;
                     if (node_idx >= 0 && node_idx < (int)routing_table.size()) {
-                        std::string down_address = routing_table[node_idx][1]; 
+                        std::string down_address = routing_table[node_idx][1];
                         down_addr.sin_addr.s_addr = inet_addr(down_address.c_str());
+                        g_down_ip_netorder.store(down_addr.sin_addr.s_addr);
                         // cout << "DEBUG: Routing updated to " << down_address << endl;
                     } else {
                         std::cerr << "DEBUG: Routing index error!" << endl;
@@ -707,9 +770,11 @@ int main(int argc, char* argv[]) {
     //河村追加20250930
     pid_t motor_pid = fork();
     std::thread(distance_reader_thread).detach();
+    std::thread(rssi_reader_thread).detach();
     std::thread([]() {
         while (true) {
-            std::cout << "[DEBUG] g_current_distance_cm = " << g_current_distance_cm.load() << std::endl;
+            std::cout << "[DEBUG] g_current_distance_cm = " << g_current_distance_cm.load()
+                       << " g_current_rssi = " << g_current_rssi.load() << std::endl;
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
     }).detach();

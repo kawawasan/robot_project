@@ -55,6 +55,7 @@ std::mutex g_lock;
 std::string g_video_file_name;  // 映像ファイル名
 
 std::array<int16_t, Packet::DIST_SLOT_COUNT> g_latest_distances = {Packet::DIST_NO_DATA, Packet::DIST_NO_DATA, Packet::DIST_NO_DATA};
+std::array<int16_t, Packet::RSSI_SLOT_COUNT> g_latest_rssis = {Packet::RSSI_NO_DATA, Packet::RSSI_NO_DATA, Packet::RSSI_NO_DATA};
 std::map<uint32_t, hr_clock::time_point> g_control_send_time;  // control seq -> 送信時刻
 std::mutex g_health_lock;
 
@@ -324,9 +325,13 @@ public:
             // ↓ 追加：測距値キャッシュ更新 + RTT算出
             {
                 auto dists = packet.get_distances();
+                auto rssis = packet.get_rssis();
                 std::lock_guard<std::mutex> lk(g_health_lock);
                 for (int i = 0; i < Packet::DIST_SLOT_COUNT; i++) {
                     if (dists[i] != Packet::DIST_NO_DATA) g_latest_distances[i] = dists[i];
+                }
+                for (int i = 0; i < Packet::RSSI_SLOT_COUNT; i++) {
+                    if (rssis[i] != Packet::RSSI_NO_DATA) g_latest_rssis[i] = rssis[i];
                 }
                 auto it = g_control_send_time.find(ack);
                 if (it != g_control_send_time.end()) {
@@ -395,9 +400,13 @@ public:
             // ↓ VIDEO分岐と同じ内容を追加
             {
                 auto dists = packet.get_distances();
+                auto rssis = packet.get_rssis();
                 std::lock_guard<std::mutex> lk(g_health_lock);
                 for (int i = 0; i < Packet::DIST_SLOT_COUNT; i++) {
                     if (dists[i] != Packet::DIST_NO_DATA) g_latest_distances[i] = dists[i];
+                }
+                for (int i = 0; i < Packet::RSSI_SLOT_COUNT; i++) {
+                    if (rssis[i] != Packet::RSSI_NO_DATA) g_latest_rssis[i] = rssis[i];
                 }
                 auto it = g_control_send_time.find(ack);
                 if (it != g_control_send_time.end()) {
@@ -560,21 +569,28 @@ int main(int argc, char* argv[]) {
     std::thread([&log]() {
         while (true) {
             int16_t d1, d2, d3;
+            int16_t r1, r2, r3;
             {
                 // ★ ロックの範囲を値のコピーの瞬間だけに限定する
                 std::lock_guard<std::mutex> lk(g_health_lock);
                 d1 = g_latest_distances[0];
                 d2 = g_latest_distances[1];
                 d3 = g_latest_distances[2];
+                r1 = g_latest_rssis[0];
+                r2 = g_latest_rssis[1];
+                r3 = g_latest_rssis[2];
             } // ← ここで lk の寿命が尽き、ロックが解放される
-            
+
             std::stringstream ss;
             ss << "Ev= HealthMetrics"
                << " LossRate= " << g_latest_loss_rate.load()
                << " Throughput_Mbps= " << g_latest_throughput_mbps.load()
                << " Dist_RN1= " << d1
                << " Dist_RN2= " << d2
-               << " Dist_CamN= " << d3;
+               << " Dist_CamN= " << d3
+               << " RSSI_RN1= " << r1
+               << " RSSI_RN2= " << r2
+               << " RSSI_CamN= " << r3;
             log.write(ss.str());
             std::this_thread::sleep_for(std::chrono::seconds(1));  // ロックを持たない状態で待機
     }

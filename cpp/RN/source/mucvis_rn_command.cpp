@@ -76,7 +76,7 @@ void distance_reader_thread() {//追加関数　河村0828
 int16_t get_rssi_for_neighbor(const std::string& neighbor_ip) {
     std::string mac;
     {
-        std::string cmd = "ip neigh show " + neighbor_ip + " dev wlan0 2>/dev/null";
+        std::string cmd = "ip neigh show " + neighbor_ip + " dev wlan-adhoc 2>/dev/null";
         FILE* fp = popen(cmd.c_str(), "r");
         if (fp != nullptr) {
             char line[256];
@@ -91,7 +91,7 @@ int16_t get_rssi_for_neighbor(const std::string& neighbor_ip) {
     if (mac.empty()) return Packet::RSSI_NO_DATA;
 
     int16_t rssi_dbm = Packet::RSSI_NO_DATA;
-    std::string cmd = "iw dev wlan0 station get " + mac + " 2>/dev/null";
+    std::string cmd = "iw dev wlan-adhoc station get " + mac + " 2>/dev/null";
     FILE* fp = popen(cmd.c_str(), "r");
     if (fp != nullptr) {
         char line[256];

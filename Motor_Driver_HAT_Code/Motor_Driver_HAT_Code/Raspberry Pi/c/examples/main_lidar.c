@@ -136,10 +136,13 @@ int main(void)
     // 時間管理用の変数
     struct timespec last_measure_time;
     clock_gettime(CLOCK_MONOTONIC, &last_measure_time);
-    
+    struct timespec last_print_time;
+    clock_gettime(CLOCK_MONOTONIC, &last_print_time);
+
     int dist_cm = -1; // 最新の測定値を保持
     const double STOP_TOLERANCE = 0.05; // 5cmの許容誤差
     const double UPDATE_INTERVAL = 0.5; // 1.0sより安全な0.5s（2Hz）を推奨
+    const double PRINT_INTERVAL = 5.0; // 画面表示は5秒に1回に間引く（測定・制御自体は上のUPDATE_INTERVALのまま）
 
     while(1) {
         struct timespec now;
@@ -156,9 +159,18 @@ int main(void)
                 dist_cm = new_dist;
                 last_measure_time = now; // 測定成功時のみタイマーリセット
                 write_current_distance(dist_cm); // 河村20260827
-                printf("[LIDAR] Updated Distance: %d cm\n", dist_cm);
-            } else {
-                printf("[WARNING] Invalid data (0cm). Keeping last distance.\n");
+            }
+
+            // --- 画面表示は測定・制御と切り離してPRINT_INTERVALごとに間引く ---
+            double print_elapsed = (now.tv_sec - last_print_time.tv_sec) +
+                                    (now.tv_nsec - last_print_time.tv_nsec) / 1e9;
+            if (print_elapsed >= PRINT_INTERVAL) {
+                if (new_dist > 0) {
+                    printf("[LIDAR] Updated Distance: %d cm\n", dist_cm);
+                } else {
+                    printf("[WARNING] Invalid data (0cm). Keeping last distance.\n");
+                }
+                last_print_time = now;
             }
         }
 

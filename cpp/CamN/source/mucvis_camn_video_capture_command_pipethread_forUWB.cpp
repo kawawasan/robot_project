@@ -113,7 +113,7 @@ int16_t get_rssi_for_neighbor(const std::string& neighbor_ip) {
             char line[256];
             char lladdr[32] = {0};
             if (fgets(line, sizeof(line), fp) != nullptr &&
-                sscanf(line, "%*s dev %*s lladdr %31s", lladdr) == 1) {
+                sscanf(line, "%*s lladdr %31s", lladdr) == 1) {
                 mac = lladdr;
             }
             pclose(fp);
@@ -775,7 +775,7 @@ int main(int argc, char* argv[]) {
         while (true) {
             std::cout << "[DEBUG] g_current_distance_cm = " << g_current_distance_cm.load()
                        << " g_current_rssi = " << g_current_rssi.load() << std::endl;
-            std::this_thread::sleep_for(std::chrono::seconds(1));
+            std::this_thread::sleep_for(std::chrono::seconds(5));
         }
     }).detach();
 
